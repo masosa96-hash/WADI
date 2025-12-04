@@ -1,41 +1,42 @@
-const CACHE_NAME = 'kivo-cache-v3';
+const CACHE_NAME = "kivo-v2-cache";
+const urlsToCache = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./script.js",
+  "./firebase-config.js",
+  "./manifest.json",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png",
+];
 
-self.addEventListener('install', event => {
-  self.skipWaiting();
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll([
-        './',
-        './index.html',
-        './style.css',
-        './script.js',
-        './firebase-config.js',
-        './manifest.json',
-        './assets/pop.mp3',
-        './assets/kivo-icon.png',
-        './privacy.html'
-      ]);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(urlsToCache);
     })
   );
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
+});
+
+self.addEventListener("activate", (event) => {
+  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
+        cacheNames.map((cacheName) => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
             return caches.delete(cacheName);
           }
         })
       );
     })
-  );
-  self.clients.claim(); // Take control immediately
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
   );
 });

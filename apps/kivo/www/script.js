@@ -8,11 +8,10 @@ let body,
   chatWindow,
   installBtn,
   installPrompt;
-let popSonido;
 let deferredPrompt; // Para PWA install
 
 // Estado de Kivo
-let userId = null; // Modificado: Inicialmente null
+let userId = null;
 let currentEmotion = "neutral";
 let chatHistory = [];
 let userProfile = {
@@ -24,6 +23,7 @@ let userProfile = {
   voz: "emocional",
 };
 let lastMessageTimestamp = Date.now();
+let kivoVoice = "emocional"; // Default voice
 
 // --- INICIALIZACIÓN DOM ---
 if (typeof document !== "undefined") {
@@ -38,9 +38,6 @@ if (typeof document !== "undefined") {
     installBtn = document.getElementById("install-btn");
     installPrompt = document.getElementById("install-prompt");
 
-    // Sonido
-    // popSonido = new Audio("assets/pop.mp3");
-
     // --- 2. LÓGICA DE INICIO Y NAVEGACIÓN ---
 
     if (empezarBtn) {
@@ -48,9 +45,6 @@ if (typeof document !== "undefined") {
         inicioScreen.style.display = "none";
         chatScreen.style.display = "flex";
         scrollToBottom();
-
-        // Esperar a que la autenticación esté lista
-        // cargarUsuario() se llamará desde el listener de onAuthStateChanged en firebase-config.js
       });
     }
 
@@ -61,19 +55,19 @@ if (typeof document !== "undefined") {
         if (userMessage) {
           handleUserMessage(userMessage);
         }
-        messageInput.focus(); // Mantener foco en móvil
+        messageInput.focus();
       });
     }
 
     // Registro Service Worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("/sw.js")
+        .register("./sw.js")
         .then((registration) => {
-          console.log("ServiceWorker registrado con éxito:", registration);
+          console.log("ServiceWorker registrado:", registration);
         })
         .catch((err) => {
-          console.warn("Falló el registro del ServiceWorker:", err);
+          console.warn("Falló registro ServiceWorker:", err);
         });
     }
 
@@ -84,17 +78,12 @@ if (typeof document !== "undefined") {
       if (installPrompt) installPrompt.style.display = "block";
     });
 
-    // Ocultar botón si no hay evento diferido (inicialmente oculto por CSS, pero aseguramos)
-    if (installBtn && !deferredPrompt) {
-      // installPrompt.style.display = "none"; // Ya está oculto por defecto en HTML/CSS
-    }
-
     if (installBtn) {
       installBtn.addEventListener("click", async () => {
         if (deferredPrompt) {
           deferredPrompt.prompt();
           const { outcome } = await deferredPrompt.userChoice;
-          console.log(`User response to the install prompt: ${outcome}`);
+          console.log(`User response: ${outcome}`);
           deferredPrompt = null;
           installPrompt.style.display = "none";
         }
@@ -104,12 +93,11 @@ if (typeof document !== "undefined") {
 }
 
 // Función central de manejo de mensajes
-// Función central de manejo de mensajes
 function handleUserMessage(userMessage) {
-  analyzeUserStyle(userMessage); // Analiza perfil
+  analyzeUserStyle(userMessage);
   addMessageToChat(userMessage, "user");
   if (messageInput) messageInput.value = "";
-  lastMessageTimestamp = Date.now(); // Guarda la hora del envío
+  lastMessageTimestamp = Date.now();
 
   // Simular "pensamiento"
   setTimeout(() => {
@@ -129,22 +117,16 @@ function handleUserMessage(userMessage) {
       addMessageToChat(data.response, "kivo");
     } catch (err) {
       console.error("Error en Kivo Brain:", err);
-      addMessageToChat(
-        "Lo siento, me perdí un poco. ¿Me lo repetís?",
-        "kivo",
-        "tecnico"
-      );
+      addMessageToChat("Lo siento, me perdí un poco. ¿Me lo repetís?", "kivo");
     }
-  }, 600 + Math.random() * 800); // Pequeño delay natural
+  }, 600 + Math.random() * 800);
 }
 
 // --- 3. FUNCIONES DE FIREBASE (V12) ---
+// (Simplificado para standalone, la lógica completa de auth está en firebase-config.js)
 
-// =============================
-// CARGAR PERFIL Y HISTORIAL
-// =============================
 async function cargarUsuario(uid) {
-  userId = uid; // Guardamos el UID globalmente
+  userId = uid;
   try {
     const doc = await db.collection("usuarios").doc(uid).get();
 
@@ -152,9 +134,7 @@ async function cargarUsuario(uid) {
       const data = doc.data();
       userProfile = data.perfil || {};
       chatHistory = data.historialEmocional || [];
-
       currentEmotion = chatHistory.slice(-1)[0]?.emocion || "neutral";
-
       setBodyEmotion(currentEmotion);
 
       const momento = obtenerMomentoDelDía();
@@ -165,22 +145,17 @@ async function cargarUsuario(uid) {
     } else {
       addMessageToChat(
         "Hola, soy Kivo. Estoy aquí para escucharte. ¿Cómo te sientes hoy?",
-        "kivo",
-        "emocional"
+        "kivo"
       );
     }
   } catch (err) {
     console.error("Error al cargar Firebase:", err);
-    addMessageToChat("Error de permisos o conexión.", "kivo");
+    addMessageToChat("Hola. Estoy listo para charlar.", "kivo");
   }
 }
 
-// =============================
-// GUARDAR MENSAJE
-// =============================
 async function guardarMensaje(uid, mensaje, emocion, modo) {
   const docRef = db.collection("usuarios").doc(uid);
-
   const nuevo = {
     mensaje,
     emocion,
@@ -201,19 +176,16 @@ async function guardarMensaje(uid, mensaje, emocion, modo) {
   }
 }
 
-// =============================
-// GUARDAR PERFIL
-// =============================
 async function guardarPerfil(uid, perfil) {
   if (!uid) return;
   await db.collection("usuarios").doc(uid).set({ perfil }, { merge: true });
 }
 
-// --- 4. FUNCIONES HELPER (Inteligencia V13) ---
+// --- 4. FUNCIONES HELPER ---
 
 function obtenerMomentoDelDía() {
   const hora = new Date().getHours();
-  if (hora >= 22 || hora < 6) return "noche_descanso"; // ¡NUEVO!
+  if (hora >= 22 || hora < 6) return "noche_descanso";
   if (hora >= 6 && hora < 12) return "mañana";
   if (hora >= 12 && hora < 18) return "tarde";
   return "noche";
@@ -230,7 +202,6 @@ function detectarClimaEmocional(historial) {
 }
 
 function detectarModo(input) {
-  // (Sin cambios)
   const tecnico =
     /\b(puerto|proceso|script|evento|auditoría|log|firewall|powershell|sistema|control|validar|debug|conexión|remoto|registro)\b/i;
   const emocional =
@@ -241,7 +212,6 @@ function detectarModo(input) {
 }
 
 function detectarSubmodo(input) {
-  // (Sin cambios)
   const reflexivo =
     /\b(pensando|reflexionando|últimamente|no sé qué quiero|me estuve dando cuenta|me di cuenta|me siento distinto|cambiando|procesando)\b/i;
   const creativo =
@@ -254,28 +224,20 @@ function detectarSubmodo(input) {
 function setBodyEmotion(emotion) {
   if (!body) return;
   body.className = "";
-  if (emotion.startsWith("triste")) {
-    body.classList.add("triste");
-  } else if (emotion.startsWith("ansioso")) {
+  if (emotion && emotion.startsWith("triste")) body.classList.add("triste");
+  else if (emotion && emotion.startsWith("ansioso"))
     body.classList.add("ansioso");
-  } else if (emotion.startsWith("contento")) {
+  else if (emotion && emotion.startsWith("contento"))
     body.classList.add("contento");
-  }
 }
 
-// --- 5. LÓGICA DE CHAT (Núcleo V13) ---
-
 function addMessageToChat(message, sender) {
-  if (typeof document === "undefined") return; // Node check
+  if (typeof document === "undefined") return;
   if (!chatWindow) return;
 
   const messageElement = document.createElement("div");
   messageElement.classList.add("message", sender);
-  if (sender === "kivo") {
-    // if (popSonido && popSonido.play) popSonido.play().catch(() => {}); // Catch autoplay errors
-  }
   messageElement.innerHTML = `<p>${message}</p>`;
-  chatWindow.appendChild(messageElement);
   chatWindow.appendChild(messageElement);
   scrollToBottom();
 }
@@ -289,7 +251,6 @@ function scrollToBottom() {
 }
 
 function analyzeUserStyle(input) {
-  // (Función V11 sin cambios)
   const lowerInput = input.toLowerCase();
   userProfile.emojis = /[\u{1F600}-\u{1F64F}]/u.test(input);
   const slangMatches = lowerInput.match(
@@ -304,21 +265,16 @@ function analyzeUserStyle(input) {
   if (/qué onda|ey|che/i.test(lowerInput))
     userProfile.greetingType = "informal";
   else if (/hola|buenas/i.test(lowerInput)) userProfile.greetingType = "formal";
-  if (/mil gracias|se agradece|genio/i.test(lowerInput))
-    userProfile.gratitudeType = "expresivo";
-  else if (/gracias|gracia/i.test(lowerInput))
-    userProfile.gratitudeType = "simple";
 
   if (userId) guardarPerfil(userId, userProfile);
 }
 
-// --- 6. MOTOR DE RESPUESTAS DE KIVO (V13) ---
+// --- 6. MOTOR DE RESPUESTAS DE KIVO (V13 - Standalone) ---
 function kivoResponse(userInput) {
-  // Objeto de respuesta
   let responseDetails = {
     response: "",
-    finalMode: kivoVoice, // El modo por defecto es la voz elegida
-    emotion: currentEmotion, // Emoción por defecto
+    finalMode: kivoVoice,
+    emotion: currentEmotion,
   };
 
   // --- LÓGICA DE VOZ "BARRIO" ---
@@ -345,16 +301,12 @@ function kivoResponse(userInput) {
     } else if (input.includes("hola") || input.includes("che")) {
       res = "¡Epa! ¿Todo tranca? ¿Qué se cuenta?";
       emotion = "neutral";
-    } else if (input.includes("gracias") || input.includes("gracia")) {
+    } else if (input.includes("gracias")) {
       res = "De nada, man. Para eso estamos. ¿Algo más?";
-      emotion = "neutral";
-    } else if (input.includes("silencio")) {
-      res = "Todo bien. Quedate piola. Estoy acá igual.";
       emotion = "neutral";
     } else {
       res = "Te sigo, te sigo... ¿Qué más?";
     }
-
     responseDetails.response = res;
     responseDetails.emotion = emotion;
   };
@@ -370,317 +322,51 @@ function kivoResponse(userInput) {
       res = `Emoción detectada: triste. Protocolo de escucha activado.`;
     else if (input.includes("chau"))
       res = "Cerrando sesión. Que tenga un día productivo.";
-
     responseDetails.response = res;
     responseDetails.emotion = "neutral";
   };
 
-  // --- LÓGICA DE VOZ "REFLEXIVA" ---
-  const LOGICA_REFLEXIVA = (input) => {
-    let res = "";
-    let emotion = currentEmotion;
-    const submodo = detectarSubmodo(input);
-
-    if (/no sirvo|siempre me pasa|nunca puedo/i.test(input)) {
-      res =
-        "Eso que decís suena como una creencia instalada. ¿Querés que lo desarmemos juntos, sin apuro?";
-      emotion = "reflexivo"; // Usamos 'reflexivo' como modo y emoción
-    } else if (submodo === "reflexivo" || input.includes("pensando")) {
-      res = "Es fascinante... ¿Qué disparó esa línea de pensamiento?";
-      emotion = "confuso";
-    } else if (submodo === "creativo" || input.includes("idea")) {
-      res =
-        "La creatividad es la inteligencia divirtiéndose. ¿Cuál es el núcleo de esa idea?";
-      emotion = "contento";
-    } else if (input.includes("hola")) {
-      res = "Hola. Un gusto conectar. ¿Sobre qué te gustaría reflexionar hoy?";
-      emotion = "neutral";
-    } else if (input.includes("triste") || input.includes("ansioso")) {
-      res =
-        "Entiendo. ¿Podrías describir la textura de ese sentimiento? ¿Dónde lo sentís?";
-      emotion = input.includes("triste") ? "triste" : "ansioso";
-    } else if (input.includes("no sé")) {
-      res =
-        'El "no saber" es, a menudo, el primer paso para el verdadero saber. ¿Qué sentís en esa incertidumbre?';
-      emotion = "confuso";
-    } else {
-      res = "Interesante. ¿Y qué conclusión sacás de eso?";
-    }
-    responseDetails.response = res;
-    responseDetails.emotion = emotion;
-  };
-
-  // --- LÓGICA DE VOZ "EMOCIONAL" (La V11 completa) ---
+  // --- LÓGICA DE VOZ "EMOCIONAL" (Simplificada) ---
   const LOGICA_EMOCIONAL = (input) => {
-    // (Esta es la lógica V11 que ya teníamos)
-    const momento = obtenerMomentoDelDía();
-    const modo = detectarModo(input);
-    const submodo = detectarSubmodo(input);
     let res = "";
     let emotion = currentEmotion;
-    let emotionDetected = false;
 
-    // 1. MANEJO DE OFERTAS
-    if (emotion === "ansioso_ofreciendo_ayuda") {
-      if (input.includes("dale") || input.includes("sí")) {
-        res =
-          "Genial. Es simple: Inhalá profundo (4 seg)... sostené (4 seg)... y largalo despacio (6 seg). Repetilo un par de veces.";
-        emotion = "ansioso";
-      } else {
-        res =
-          "No hay problema, tranqui. Era solo una idea. ¿Querés seguir contándome qué te pasa?";
-        emotion = "ansioso";
-      }
-      responseDetails.response = res;
-      responseDetails.emotion = emotion;
-      return;
-    }
-    if (emotion === "triste_ofreciendo_ayuda") {
-      if (input.includes("dale") || input.includes("sí")) {
-        res =
-          "Ok, tomá un segundo. Intentá escribir (acá o en un papel) 3 cosas que sentís ahora mismo, sin filtro. Te espero.";
-        emotion = "triste";
-      } else {
-        res =
-          "Todo bien. No te preocupes. ¿Querés seguir charlando sobre eso? Te leo.";
-        emotion = "triste";
-      }
-      responseDetails.response = res;
-      responseDetails.emotion = emotion;
-      return;
-    }
-
-    // 2. DETECCIÓN DE EMOCIONES
-    if (/no sirvo|siempre me pasa|nunca puedo/i.test(input)) {
+    if (input.includes("triste") || input.includes("deprimido")) {
       res =
-        "Eso que decís suena como una creencia instalada. ¿Querés que lo desarmemos juntos, sin apuro?";
-      emotion = "reflexivo"; // Sobreescribe la voz
-      responseDetails.finalMode = "reflexivo";
-      emotionDetected = true;
-    } else if (
-      input.includes("triste") ||
-      input.includes("deprimido") ||
-      input.includes("llorar")
-    ) {
+        "Uh, qué bajón... Largar todo eso es el primer paso. Estoy acá para escucharte.";
+      emotion = "triste";
+    } else if (input.includes("ansiedad") || input.includes("estrés")) {
       res =
-        'Uh, qué bajón... Largar todo eso es el primer paso. ¿Querés probar un ejercicio simple de "descarga" de sentimientos?';
-      emotion = "triste_ofreciendo_ayuda";
-      emotionDetected = true;
-    } else if (
-      input.includes("ansiedad") ||
-      input.includes("estresado") ||
-      input.includes("estrés")
-    ) {
-      res =
-        "La ansiedad te revuelve todo, ¿no? ¿Querés probar un ejercicio de respiración simple para anclarse?";
-      emotion = "ansioso_ofreciendo_ayuda";
-      emotionDetected = true;
-    } else if (input.includes("solo") || input.includes("soledad")) {
-      res =
-        "La soledad pega... pero ahora estoy con vos. ¿Querés hablar de eso?";
-      emotion = "solo";
-      emotionDetected = true;
-    } else if (
-      input.includes("enojado") ||
-      input.includes("molesto") ||
-      input.includes("rabia")
-    ) {
-      res = "Uf, qué bronca... si querés descargar, este es tu espacio.";
-      emotion = "enojado";
-      emotionDetected = true;
-    } else if (
-      input.includes("miedo") ||
-      input.includes("temor") ||
-      input.includes("preocupado")
-    ) {
-      res = "El miedo te deja medio paralizado, ¿no? Pero tranqui, estoy acá.";
-      emotion = "miedo";
-      emotionDetected = true;
-    } else if (input.includes("aburrido") || input.includes("embole")) {
-      res = "El embole total... ¿Querés que pensemos algo para cortar con eso?";
-      emotion = "aburrido";
-      emotionDetected = true;
-    } else if (
-      (input.includes("bien") &&
-        (input.includes("pero") ||
-          input.includes("no sé") ||
-          input.includes("ultimamente") ||
-          input.includes("raro"))) ||
-      input.includes("me siento raro") ||
-      input.includes("ando medio") ||
-      input.includes("no sé qué me pasa")
-    ) {
-      res =
-        'Entiendo, es como una mezcla rara, ¿no? A veces uno está "bien" pero hay algo que no termina de cerrar. Si querés, lo charlamos tranqui.';
-      emotion = "confuso";
-      emotionDetected = true;
-    } else if (
-      input.includes("🙃") ||
-      input.includes("todo joya") ||
-      (input.includes("re feliz") && input.includes("jaja")) ||
-      input.includes("sobreviviendo")
-    ) {
-      res =
-        "Jaja, ese “todo joya” suena con doble fondo... Si querés, seguimos charlando de eso. Estoy acá, tranqui.";
-      emotion = "confuso";
-      emotionDetected = true;
-    } else if (
-      input.includes("feliz") ||
-      input.includes("contento") ||
-      input.includes("bien")
-    ) {
+        "La ansiedad te revuelve todo, ¿no? Respirá profundo. Estoy con vos.";
+      emotion = "ansioso";
+    } else if (input.includes("feliz") || input.includes("contento")) {
       res = "¡Qué bueno eso! Contame, ¿qué te tiene con esa buena vibra?";
       emotion = "contento";
-      emotionDetected = true;
+    } else if (input.includes("hola") || input.includes("buenas")) {
+      res = "¡Hola! Qué bueno verte. ¿Cómo te sentís hoy?";
+      emotion = "neutral";
+    } else if (input.includes("gracias")) {
+      res = "No hay de qué. Es un placer acompañarte.";
+      emotion = "neutral";
+    } else {
+      res = "Te escucho. Contame más sobre eso.";
     }
-
-    // 3. RESPUESTAS DE CONTEXTO
-    if (!emotionDetected) {
-      if (input.includes("gracias") || input.includes("gracia")) {
-        res =
-          userProfile.gratitudeType === "expresivo"
-            ? "No hay de qué, de verdad. Es un placer acompañarte."
-            : "No hay drama, posta. Me gusta estar acá para vos.";
-        emotion = "neutral";
-      } else if (input.includes("no sé") || input.includes("nose")) {
-        switch (emotion) {
-          case "triste":
-            res =
-              "Y sí... cuando uno está bajón, todo se vuelve medio confuso. No pasa nada.";
-            break;
-          case "ansioso":
-            res =
-              "La ansiedad te deja en blanco a veces. Respirá, no hay apuro.";
-            break;
-          case "confuso":
-            res =
-              'Ese "no sé" tiene peso, ¿no? Si querés, lo desarmamos juntos.';
-            break;
-          default:
-            res = "No saber también está bien. Nadie tiene todo claro siempre.";
-        }
-      } else if (
-        input.includes("hola") ||
-        input.includes("buen día") ||
-        input.includes("buenas") ||
-        input.includes("che") ||
-        input.includes("ey")
-      ) {
-        const saludo =
-          userProfile.greetingType === "informal"
-            ? "¡Ey!"
-            : momento === "mañana"
-            ? "Buen día"
-            : momento === "tarde"
-            ? "Buenas tardes"
-            : "Buenas noches";
-        res = `${saludo}, qué bueno verte de nuevo. ¿Cómo venís esta ${momento}?`;
-        emotion = "neutral";
-      } else if (
-        input.includes("chau") ||
-        input.includes("adiós") ||
-        input.includes("me voy")
-      ) {
-        res = "Dale, cuidate. Acordate que estoy acá si necesitás hablar.";
-        emotion = "neutral";
-      } else if (input.includes("silencio") || input.includes("descansar")) {
-        res =
-          "Todo bien. Podemos quedarnos en silencio un rato. Estoy acá igual.";
-        emotion = "neutral";
-      } else if (submodo === "reflexivo") {
-        res =
-          "Te re entiendo. Esos momentos de introspección son clave. ¿Querés compartir algo de eso que venís pensando?";
-        emotion = "confuso";
-        responseDetails.finalMode = "reflexivo";
-      } else if (submodo === "creativo") {
-        res =
-          "¡Me encanta! Esas chispas de creatividad son geniales. ¿Querés contarme más sobre esa idea o proyecto?";
-        emotion = "contento";
-        responseDetails.finalMode = "creativo";
-      } else {
-        // Genérica
-        switch (emotion) {
-          case "triste":
-            res = `Dijiste “${userInput}”... y eso suena fuerte. Lo podemos desarmar juntos.`;
-            break;
-          case "ansioso":
-            res =
-              "¿Eso que me decís tiene que ver con lo que te venía angustiando? Estoy acá.";
-            break;
-          case "contento":
-            res =
-              "¡Me encanta esa energía! ¿Querés contarme más de lo que te tiene tan bien?";
-            break;
-          default:
-            res =
-              "Gracias por compartir eso. ¿Cómo te hace sentir lo que me contás? Estoy acá para vos.";
-        }
-      }
-    }
-
-    // 4. PULIDO V13
-
-    // Clima
-    const clima = detectarClimaEmocional(chatHistory);
-    if (clima && clima !== emotion) {
-      if (clima === "triste" || clima === "confuso" || clima === "ansioso") {
-        res += ` Además, noté que venís ${clima} en varios mensajes. Si querés, podemos pensar algo distinto para cortar con eso.`;
-      }
-    }
-
-    // Noche Descanso
-    if (momento === "noche_descanso") {
-      res +=
-        " Ya es tarde, si querés podemos bajar un cambio y dejar que el cuerpo respire.";
-    }
-
-    // Velocidad
-    const longitud = input.length;
-    const velocidad = Date.now() - lastMessageTimestamp;
-    if (longitud < 30 && velocidad < 5000) {
-      // Menos de 5 seg
-      res +=
-        " Noté que estás escribiendo más breve y rápido. ¿Querés que vayamos más al grano hoy?";
-    }
-
-    // Fecha especial
-    const hoy = new Date();
-    if (hoy.getDate() === 19 && hoy.getMonth() === 9) {
-      // 19 de Octubre (mes 9 en JS)
-      res +=
-        " Hoy es el aniversario del pueblo. ¿Querés que armemos algo especial para compartir?";
-    }
-
-    // Adaptación final al estilo del usuario
-    if (userProfile.emojis) res += " 😊";
-    if (userProfile.slang.includes("posta"))
-      res = res.replace("Estoy acá", "Estoy acá, posta");
-    if (userProfile.prefersShort) res = res.split(".")[0] + ".";
-
     responseDetails.response = res;
     responseDetails.emotion = emotion;
   };
 
-  // --- CONTROLADOR PRINCIPAL ---
   const input = userInput.toLowerCase();
 
-  // Override: Modo técnico
-  if (detectarModo(input) === "tecnico") {
-    kivoVoice = "tecnico"; // Forzar voz técnica
-  } else if (input.includes("modo barrio")) {
+  if (detectarModo(input) === "tecnico") kivoVoice = "tecnico";
+  else if (input.includes("modo barrio")) {
     kivoVoice = "barrio";
-    userProfile.voz = "barrio";
-    if (userId) guardarPerfil(userId, userProfile);
     responseDetails.response =
       "Tranqui, loco. Acá estamos pa lo que pinte. ¿Querés largar eso que te pesa?";
-    responseDetails.emotion = "neutral";
-    responseDetails.finalMode = "barrio";
-    return responseDetails; // Salir
+    return responseDetails;
   } else {
-    kivoVoice = userProfile.voz; // Volver a la voz guardada
+    kivoVoice = userProfile.voz;
   }
 
-  // SWITCH DE VOZ
   switch (kivoVoice) {
     case "barrio":
       LOGICA_BARRIO(input);
@@ -688,34 +374,14 @@ function kivoResponse(userInput) {
     case "tecnico":
       LOGICA_TECNICA(input);
       break;
-    case "reflexivo":
-      LOGICA_REFLEXIVA(input);
-      break;
-    case "emocional":
     default:
       LOGICA_EMOCIONAL(input);
   }
 
-  // Asignar el modo de burbuja final (si no se asignó ya)
-  if (!responseDetails.finalMode) {
-    responseDetails.finalMode = kivoVoice;
-  }
-
-  // Resetear kivoVoice si fue un override temporal
-  if (kivoVoice === "creativo" || kivoVoice === "reflexivo") {
-    kivoVoice = userProfile.voz;
-  }
-
+  if (!responseDetails.finalMode) responseDetails.finalMode = kivoVoice;
   return responseDetails;
 }
 
-// Export for testing
 if (typeof module !== "undefined") {
-  module.exports = {
-    detectarModo,
-    detectarSubmodo,
-    detectarClimaEmocional,
-    obtenerMomentoDelDía,
-    kivoResponse,
-  };
+  module.exports = { detectarModo, kivoResponse };
 }

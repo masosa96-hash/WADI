@@ -7,7 +7,7 @@
   --glass-border: rgba(255, 255, 255, 0.4);
   --text-primary: #1f2937;
   --text-secondary: #6b7280;
-  --accent-primary: #3b82f6; /* Botones, User Bubbles */
+  --accent-primary: #3b82f6;
   --accent-secondary: #22d3ee;
   --accent-emotional: #a78bfa;
 
@@ -281,9 +281,7 @@ body {
     border-radius: 0;
     border: none;
     justify-content: center;
-    background: var(
-      --bg-color
-    ); /* Solid bg for mobile welcome to avoid artifacts */
+    background: var(--bg-color);
   }
 
   .chat-section-container {
