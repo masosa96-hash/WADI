@@ -1,6 +1,15 @@
 node_modules
-android
-ios
+# Native projects (keep these!)
+# android
+# ios
+
+# Native builds
+android/app/build
+android/.gradle
+android/local.properties
+ios/App/App/public
+ios/App/build
+ios/App/Pods
 dist
 coverage
 .DS_Store
