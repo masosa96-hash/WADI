@@ -8,3 +8,5 @@ coverage
 android/app/build
 android/.gradle
 ios/App/App/public
+.tools
+
