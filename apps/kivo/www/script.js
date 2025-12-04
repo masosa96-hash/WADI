@@ -39,7 +39,7 @@ if (typeof document !== "undefined") {
     installPrompt = document.getElementById("install-prompt");
 
     // Sonido
-    popSonido = new Audio("assets/pop.mp3");
+    // popSonido = new Audio("assets/pop.mp3");
 
     // --- 2. LÓGICA DE INICIO Y NAVEGACIÓN ---
 
@@ -83,6 +83,11 @@ if (typeof document !== "undefined") {
       deferredPrompt = e;
       if (installPrompt) installPrompt.style.display = "block";
     });
+
+    // Ocultar botón si no hay evento diferido (inicialmente oculto por CSS, pero aseguramos)
+    if (installBtn && !deferredPrompt) {
+      // installPrompt.style.display = "none"; // Ya está oculto por defecto en HTML/CSS
+    }
 
     if (installBtn) {
       installBtn.addEventListener("click", async () => {
@@ -267,7 +272,7 @@ function addMessageToChat(message, sender) {
   const messageElement = document.createElement("div");
   messageElement.classList.add("message", sender);
   if (sender === "kivo") {
-    if (popSonido && popSonido.play) popSonido.play().catch(() => {}); // Catch autoplay errors
+    // if (popSonido && popSonido.play) popSonido.play().catch(() => {}); // Catch autoplay errors
   }
   messageElement.innerHTML = `<p>${message}</p>`;
   chatWindow.appendChild(messageElement);
