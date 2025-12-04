@@ -2,6 +2,8 @@
 description: Full automation pipeline for Kivo (Health Check, Build Verify, Auto-Sync)
 ---
 
+# Kivo Automation Pipeline
+
 1. Health Check & Validation
    // turbo
    npm run lint --prefix apps/kivo || echo "Linting issues found, attempting auto-fix..."
