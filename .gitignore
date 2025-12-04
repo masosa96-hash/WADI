@@ -4,7 +4,7 @@ build
 .env
 .DS_Store
 coverage
-.vscode
+
 android/app/build
 android/.gradle
 ios/App/App/public
