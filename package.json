@@ -1,0 +1,1 @@
+{"name":"wadi","private":true,"workspaces":["apps/api","apps/frontend"],"dependencies":{"@supabase/supabase-js":"^2.86.0","cors":"^2.8.5","dotenv":"^17.2.3","express":"^5.2.1","jsonwebtoken":"^9.0.2","openai":"^6.9.1"}}

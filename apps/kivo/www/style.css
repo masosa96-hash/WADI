@@ -1,0 +1,264 @@
+/* ---- KIVO MOBILE 2.0 - ESTILOS COMPLETOS ---- */
+
+:root {
+  --primary-color: #42a5f5;
+  --primary-dark: #1e88e5;
+  --bg-color: #fdfbf5;
+  --chat-bg: #ffffff;
+  --incoming-bg: #e9e9eb; /* iMessage gray */
+  --incoming-text: #000000;
+  --outgoing-bg: #42a5f5; /* iMessage blue */
+  --outgoing-text: #ffffff;
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100dvh;
+  margin: 0;
+  overflow: hidden;
+  transition: background-color 0.5s ease;
+}
+
+/* Fondo emocional dinámico */
+body.triste { background-color: #f0f4f8; }
+body.contento { background-color: #fdfbf5; }
+body.ansioso { background-color: #fff3e0; }
+
+/* --- PANTALLA DE INICIO --- */
+.inicio-container {
+  text-align: center;
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  max-width: 400px;
+  width: 90%;
+  margin: auto;
+  animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.inicio-container h1 {
+  font-size: 36px;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.inicio-container p {
+  font-size: 17px;
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+#empezar-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 16px 48px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(66, 165, 245, 0.3);
+  width: 100%;
+  max-width: 280px;
+}
+
+#empezar-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 6px rgba(66, 165, 245, 0.2);
+}
+
+/* --- PANTALLA DE CHAT --- */
+.chat-section-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  max-width: 600px;
+  background-color: var(--chat-bg);
+  box-shadow: 0 0 40px rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.mode-label {
+  font-size: 13px;
+  color: #78909c;
+  text-align: center;
+  padding: 12px;
+  padding-top: max(12px, var(--safe-top));
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  z-index: 10;
+  font-weight: 500;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  padding-top: 50px; /* Space for mode-label */
+}
+
+#chat-window {
+  flex: 1;
+  padding: 20px;
+  padding-bottom: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Tighter grouping like iMessage */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- BURBUJAS DE CHAT --- */
+.message {
+  padding: 10px 16px;
+  border-radius: 20px;
+  max-width: 80%;
+  line-height: 1.4;
+  font-size: 17px; /* Standard mobile text size */
+  position: relative;
+  word-wrap: break-word;
+  animation: messageSlide 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes messageSlide {
+  from { opacity: 0; transform: translateY(15px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Kivo (Incoming) */
+.message.kivo {
+  align-self: flex-start;
+  background-color: var(--incoming-bg);
+  color: var(--incoming-text);
+  border-bottom-left-radius: 5px;
+}
+
+/* Modos de Kivo - Subtle tinting */
+.message.kivo.emocional { background-color: #e3f2fd; color: #0d47a1; }
+.message.kivo.tecnico { background-color: #f5f5f5; color: #37474f; }
+.message.kivo.reflexivo { background-color: #f3e5f5; color: #4a148c; }
+.message.kivo.barrio { background-color: #e8f5e9; color: #1b5e20; }
+.message.kivo.creativo { background-color: #e0f7fa; color: #006064; }
+
+/* User (Outgoing) */
+.message.user {
+  align-self: flex-end;
+  background-color: var(--outgoing-bg);
+  color: var(--outgoing-text);
+  border-bottom-right-radius: 5px;
+}
+
+/* Etiquetas de autor - Minimalist */
+.message::after {
+  content: attr(data-time); /* Future: Add timestamps */
+  font-size: 10px;
+  opacity: 0.5;
+  margin-top: 4px;
+  display: none; /* Hidden for cleaner look, can enable */
+}
+
+/* --- INPUT AREA --- */
+#chat-form {
+  display: flex;
+  padding: 10px 16px;
+  padding-bottom: max(10px, var(--safe-bottom));
+  background-color: rgba(255, 255, 255, 0.98);
+  border-top: 1px solid rgba(0,0,0,0.05);
+  gap: 12px;
+  align-items: flex-end;
+  backdrop-filter: blur(10px);
+}
+
+#message-input {
+  flex-grow: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 10px 16px;
+  font-size: 17px; /* Prevents iOS zoom */
+  background-color: #ffffff;
+  transition: all 0.2s;
+  max-height: 120px;
+  min-height: 40px;
+  line-height: 20px;
+}
+
+#message-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+#chat-form button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.1s;
+  flex-shrink: 0;
+  margin-bottom: 2px; /* Align with input text baseline */
+}
+
+#chat-form button:active {
+  transform: scale(0.9);
+}
+
+#chat-form button svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+  margin-left: 2px; /* Visual correction for send icon */
+}
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 600px) {
+  .inicio-container {
+    height: 100dvh;
+    width: 100vw;
+    border-radius: 0;
+    justify-content: center;
+    box-shadow: none;
+  }
+  
+  .chat-section-container {
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .message {
+    max-width: 85%;
+  }
+}
