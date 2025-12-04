@@ -103,7 +103,7 @@ body {
 }
 
 #install-btn {
-  background: transparent;
+  background: rgba(59, 130, 246, 0.1);
   border: 1px solid var(--accent-primary);
   color: var(--accent-primary);
   padding: 12px;
@@ -111,6 +111,11 @@ body {
   width: 100%;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+#install-btn:active {
+  background: rgba(59, 130, 246, 0.2);
 }
 
 /* --- PANTALLA DE CHAT --- */

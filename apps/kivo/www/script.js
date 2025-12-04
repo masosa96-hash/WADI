@@ -99,42 +99,38 @@ if (typeof document !== "undefined") {
 }
 
 // Función central de manejo de mensajes
+// Función central de manejo de mensajes
 function handleUserMessage(userMessage) {
   analyzeUserStyle(userMessage); // Analiza perfil
   addMessageToChat(userMessage, "user");
   if (messageInput) messageInput.value = "";
   lastMessageTimestamp = Date.now(); // Guarda la hora del envío
 
-  // Llamada al Backend (Cerebro 2.0)
-  fetch("http://localhost:3000/kivo/message", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      mensajeUsuario: userMessage,
-      historial: chatHistory.slice(-5), // Enviamos los últimos 5 mensajes para contexto
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      // Guardamos en BD
+  // Simular "pensamiento"
+  setTimeout(() => {
+    try {
+      // Usar lógica local (Cerebro en el cliente para PWA standalone)
+      const data = kivoResponse(userMessage);
+
+      // Guardamos en BD (si hay usuario)
       if (userId) {
-        guardarMensaje(userId, userMessage, data.emocion, data.modo);
+        guardarMensaje(userId, userMessage, data.emotion, data.finalMode);
       }
 
       // Actualizamos UI
-      setBodyEmotion(data.emocion);
+      setBodyEmotion(data.emotion);
 
       // Enviamos respuesta
-      addMessageToChat(data.respuestaKivo, "kivo");
-    })
-    .catch((err) => {
-      console.error("Error conectando con Kivo Brain:", err);
+      addMessageToChat(data.response, "kivo");
+    } catch (err) {
+      console.error("Error en Kivo Brain:", err);
       addMessageToChat(
-        "Lo siento, estoy teniendo problemas para conectar con mi cerebro.",
+        "Lo siento, me perdí un poco. ¿Me lo repetís?",
         "kivo",
         "tecnico"
       );
-    });
+    }
+  }, 600 + Math.random() * 800); // Pequeño delay natural
 }
 
 // --- 3. FUNCIONES DE FIREBASE (V12) ---
