@@ -93,6 +93,46 @@ if (typeof document !== "undefined") {
 }
 
 // Función central de manejo de mensajes
+const API_URL = "https://ideal-essence-production.up.railway.app/kivo/message";
+
+function handleUserMessage(userMessage) {
+  analyzeUserStyle(userMessage);
+  addMessageToChat(userMessage, "user");
+  if (messageInput) messageInput.value = "";
+  lastMessageTimestamp = Date.now();
+
+  // Llamada al Backend Real (Railway)
+  fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      mensajeUsuario: userMessage,
+      historial: chatHistory.slice(-5),
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (userId) {
+        guardarMensaje(userId, userMessage, data.emocion, data.modo);
+      }
+      setBodyEmotion(data.emocion);
+      addMessageToChat(data.respuestaKivo, "kivo");
+    })
+    .catch((err) => {
+      console.error("Error conectando con Kivo Brain:", err);
+      // Fallback local
+      try {
+        const localData = kivoResponse(userMessage);
+        addMessageToChat(localData.response, "kivo");
+      } catch (e) {
+        addMessageToChat(
+          "Estoy teniendo problemas de conexión. Intenta de nuevo.",
+          "kivo"
+        );
+      }
+    });
+}
+
 async function cargarUsuario(uid) {
   userId = uid;
   try {
