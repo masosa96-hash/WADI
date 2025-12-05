@@ -1,0 +1,4 @@
+
+> wadi@1.0.0 lint E:\WADINEW\WADI
+> eslint .
+
