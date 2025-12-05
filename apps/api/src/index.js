@@ -18,5 +18,20 @@ app.use("/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
 app.use("/webhooks", webhookRoutes);
 
+// Root Debug Route
+app.get("/", (req, res) => {
+  res.json({
+    service: "wadi-api",
+    status: "online",
+    endpoints: [
+      "/api",
+      "/kivo",
+      "/system/health",
+      "/system/ready",
+      "/webhooks/whatsapp",
+    ],
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`API running on ${PORT}`));
