@@ -374,5 +374,5 @@ function kivoResponse(userInput) {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { detectarModo, kivoResponse };
+  module.exports = { detectarModo, kivoResponse, detectarSubmodo };
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = "kivo-v4";
+const CACHE_NAME = "kivo-v5";
 const urlsToCache = [
   "./",
   "./index.html",
@@ -6,11 +6,15 @@ const urlsToCache = [
   "./script.js",
   "./firebase-config.js",
   "./manifest.json",
+  "./favicon.ico",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
+  "./assets/kivo-icon.png",
+  "./assets/pop.mp3",
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting(); // Force waiting service worker to become active
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(urlsToCache);
@@ -36,7 +40,7 @@ self.addEventListener("activate", (event) => {
             return caches.delete(cacheName);
           }
         })
-      );
+      ).then(() => self.clients.claim()); // Take control of all clients immediately
     })
   );
 });
