@@ -13,6 +13,7 @@ export default tseslint.config(
       "**/coverage/**",
       "**/.firebase/**",
       "**/.turbo/**",
+      "scripts/**",
       // Kivo's www/assets might need ignoring if they contain 3rd party stuff, but generally script.js is there.
       // Ignoring minified files if any.
       "**/*.min.js",

@@ -1,3 +1,4 @@
+/* eslint-env jest */
 const { detectarModo, detectarSubmodo } = require("../www/script.js");
 
 describe("Kivo Logic Tests", () => {
