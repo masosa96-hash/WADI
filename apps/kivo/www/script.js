@@ -251,23 +251,6 @@ function kivoResponse(userInput) {
     let emotion = currentEmotion;
 
     if (input.includes("triste") || input.includes("bajón")) {
-      res =
-        "Uh, qué cag... es un garrón sentirse así. Pero acá estoy, ¿querés largar un poco?";
-      emotion = "triste";
-    } else if (input.includes("ansiedad") || input.includes("estrés")) {
-      res =
-        "Esa te liquida... te corre por todos lados. Respirá hondo, loco. ¿Qué te tiene así?";
-      emotion = "ansioso";
-    } else if (
-      input.includes("feliz") ||
-      input.includes("contento") ||
-      input.includes("re bien")
-    ) {
-      res =
-        "¡Vamos! Así me gusta. ¿Qué onda, qué pasó de bueno? Tirame la data.";
-      emotion = "contento";
-    } else if (input.includes("hola") || input.includes("che")) {
-      res = "¡Epa! ¿Todo tranca? ¿Qué se cuenta?";
       emotion = "neutral";
     } else if (input.includes("gracias")) {
       res = "De nada, man. Para eso estamos. ¿Algo más?";
