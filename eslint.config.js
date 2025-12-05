@@ -32,11 +32,37 @@ export default tseslint.config(
       },
     },
     rules: {
-      "no-unused-vars": "warn",
-      "no-console": "off", // Common in this project based on logs
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
-      "prettier/prettier": "warn",
+      "no-unused-vars": "off", // Handled by typescript-eslint
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_" },
+      ],
+      "no-console": ["warn", { allow: ["warn", "error", "info"] }], // Discourage plain console.log
+      "@typescript-eslint/no-explicit-any": "error", // Strict mode
+      eqeqeq: "error", // Enforce type-safe equality
+      "no-var": "error",
+      "prefer-const": "error",
+      "prettier/prettier": "error",
+    },
+  },
+  {
+    files: ["apps/frontend/**/*.{ts,tsx}"],
+    languageOptions: {
+      globals: { ...globals.browser },
+    },
+  },
+  {
+    files: [
+      "apps/api/**/*.js",
+      "apps/kivo-brain-api/**/*.js",
+      "packages/**/*.js",
+    ],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+    rules: {
+      "@typescript-eslint/no-var-requires": "off", // Allow require in CommonJS backend/packages
+      "no-undef": "off", // TypeScript handles this mostly, but good for JS
     },
   }
 );

@@ -50,6 +50,28 @@ jobs:
       - name: Build (Verification)
         run: pnpm --filter kivo build
 
+  deploy-preview:
+    needs: build-and-test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - run: pnpm install
+      - name: Deploy to Firebase Hosting (Preview)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KIVO_8C62E }}"
+          projectId: kivo-8c62e
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels
+
   deploy-hosting:
     needs: build-and-test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -71,7 +93,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Deploy to Firebase Hosting
+      - name: Deploy to Firebase Hosting (Live)
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
