@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 
@@ -9,7 +10,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { signIn, loading } = useAuthStore();
 
-  const handleLogin = async (e: any) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     const { error } = await signIn(email, password);
     if (!error) {

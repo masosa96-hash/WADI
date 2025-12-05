@@ -1,0 +1,115 @@
+
+> wadi@ lint E:\WADINEW\WADI
+> eslint .
+
+(node:3792) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/WADINEW/WADI/eslint.config.js?mtime=1764940650859 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to E:\WADINEW\WADI\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+E:\WADINEW\WADI\apps\api\src\index.js
+  18:24  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+
+E:\WADINEW\WADI\apps\api\src\register_user.js
+  18:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+
+E:\WADINEW\WADI\apps\frontend\src\pages\Login.tsx
+  12:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\WADINEW\WADI\apps\frontend\src\pages\Projects.tsx
+  16:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\WADINEW\WADI\apps\frontend\src\store\authStore.ts
+  5:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\WADINEW\WADI\apps\kivo-brain-api\index.js
+  23:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+
+E:\WADINEW\WADI\apps\kivo\android\app\src\main\assets\public\firebase-config.js
+  15:1   error    'firebase' is not defined                                                                no-undef
+  18:12  error    'firebase' is not defined                                                                no-undef
+  19:14  error    'firebase' is not defined                                                                no-undef
+  51:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  62:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  72:7   error    'cargarUsuario' is not defined                                                           no-undef
+
+E:\WADINEW\WADI\apps\kivo\android\app\src\main\assets\public\script.js
+   73:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+   92:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  145:16  error    'cargarUsuario' is defined but never used                                                @typescript-eslint/no-unused-vars
+  148:23  error    'db' is not defined                                                                      no-undef
+  181:18  error    'db' is not defined                                                                      no-undef
+  194:27  error    'firebase' is not defined                                                                no-undef
+  197:12  error    'err' is defined but never used                                                          @typescript-eslint/no-unused-vars
+  208:9   error    'db' is not defined                                                                      no-undef
+  317:7   error    'responseDetails' is never reassigned. Use 'const' instead                               prefer-const
+  319:16  error    'kivoVoice' is not defined                                                               no-undef
+  416:11  error    'modo' is assigned a value but never used                                                @typescript-eslint/no-unused-vars
+  668:5   error    'kivoVoice' is not defined                                                               no-undef
+  670:5   error    'kivoVoice' is not defined                                                               no-undef
+  679:5   error    'kivoVoice' is not defined                                                               no-undef
+  683:11  error    'kivoVoice' is not defined                                                               no-undef
+  700:33  error    'kivoVoice' is not defined                                                               no-undef
+  704:7   error    'kivoVoice' is not defined                                                               no-undef
+  704:35  error    'kivoVoice' is not defined                                                               no-undef
+  705:5   error    'kivoVoice' is not defined                                                               no-undef
+
+E:\WADINEW\WADI\apps\kivo\tests\logic.test.js
+   1:43  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   3:1   error  'describe' is not defined                no-undef
+   4:3   error  'describe' is not defined                no-undef
+   5:5   error  'test' is not defined                    no-undef
+   6:7   error  'expect' is not defined                  no-undef
+   7:7   error  'expect' is not defined                  no-undef
+  10:5   error  'test' is not defined                    no-undef
+  11:7   error  'expect' is not defined                  no-undef
+  12:7   error  'expect' is not defined                  no-undef
+  15:5   error  'test' is not defined                    no-undef
+  16:7   error  'expect' is not defined                  no-undef
+  20:3   error  'describe' is not defined                no-undef
+  21:5   error  'test' is not defined                    no-undef
+  22:7   error  'expect' is not defined                  no-undef
+  25:5   error  'test' is not defined                    no-undef
+  26:7   error  'expect' is not defined                  no-undef
+  29:5   error  'test' is not defined                    no-undef
+  30:7   error  'expect' is not defined                  no-undef
+
+E:\WADINEW\WADI\apps\kivo\www\firebase-config.js
+  15:1   error    'firebase' is not defined                                                                no-undef
+  18:12  error    'firebase' is not defined                                                                no-undef
+  19:14  error    'firebase' is not defined                                                                no-undef
+  51:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  62:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  72:7   error    'cargarUsuario' is not defined                                                           no-undef
+
+E:\WADINEW\WADI\apps\kivo\www\script.js
+   25:5   error    'lastMessageTimestamp' is assigned a value but never used                                @typescript-eslint/no-unused-vars
+   67:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+   86:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+   94:9   error    'newWorker' is defined but never used                                                    @typescript-eslint/no-unused-vars
+  100:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  138:16  error    'e' is defined but never used                                                            @typescript-eslint/no-unused-vars
+  147:16  error    'cargarUsuario' is defined but never used                                                @typescript-eslint/no-unused-vars
+  150:23  error    'db' is not defined                                                                      no-undef
+  177:18  error    'db' is not defined                                                                      no-undef
+  189:27  error    'firebase' is not defined                                                                no-undef
+  192:12  error    'err' is defined but never used                                                          @typescript-eslint/no-unused-vars
+  200:9   error    'db' is not defined                                                                      no-undef
+  213:10  error    'detectarClimaEmocional' is defined but never used                                       @typescript-eslint/no-unused-vars
+  268:23  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  306:7   error    'responseDetails' is never reassigned. Use 'const' instead                               prefer-const
+
+E:\WADINEW\WADI\packages\logger\index.js
+  1:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+E:\WADINEW\WADI\packages\logger\test-logger.js
+  1:16  error    A `require()` style import is forbidden                                                  @typescript-eslint/no-require-imports
+  3:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  7:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+
+Ô£û 76 problems (61 errors, 15 warnings)
+  2 errors and 0 warnings potentially fixable with the `--fix` option.
+
+ÔÇëELIFECYCLEÔÇë Command failed with exit code 1.

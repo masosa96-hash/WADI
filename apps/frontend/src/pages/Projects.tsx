@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { useProjectsStore } from "../store/projectsStore";
 import { useAuthStore } from "../store/authStore";
 
@@ -13,7 +14,7 @@ export default function Projects() {
     fetchProjects();
   }, []);
 
-  const handleCreate = async (e: any) => {
+  const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     await createProject(name, desc);
     setName("");

@@ -1,0 +1,35 @@
+
+> wadi@ lint E:\WADINEW\WADI
+> eslint .
+
+(node:15116) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/WADINEW/WADI/eslint.config.js?mtime=1764941607096 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to E:\WADINEW\WADI\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+E:\WADINEW\WADI\apps\api\src\index.js
+  18:24  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+
+E:\WADINEW\WADI\apps\api\src\register_user.js
+  18:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+
+E:\WADINEW\WADI\apps\frontend\src\pages\Login.tsx
+  12:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\WADINEW\WADI\apps\frontend\src\pages\Projects.tsx
+  16:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\WADINEW\WADI\apps\frontend\src\store\authStore.ts
+  5:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\WADINEW\WADI\apps\kivo-brain-api\index.js
+  23:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+
+E:\WADINEW\WADI\packages\logger\test-logger.js
+  3:1  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+  7:1  warning  Unexpected console statement. Only these console methods are allowed: warn, error, info  no-console
+
+Ô£û 9 problems (4 errors, 5 warnings)
+
+ÔÇëELIFECYCLEÔÇë Command failed with exit code 1.

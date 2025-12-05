@@ -25,6 +25,10 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: process.cwd(),
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
@@ -61,8 +65,40 @@ export default tseslint.config(
       globals: { ...globals.node },
     },
     rules: {
-      "@typescript-eslint/no-var-requires": "off", // Allow require in CommonJS backend/packages
-      "no-undef": "off", // TypeScript handles this mostly, but good for JS
+      "@typescript-eslint/no-var-requires": "off",
+      "@typescript-eslint/no-require-imports": "off",
+      "no-undef": "off",
+    },
+  },
+  {
+    files: ["apps/kivo/www/**/*.js", "apps/kivo/android/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        firebase: "readonly",
+        db: "writable",
+        module: "readonly",
+      },
+    },
+    rules: {
+      "no-undef": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-console": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "prefer-const": "off",
+    },
+  },
+  {
+    files: ["apps/kivo/tests/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+        ...globals.node,
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+      "no-undef": "off",
     },
   }
 );
