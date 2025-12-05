@@ -14,4 +14,5 @@ import kivoRoutes from "./routes/kivo.js";
 app.use("/api", routes);
 app.use("/kivo", kivoRoutes);
 
-app.listen(3000, () => console.log("API running on 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`API running on ${PORT}`));

@@ -1,4 +1,4 @@
-const CACHE_NAME = "kivo-v2-cache";
+const CACHE_NAME = "kivo-v3-cache";
 const urlsToCache = [
   "./",
   "./index.html",

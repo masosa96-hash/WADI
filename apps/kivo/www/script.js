@@ -93,38 +93,6 @@ if (typeof document !== "undefined") {
 }
 
 // Función central de manejo de mensajes
-function handleUserMessage(userMessage) {
-  analyzeUserStyle(userMessage);
-  addMessageToChat(userMessage, "user");
-  if (messageInput) messageInput.value = "";
-  lastMessageTimestamp = Date.now();
-
-  // Simular "pensamiento"
-  setTimeout(() => {
-    try {
-      // Usar lógica local (Cerebro en el cliente para PWA standalone)
-      const data = kivoResponse(userMessage);
-
-      // Guardamos en BD (si hay usuario)
-      if (userId) {
-        guardarMensaje(userId, userMessage, data.emotion, data.finalMode);
-      }
-
-      // Actualizamos UI
-      setBodyEmotion(data.emotion);
-
-      // Enviamos respuesta
-      addMessageToChat(data.response, "kivo");
-    } catch (err) {
-      console.error("Error en Kivo Brain:", err);
-      addMessageToChat("Lo siento, me perdí un poco. ¿Me lo repetís?", "kivo");
-    }
-  }, 600 + Math.random() * 800);
-}
-
-// --- 3. FUNCIONES DE FIREBASE (V12) ---
-// (Simplificado para standalone, la lógica completa de auth está en firebase-config.js)
-
 async function cargarUsuario(uid) {
   userId = uid;
   try {
