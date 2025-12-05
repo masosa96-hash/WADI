@@ -5,6 +5,7 @@ import { supabase } from "../config/supabase";
 interface AuthState {
   user: User | null;
   loading: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
 }
