@@ -25,10 +25,6 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
-      parserOptions: {
-        project: true,
-        tsconfigRootDir: process.cwd(),
-      },
       globals: {
         ...globals.browser,
         ...globals.node,
