@@ -89,6 +89,17 @@ if (typeof document !== "undefined") {
         }
       });
     }
+
+    // Detectar nueva versión (cuando el SW toma el control tras un update)
+    let newWorker;
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        // El SW se actualizó (skipWaiting + clients.claim)
+        // Opcional: Mostrar toast "Actualización completa" o simplemente nada si es transparente.
+        // Dado que usamos clients.claim(), la página ya está usando el nuevo SW.
+        console.log("Kivo se ha actualizado a la nueva versión.");
+      });
+    }
   });
 }
 
@@ -247,6 +258,19 @@ function addMessageToChat(message, sender) {
   messageElement.classList.add("message", sender);
   messageElement.innerHTML = `<p>${message}</p>`;
   chatWindow.appendChild(messageElement);
+
+  if (sender === "kivo") {
+    try {
+      const audio = new Audio("./assets/pop.mp3");
+      audio.volume = 0.5;
+      audio
+        .play()
+        .catch((e) => console.log("Audio autoplay blocked or failed", e));
+    } catch (e) {
+      console.warn("Audio play error", e);
+    }
+  }
+
   scrollToBottom();
 }
 

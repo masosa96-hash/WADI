@@ -1,0 +1,16 @@
+[debug] [2025-12-05T12:52:47.094Z] ----------------------------------------------------------------------
+[debug] [2025-12-05T12:52:47.096Z] Command:       C:\nvm4w\nodejs\node.exe C:\nvm4w\nodejs\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2025-12-05T12:52:47.096Z] CLI Version:   14.27.0
+[debug] [2025-12-05T12:52:47.097Z] Platform:      win32
+[debug] [2025-12-05T12:52:47.097Z] Node Version:  v20.12.0
+[debug] [2025-12-05T12:52:47.097Z] Time:          Fri Dec 05 2025 09:52:47 GMT-0300 (hora estándar de Argentina)
+[debug] [2025-12-05T12:52:47.097Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-12-05T12:52:47.245Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-05T12:52:47.245Z] > authorizing via signed-in user (masosa96@gmail.com)
+[debug] [2025-12-05T12:52:47.245Z] [iam] checking project kivo-8c62e for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-12-05T12:52:47.246Z] Checked if tokens are valid: true, expires at: 1764940629876
+[debug] [2025-12-05T12:52:47.246Z] Checked if tokens are valid: true, expires at: 1764940629876
+[debug] [2025-12-05T12:52:47.247Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/kivo-8c62e:testIamPermissions [none]
+[debug] [2025-12-05T12:52:47.247Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/kivo-8c62e:testIamPermissions x-goog-quota-user=projects/kivo-8c62e
+[debug] [2025-12-05T12:52:47.247Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/kivo-8c62e:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
