@@ -1,8 +1,6 @@
 import express from "express";
 const router = express.Router();
 
-const startTime = Date.now();
-
 // Liveness Probe
 router.get("/health", (req, res) => {
   res.json({
