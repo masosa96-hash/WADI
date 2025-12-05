@@ -54,7 +54,6 @@ Firebase Hosting habilita automáticamente HTTP/2 y compresión Brotli/Gzip para
 Actualmente el ecosistema WADI convive pero no está fuertemente acoplado en código:
 
 - **Kivo (apps/kivo)**:
-
   - Frontend independiente (Vanilla JS).
   - Consume `kivo-brain-api` vía URL directa de Railway.
   - Usa Firebase solo para Hosting y Firestore (configurado en `firebase-config.js`).

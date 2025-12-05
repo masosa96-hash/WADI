@@ -8,7 +8,7 @@ const firebaseConfig = {
   storageBucket: "kivo-8c62e.appspot.com",
   messagingSenderId: "118749642871",
   appId: "1:118749642871:web:28a152eccf323981c64672",
-  measurementId: "G-HQ4WK0N2XT"
+  measurementId: "G-HQ4WK0N2XT",
 };
 
 // Inicializar Firebase
@@ -41,9 +41,9 @@ async function inicializarFirestore(uid) {
             emocion: "neutral",
             modo: "emocional",
             etiqueta: "normal",
-            timestamp: new Date().toISOString()
-          }
-        ]
+            timestamp: new Date().toISOString(),
+          },
+        ],
       },
       { merge: true }
     );
@@ -61,9 +61,12 @@ auth.onAuthStateChanged((user) => {
   if (user) {
     console.log("Usuario autenticado:", user.uid);
 
-    db.collection("usuarios").doc(user.uid).get().then((doc) => {
-      if (!doc.exists) inicializarFirestore(user.uid);
-    });
+    db.collection("usuarios")
+      .doc(user.uid)
+      .get()
+      .then((doc) => {
+        if (!doc.exists) inicializarFirestore(user.uid);
+      });
 
     if (typeof cargarUsuario === "function") {
       cargarUsuario(user.uid);

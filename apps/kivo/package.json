@@ -5,6 +5,7 @@
   "main": "script.js",
   "scripts": {
     "test": "jest",
+    "build": "echo 'No build step required for Kivo PWA'",
     "start": "npx serve www"
   },
   "keywords": [],

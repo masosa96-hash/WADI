@@ -4,7 +4,8 @@ import { useAuthStore } from "../store/authStore";
 
 export default function Projects() {
   const { user, signOut } = useAuthStore();
-  const { projects, fetchProjects, createProject, loading } = useProjectsStore();
+  const { projects, fetchProjects, createProject, loading } =
+    useProjectsStore();
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
 
@@ -30,8 +31,16 @@ export default function Projects() {
 
       <h3>Crear Proyecto</h3>
       <form onSubmit={handleCreate}>
-        <input placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
-        <input placeholder="Descripción" value={desc} onChange={(e) => setDesc(e.target.value)} />
+        <input
+          placeholder="Nombre"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          placeholder="Descripción"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+        />
         <button>Crear</button>
       </form>
 
@@ -49,4 +58,3 @@ export default function Projects() {
     </div>
   );
 }
-

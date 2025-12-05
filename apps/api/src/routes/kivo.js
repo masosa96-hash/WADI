@@ -10,7 +10,7 @@ router.post("/message", async (req, res) => {
     const { mensajeUsuario, historial } = req.body;
 
     if (!mensajeUsuario) {
-        return res.status(400).json({ error: "Mensaje requerido" });
+      return res.status(400).json({ error: "Mensaje requerido" });
     }
 
     const { emocion, modo } = analizarMensaje(mensajeUsuario);
@@ -19,14 +19,14 @@ router.post("/message", async (req, res) => {
       mensajeUsuario,
       emocion,
       modo,
-      historial
+      historial,
     });
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: prompt },
-        { role: "user", content: mensajeUsuario }
+        { role: "user", content: mensajeUsuario },
       ],
     });
 
@@ -35,7 +35,7 @@ router.post("/message", async (req, res) => {
     res.json({
       respuestaKivo: respuesta,
       emocion,
-      modo
+      modo,
     });
   } catch (error) {
     console.error("Error en Kivo backend:", error);

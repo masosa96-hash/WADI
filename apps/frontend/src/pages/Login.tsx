@@ -28,14 +28,16 @@ export default function Login() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-        /><br/>
+        />
+        <br />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-        /><br/>
+        />
+        <br />
 
         <button disabled={loading}>Ingresar</button>
       </form>
