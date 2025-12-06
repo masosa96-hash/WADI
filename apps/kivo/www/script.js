@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     messageInput.value = "";
 
     try {
-      const res = await fetch(`${API_URL}/kivo/chat`, {
+      const res = await fetch(`${API_URL}/kivo/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
