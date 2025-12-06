@@ -1,104 +1,64 @@
-// ==============================
-// KIVO FRONTEND LOGIC
-// ==============================
-
-// Validar que el DOM esté listo
 document.addEventListener("DOMContentLoaded", () => {
-  // ==============================
-  // CONFIG
-  // ==============================
-  const API_URL = "https://wadi-wxg7.onrender.com/api";
+  const API_URL = "https://wadi-wxg7.onrender.com";
+  const API_ENDPOINT = `${API_URL}/kivo/chat`;
 
-  // ==============================
-  // SERVICE WORKER
-  // ==============================
-  if ("serviceWorker" in navigator) {
-    const isKivoRoute = window.location.pathname.includes("/kivo");
-    // Also register if we are testing locally or loosely, but strict requirement was "Register ... only if current path is correct"
-    if (isKivoRoute) {
-      navigator.serviceWorker
-        .register("./sw.js", { scope: "./" })
-        .then((reg) => console.log("SW registrado:", reg.scope))
-        .catch((err) => console.error("SW error:", err));
-    }
-  }
-
-  // ==============================
-  // DOM ELEMENTS
-  // ==============================
   const startBtn = document.getElementById("start-btn");
-  const inicioSection = document.getElementById("inicio");
-  const chatSection = document.getElementById("chat-section");
+  const introScreen = document.getElementById("intro-screen");
+  const chatScreen = document.getElementById("chat-screen");
+
   const chatWindow = document.getElementById("chat-window");
-  const messageInput = document.getElementById("message-input");
-  const sendButton = document.getElementById("send");
-  const chatForm = document.getElementById("chat-form");
+  const sendBtn = document.getElementById("send-btn");
+  const userInput = document.getElementById("user-input");
 
-  // ==============================
-  // UI LOGIC
-  // ==============================
-
-  // Start Button Logic
-  if (startBtn && inicioSection && chatSection) {
-    startBtn.onclick = () => {
-      inicioSection.style.display = "none";
-      chatSection.style.display = "flex";
-    };
+  if (!startBtn || !introScreen || !chatScreen) {
+    console.error("ERROR: elementos esenciales no encontrados en DOM.");
+    return;
   }
 
-  // ==============================
-  // HELPERS
-  // ==============================
-  function addMessage(role, content) {
-    if (!chatWindow) return;
+  startBtn.onclick = () => {
+    introScreen.style.display = "none";
+    chatScreen.style.display = "flex";
+  };
 
-    const el = document.createElement("div");
-    // Match CSS classes: .message .user or .message .kivo
-    const cssClass = role === "assistant" ? "kivo" : role;
+  sendBtn.onclick = sendMessage;
+  userInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
 
-    el.className = `message ${cssClass}`;
-    el.innerText = content;
-    chatWindow.appendChild(el);
+  function addMessage(text, sender = "user") {
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.textContent = text;
+    chatWindow.appendChild(msg);
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
 
-  // ==============================
-  // SEND MESSAGE
-  // ==============================
-  async function sendMessage(e) {
-    if (e) e.preventDefault();
-
-    if (!messageInput) return;
-    const text = messageInput.value.trim();
+  async function sendMessage() {
+    const text = userInput.value.trim();
     if (!text) return;
 
-    addMessage("user", text);
-    messageInput.value = "";
+    addMessage(text, "user");
+    userInput.value = "";
 
     try {
-      const res = await fetch(`${API_URL}/kivo/run`, {
+      const response = await fetch(API_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
       });
 
-      const data = await res.json();
+      if (!response.ok) throw new Error("Error en el servidor");
 
-      if (data.reply) {
-        addMessage("assistant", data.reply);
-      } else {
-        addMessage("assistant", "Error: respuesta inválida del servidor.");
-      }
+      const data = await response.json();
+      addMessage(data.reply || "Sin respuesta del servidor", "kivo");
+
     } catch (err) {
+      addMessage("Error al conectar con el servidor.", "kivo");
       console.error(err);
-      addMessage("assistant", "Error de red o servidor caído.");
     }
   }
 
-  // Attach Event Listeners
-  if (chatForm) {
-    chatForm.addEventListener("submit", sendMessage);
-  } else if (sendButton) {
-    sendButton.onclick = sendMessage;
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(console.error);
   }
 });

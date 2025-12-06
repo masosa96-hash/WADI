@@ -1,302 +1,82 @@
-/* ---- KIVO MOBILE 2.0 - OFFICIAL BRANDING ---- */
-
-:root {
-  /* Paleta Oficial */
-  --bg-color: #f7f6f2;
-  --glass-panel: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.4);
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --accent-primary: #3b82f6;
-  --accent-secondary: #22d3ee;
-  --accent-emotional: #a78bfa;
-
-  /* Bubbles */
-  --incoming-bg: rgba(255, 255, 255, 0.8);
-  --incoming-text: #1f2937;
-  --outgoing-bg: #3b82f6;
-  --outgoing-text: #ffffff;
-
-  /* Safe Areas */
-  --safe-bottom: env(safe-area-inset-bottom, 20px);
-  --safe-top: env(safe-area-inset-top, 0px);
-
-  /* Shadows */
-  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
-  --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.07);
-}
-
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
 body {
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-primary);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100dvh;
   margin: 0;
-  overflow: hidden;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
 }
 
-/* --- PANTALLA DE INICIO --- */
-.inicio-container {
-  text-align: center;
-  padding: 40px;
-  background: var(--glass-panel);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-glass);
-  max-width: 380px;
-  width: 90%;
-  margin: auto;
-  animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+.screen {
+  width: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-}
-
-.inicio-container h1 {
-  font-size: 42px;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-  font-weight: 700;
-  letter-spacing: -1px;
-}
-
-.inicio-container p {
-  font-size: 18px;
-  color: var(--text-secondary);
-  margin-bottom: 40px;
-  font-weight: 400;
 }
 
 #start-btn {
-  background-color: var(--accent-primary);
-  color: white;
-  border: none;
-  border-radius: 16px;
-  padding: 18px 40px;
+  margin-top: 20px;
+  padding: 12px 25px;
   font-size: 18px;
-  font-weight: 600;
+  border: none;
+  background: #0af;
+  color: #000;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-  width: 100%;
-}
-
-#start-btn:active {
-  transform: scale(0.98);
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
-}
-
-.install-prompt {
-  margin-top: 15px;
-  width: 100%;
-}
-
-#install-btn {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-  padding: 12px;
-  border-radius: 16px;
-  width: 100%;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-#install-btn:active {
-  background: rgba(59, 130, 246, 0.2);
-}
-
-/* --- PANTALLA DE CHAT --- */
-.chat-section-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100dvh;
-  max-width: 600px;
-  background-color: var(--bg-color);
-  box-shadow: var(--shadow-soft);
-  position: relative;
-}
-
-.mode-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  text-align: center;
-  padding: 16px;
-  padding-top: max(16px, var(--safe-top));
-  background: var(--glass-panel);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--glass-border);
-  z-index: 10;
-  font-weight: 500;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-.chat-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-  padding-top: 60px; /* Space for header */
 }
 
 #chat-window {
-  flex: 1;
+  width: 100%;
+  height: calc(100vh - 70px);
   padding: 20px;
-  padding-bottom: 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  background: #1b1b1b;
 }
 
-/* --- BURBUJAS --- */
 .message {
-  padding: 12px 18px;
-  border-radius: 20px;
-  max-width: 80%;
-  line-height: 1.5;
-  font-size: 17px;
-  position: relative;
-  word-wrap: break-word;
-  animation: messageSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  max-width: 75%;
+  padding: 12px 15px;
+  border-radius: 10px;
+  font-size: 16px;
 }
 
-@keyframes messageSlide {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Kivo (Incoming) */
-.message.kivo {
-  align-self: flex-start;
-  background-color: var(--incoming-bg);
-  color: var(--incoming-text);
-  border-bottom-left-radius: 4px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-/* User (Outgoing) */
 .message.user {
   align-self: flex-end;
-  background-color: var(--outgoing-bg);
-  color: var(--outgoing-text);
-  border-bottom-right-radius: 4px;
-  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+  background: #0af;
+  color: #000;
 }
 
-/* --- INPUT AREA --- */
-#chat-form {
+.message.kivo {
+  align-self: flex-start;
+  background: #333;
+  color: #fff;
+}
+
+#input-box {
+  width: 100%;
+  height: 70px;
   display: flex;
-  padding: 12px 16px;
-  padding-bottom: max(12px, var(--safe-bottom));
-  background: var(--glass-panel);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--glass-border);
-  gap: 12px;
-  align-items: flex-end;
+  border-top: 2px solid #222;
 }
 
-#message-input {
-  flex-grow: 1;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 24px;
-  padding: 12px 20px;
-  font-size: 17px;
-  background-color: rgba(255, 255, 255, 0.8);
-  color: var(--text-primary);
-  transition: all 0.2s;
-  max-height: 120px;
-  min-height: 44px;
-  line-height: 20px;
-}
-
-#message-input:focus {
-  background-color: #ffffff;
-  border-color: var(--accent-primary);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-#chat-form button {
-  background-color: var(--accent-primary);
+#user-input {
+  flex: 1;
+  padding: 10px;
+  background: #222;
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-size: 16px;
+}
+
+#send-btn {
+  width: 80px;
+  background: #0af;
+  color: #000;
+  border: none;
   cursor: pointer;
-  transition: transform 0.1s;
-  flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
-}
-
-#chat-form button:active {
-  transform: scale(0.92);
-}
-
-#chat-form button svg {
-  width: 22px;
-  height: 22px;
-  fill: white;
-  margin-left: 2px;
-}
-
-/* --- RESPONSIVE --- */
-@media (max-width: 600px) {
-  .inicio-container {
-    width: 100%;
-    height: 100dvh;
-    border-radius: 0;
-    border: none;
-    justify-content: center;
-    background: var(--bg-color);
-  }
-
-  .chat-section-container {
-    max-width: 100%;
-    box-shadow: none;
-  }
-
-  .message {
-    max-width: 85%;
-  }
 }
