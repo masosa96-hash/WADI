@@ -1,16 +1,16 @@
 import express from "express";
 const router = express.Router();
 
-// GET /kivo
+// GET /kivo (status)
 router.get("/", (req, res) => {
   res.json({
     service: "kivo",
     status: "ready",
-    message: "Kivo module online"
+    message: "Kivo module is online"
   });
 });
 
-// POST /kivo/run  (endpoint real usado por el frontend)
+// POST /kivo/run
 router.post("/run", async (req, res) => {
   try {
     const { message } = req.body;
@@ -19,14 +19,23 @@ router.post("/run", async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
+    // Placeholder response
     return res.json({
-      reply: `Kivo recibió: ${message}`
+      reply: `You said: ${message}`
     });
 
   } catch (err) {
-    return res.status(500).json({ error: "Internal error" });
+    console.error("Kivo error:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// REQUIRED: default export
+// POST /kivo/session
+router.post("/session", (req, res) => {
+  res.json({
+    session: true,
+    timestamp: Date.now()
+  });
+});
+
 export default router;
