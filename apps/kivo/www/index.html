@@ -1,75 +1,38 @@
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("Kivo script loaded.");
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kivo</title>
+    <link rel="stylesheet" href="./style.css" />
+</head>
 
-    const API_URL = "https://wadi-wxg7.onrender.com/kivo/chat";
+<body>
 
-    // Elements
-    const introScreen = document.getElementById("intro-screen");
-    const chatScreen = document.getElementById("chat-screen");
-    const startBtn = document.getElementById("start-btn");
-    const chatWindow = document.getElementById("chat-window");
-    const userInput = document.getElementById("user-input");
-    const sendBtn = document.getElementById("send-btn");
+    <!-- Pantalla de Inicio -->
+    <div id="intro-screen" class="inicio-container">
+        <h1>Kivo</h1>
+        <p>Del caos al orden.</p>
+        <button id="start-btn">Empezar</button>
+        <a href="#">Política de Privacidad</a>
+    </div>
 
-    // VALIDATION
-    if (!startBtn || !chatWindow || !userInput || !sendBtn) {
-        console.error("ERROR: Missing DOM elements. Check HTML IDs.");
-        return;
-    }
+    <!-- Pantalla del Chat -->
+    <div id="chat-screen" class="chat-section-container" style="display: none;">
+        <div id="chat-window" class="chat-window"></div>
 
-    // GO TO CHAT
-    startBtn.onclick = () => {
-        introScreen.style.display = "none";
-        chatScreen.style.display = "flex";
+        <div class="input-section">
+            <input id="user-input" type="text" placeholder="Escribe algo..." />
+            <button id="send-btn">➤</button>
+        </div>
+    </div>
 
-        appendMessage("kivo", "Hola, ¿en qué puedo ayudarte hoy?");
-    };
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    // SEND MESSAGE
-    sendBtn.onclick = sendMessage;
-    userInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendMessage();
-    });
-
-    function appendMessage(sender, text) {
-        const msg = document.createElement("div");
-        msg.classList.add("message", sender);
-        msg.innerText = text;
-        chatWindow.appendChild(msg);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    async function sendMessage() {
-        const message = userInput.value.trim();
-        if (!message) return;
-
-        appendMessage("user", message);
-        userInput.value = "";
-
-        try {
-            const res = await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message }),
-            });
-
-            if (!res.ok) {
-                appendMessage("kivo", "Error en el servidor.");
-                return;
-            }
-
-            const data = await res.json();
-            appendMessage("kivo", data.reply || "Sin respuesta.");
-        } catch (error) {
-            console.error(error);
-            appendMessage("kivo", "No pude conectarme al servidor.");
-        }
-    }
-
-    // OPTIONAL: REGISTER SERVICE WORKER
-    if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js").catch(err => {
-            console.warn("SW error:", err);
-        });
-    }
-});
+    <script src="./firebase-config.js"></script>
+    <script src="./script.js"></script>
+</body>
+</html>
