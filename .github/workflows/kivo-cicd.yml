@@ -2,11 +2,11 @@ name: Kivo CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - "apps/kivo/**"
   pull_request:
-    branches: [main]
+    branches: [master]
     paths:
       - "apps/kivo/**"
 
@@ -74,7 +74,7 @@ jobs:
 
   deploy-hosting:
     needs: build-and-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
