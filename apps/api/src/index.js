@@ -1,27 +1,37 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
-// Cargar variables de entorno
-dotenv.config(); // Render ya expone envs, no uses rutas relativas
-
-// Importar rutas
 import routes from "./routes.js";
 import kivoRoutes from "./routes/kivo.js";
 import monitoringRoutes from "./routes/monitoring.js";
 import webhookRoutes from "./routes/webhooks.js";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+dotenv.config({ path: "../../.env" });
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Registrar rutas
+// Necesario para obtener rutas absolutas
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ruta a los archivos del frontend Kivo
+const kivoPath = path.resolve(__dirname, "../../kivo/www");
+
+// Servir frontend
+app.use("/kivo", express.static(kivoPath));
+
+// Endpoints backend
 app.use("/api", routes);
-app.use("/kivo", kivoRoutes);
+app.use("/kivo-api", kivoRoutes);
 app.use("/system", monitoringRoutes);
 app.use("/webhooks", webhookRoutes);
 
-// Ruta raíz de debug
+// Root debug
 app.get("/", (req, res) => {
   res.json({
     service: "wadi-api",
@@ -31,20 +41,12 @@ app.get("/", (req, res) => {
       "/kivo",
       "/system/health",
       "/system/ready",
-      "/webhooks/whatsapp"
-    ]
+      "/webhooks/whatsapp",
+    ],
   });
 });
 
-// Lanzar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(
-    JSON.stringify({
-      message: "WADI API running",
-      port: PORT,
-      envLoaded: true,
-      timestamp: new Date().toISOString()
-    })
-  );
+  console.log(`WADI API running on port ${PORT}`);
 });
