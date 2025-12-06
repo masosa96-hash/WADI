@@ -1,26 +1,27 @@
-// redeploy-nixpacks (retry)
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import logger from "@wadi/logger";
-import routes from "./routes.js";
 
-dotenv.config({ path: "../../.env" });
+// Cargar variables de entorno
+dotenv.config(); // Render ya expone envs, no uses rutas relativas
+
+// Importar rutas
+import routes from "./routes.js";
+import kivoRoutes from "./routes/kivo.js";
+import monitoringRoutes from "./routes/monitoring.js";
+import webhookRoutes from "./routes/webhooks.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-import kivoRoutes from "./routes/kivo.js";
-import monitoringRoutes from "./routes/monitoring.js";
-import webhookRoutes from "./routes/webhooks.js";
-
+// Registrar rutas
 app.use("/api", routes);
 app.use("/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
 app.use("/webhooks", webhookRoutes);
 
-// Root Debug Route
+// Ruta raíz de debug
 app.get("/", (req, res) => {
   res.json({
     service: "wadi-api",
@@ -30,13 +31,20 @@ app.get("/", (req, res) => {
       "/kivo",
       "/system/health",
       "/system/ready",
-      "/webhooks/whatsapp",
-    ],
+      "/webhooks/whatsapp"
+    ]
   });
 });
 
+// Lanzar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
-  logger.info({ port: PORT }, `🚀 API v1.0.1 running`);
-  logger.info(`Health check: http://0.0.0.0:${PORT}/system/health`);
+  console.log(
+    JSON.stringify({
+      message: "WADI API running",
+      port: PORT,
+      envLoaded: true,
+      timestamp: new Date().toISOString()
+    })
+  );
 });
