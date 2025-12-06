@@ -104,7 +104,7 @@ if (typeof document !== "undefined") {
 }
 
 // Función central de manejo de mensajes
-const API_URL = "https://ideal-essence-production.up.railway.app/kivo/message";
+const API_URL = "https://wadi-api-production.up.railway.app/kivo/message";
 
 function handleUserMessage(userMessage) {
   analyzeUserStyle(userMessage);

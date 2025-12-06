@@ -2,6 +2,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import logger from "@wadi/logger";
 import routes from "./routes.js";
 
 dotenv.config({ path: "../../.env" });
@@ -36,8 +37,6 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 API v1.0.1 running on port ${PORT}`);
-  console.log(
-    `Health check available at: http://0.0.0.0:${PORT}/system/health`
-  );
+  logger.info({ port: PORT }, `🚀 API v1.0.1 running`);
+  logger.info(`Health check: http://0.0.0.0:${PORT}/system/health`);
 });
