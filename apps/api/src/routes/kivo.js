@@ -1,46 +1,40 @@
 import express from "express";
-import { generarPrompt } from "../core/prompt-kivo.js";
-import { analizarMensaje } from "../core/analisis.js";
-import { openai } from "../openai.js";
-
 const router = express.Router();
 
-router.post("/message", async (req, res) => {
-  try {
-    const { mensajeUsuario, historial } = req.body;
+// GET /kivo  (status endpoint)
+router.get("/", (req, res) => {
+  res.json({
+    service: "kivo",
+    status: "ready",
+    message: "Kivo module is online"
+  });
+});
 
-    if (!mensajeUsuario) {
-      return res.status(400).json({ error: "Mensaje requerido" });
+// POST /kivo/chat
+router.post("/chat", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
     }
 
-    const { emocion, modo } = analizarMensaje(mensajeUsuario);
-
-    const prompt = generarPrompt({
-      mensajeUsuario,
-      emocion,
-      modo,
-      historial,
+    // Placeholder response
+    return res.json({
+      reply: `You said: ${message}`
     });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: mensajeUsuario },
-      ],
-    });
-
-    const respuesta = completion.choices[0].message.content;
-
-    res.json({
-      respuestaKivo: respuesta,
-      emocion,
-      modo,
-    });
-  } catch (error) {
-    console.error("Error en Kivo backend:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+  } catch (err) {
+    return res.status(500).json({ error: "Internal server error" });
   }
+});
+
+// POST /kivo/session
+router.post("/session", (req, res) => {
+  res.json({
+    session: true,
+    timestamp: Date.now()
+  });
 });
 
 export default router;
