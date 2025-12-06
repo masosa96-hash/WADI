@@ -1,57 +1,57 @@
-// ===============================
-// KIVO FRONTEND SCRIPT (PWA)
-// ===============================
-
-// API de backend (Render)
+// ==============================
+// CONFIG
+// ==============================
 const API_URL = "https://wadi-wxg7.onrender.com";
 
-// Helpers
-function $(id) {
-  return document.getElementById(id);
+// ==============================
+// DOM ELEMENTS
+// ==============================
+const chatContainer = document.getElementById("chat");
+const messageInput = document.getElementById("message");
+const sendButton = document.getElementById("send");
+
+// ==============================
+// HELPERS
+// ==============================
+function addMessage(role, content) {
+  const el = document.createElement("div");
+  el.className = `msg ${role}`;
+  el.innerText = content;
+  chatContainer.appendChild(el);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// Elements
-const promptInput = $("prompt");
-const sendBtn = $("sendBtn");
-const outputDiv = $("output");
-
-// Send prompt to API
-async function sendPrompt() {
-  const text = promptInput.value.trim();
+// ==============================
+// SEND MESSAGE
+// ==============================
+async function sendMessage() {
+  const text = messageInput.value.trim();
   if (!text) return;
 
-  outputDiv.innerHTML += `<div class="msg user">${text}</div>`;
-  promptInput.value = "";
-  sendBtn.disabled = true;
+  addMessage("user", text);
+  messageInput.value = "";
 
   try {
     const res = await fetch(`${API_URL}/kivo/chat`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ prompt: text })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
     });
 
     const data = await res.json();
 
-    outputDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
-    outputDiv.scrollTop = outputDiv.scrollHeight;
+    if (data.reply) {
+      addMessage("assistant", data.reply);
+    } else {
+      addMessage("assistant", "Error: respuesta inválida del servidor.");
+    }
+
   } catch (err) {
-    console.error(err);
-    outputDiv.innerHTML += `<div class="msg ai error">Error de conexión</div>`;
-  } finally {
-    sendBtn.disabled = false;
+    addMessage("assistant", "Error de red o servidor caído.");
   }
 }
 
-sendBtn.addEventListener("click", sendPrompt);
-
-promptInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendPrompt();
+sendButton.onclick = sendMessage;
+messageInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
 });
-
-// Service worker (PWA)
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js");
-}
