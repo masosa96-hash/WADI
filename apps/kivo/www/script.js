@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!response.ok) throw new Error(data.error || "Error en el servidor");
       addMessage(data.reply || "Sin respuesta del servidor", "kivo");
     } catch (err) {
-      addMessage("Error al conectar con el servidor.", "kivo");
+      addMessage(`Error: ${err.message}`, "kivo");
       console.error(err);
     }
   }
