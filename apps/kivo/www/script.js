@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = "https://wadi-wxg7.onrender.com/api";
-  const API_ENDPOINT = `${API_BASE}/kivo/chat`;
+  const API_ENDPOINT = "https://wadi-wxg7.onrender.com/api/kivo/chat";
 
   const startBtn = document.getElementById("start-btn");
   const introScreen = document.getElementById("intro-screen");
