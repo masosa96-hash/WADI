@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { openai } from "./openai.js";
+import { openai, AI_MODEL } from "./openai.js";
 
 const router = Router();
 
@@ -8,7 +8,7 @@ router.post("/chat", async (req, res) => {
     const { message } = req.body;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: AI_MODEL,
       messages: [{ role: "user", content: message }],
     });
 

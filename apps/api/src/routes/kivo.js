@@ -1,5 +1,5 @@
 import express from "express";
-import { openai } from "../openai.js";
+import { openai, AI_MODEL } from "../openai.js";
 import { WADI_SYSTEM_PROMPT } from "../wadi-brain.js";
 
 const router = express.Router();
@@ -23,7 +23,7 @@ router.post("/chat", async (req, res) => {
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: AI_MODEL,
       messages: [
         { role: "system", content: WADI_SYSTEM_PROMPT },
         { role: "user", content: message },
