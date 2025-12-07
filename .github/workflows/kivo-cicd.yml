@@ -64,7 +64,7 @@ jobs:
           version: 8
       - run: pnpm install
       - name: Deploy to Firebase Hosting (Preview)
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: # FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KIVO_8C62E }}"
@@ -72,7 +72,7 @@ jobs:
         env:
           FIREBASE_CLI_PREVIEWS: hostingchannels
 
-  deploy-hosting:
+  # deploy-hosting:
     needs: build-and-test
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -94,7 +94,7 @@ jobs:
         run: pnpm install
 
       - name: Deploy to Firebase Hosting (Live)
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: # FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KIVO_8C62E }}"
