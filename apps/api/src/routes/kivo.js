@@ -34,7 +34,8 @@ router.post("/chat", async (req, res) => {
     return res.json({ reply });
   } catch (err) {
     console.error("Kivo error:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    // DEBUG: Retornamos el error exacto para verlo en frontend
+    return res.status(500).json({ error: err.message });
   }
 });
 
