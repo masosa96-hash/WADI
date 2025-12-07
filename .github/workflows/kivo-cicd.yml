@@ -38,6 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render Deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
           echo "Triggering Render deploy..."
-          curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          curl -X POST "$RENDER_DEPLOY_HOOK"
