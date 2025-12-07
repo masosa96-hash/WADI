@@ -59,4 +59,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch(console.error);
   }
+  // Keep-alive pinger due to Render free tier sleep
+  const KEEP_ALIVE_URL = "https://wadi-wxg7.onrender.com/system/health";
+  setInterval(
+    () => {
+      fetch(KEEP_ALIVE_URL)
+        .then((res) => console.log(`Keep-alive ping: ${res.status}`))
+        .catch((err) => console.error("Keep-alive failed", err));
+    },
+    4 * 60 * 1000
+  ); // 4 minutes
 });
