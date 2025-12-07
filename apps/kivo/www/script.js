@@ -46,9 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ message: text }),
       });
 
-      if (!response.ok) throw new Error("Error en el servidor");
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Error en el servidor");
       addMessage(data.reply || "Sin respuesta del servidor", "kivo");
     } catch (err) {
       addMessage("Error al conectar con el servidor.", "kivo");
