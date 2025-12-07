@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_URL = "https://wadi-wxg7.onrender.com";
-  const API_ENDPOINT = `${API_URL}/api/api/kivo/chat`;
+  const API_BASE = "https://wadi-wxg7.onrender.com/api";
+  const API_ENDPOINT = `${API_BASE}/kivo/chat`;
 
   const startBtn = document.getElementById("start-btn");
   const introScreen = document.getElementById("intro-screen");
@@ -51,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
       addMessage(data.reply || "Sin respuesta del servidor", "kivo");
-
     } catch (err) {
       addMessage("Error al conectar con el servidor.", "kivo");
       console.error(err);
