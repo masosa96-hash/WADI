@@ -1,7 +1,10 @@
 import express from "express";
+import { openai } from "../openai.js";
+import { WADI_SYSTEM_PROMPT } from "../wadi-brain.js";
+
 const router = express.Router();
 
-// GET /kivo (status)
+// GET /api/kivo (status)
 router.get("/", (req, res) => {
   res.json({
     service: "kivo",
@@ -10,8 +13,7 @@ router.get("/", (req, res) => {
   });
 });
 
-// POST /kivo/run
-// POST /chat (Frontend endpoint)
+// POST /api/kivo/chat (Frontend endpoint)
 router.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -20,40 +22,36 @@ router.post("/chat", async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    // Placeholder response until OpenAI is connected here
-    return res.json({
-      reply: `[Kivo]: Recibido: "${message}"`,
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: WADI_SYSTEM_PROMPT },
+        { role: "user", content: message },
+      ],
     });
+
+    const reply = completion.choices[0].message.content;
+    return res.json({ reply });
   } catch (err) {
     console.error("Kivo error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// POST /run (Legacy/Internal)
+// POST /api/kivo/run (Legacy/Internal)
 router.post("/run", async (req, res) => {
   try {
     const { message } = req.body;
-
-    if (!message) {
-      return res.status(400).json({ error: "Message is required" });
-    }
-
-    return res.json({
-      reply: `You said: ${message}`,
-    });
+    if (!message) return res.status(400).json({ error: "Message is required" });
+    return res.json({ reply: `You said: ${message}` });
   } catch (err) {
-    console.error("Kivo error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// POST /kivo/session
+// POST /api/kivo/session
 router.post("/session", (req, res) => {
-  res.json({
-    session: true,
-    timestamp: Date.now(),
-  });
+  res.json({ session: true, timestamp: Date.now() });
 });
 
 export default router;
