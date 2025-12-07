@@ -31,7 +31,7 @@ app.use("/kivo", express.static(kivoPath)); // sirve index.html + css + js
 // API ROUTES
 // --------------------------------------------------
 app.use("/api", routes);
-app.use("/kivo", kivoRoutes);
+app.use("/api/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
 app.use("/webhooks", webhookRoutes);
 
