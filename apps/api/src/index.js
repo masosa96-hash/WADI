@@ -22,10 +22,10 @@ app.use(cors());
 app.use(express.json());
 
 // --------------------------------------------------
-// STATIC FRONTEND KIVO
+// REDIRECT LEGACY KIVO
 // --------------------------------------------------
-const kivoPath = path.join(__dirname, "../../kivo/www");
-app.use("/kivo", express.static(kivoPath)); // sirve index.html + css + js
+app.get("/kivo", (req, res) => res.redirect("/"));
+app.get("/kivo/*", (req, res) => res.redirect("/"));
 
 // --------------------------------------------------
 // STATIC FRONTEND (WADI MAIN UI)
