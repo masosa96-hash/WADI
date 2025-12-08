@@ -7,6 +7,8 @@ interface AuthState {
   loading: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signIn: (email: string, password: string) => Promise<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  signUp: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
 }
 
@@ -18,6 +20,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true });
 
     const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    set({ user: data.user, loading: false });
+    return { data, error };
+  },
+
+  signUp: async (email, password) => {
+    set({ loading: true });
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
