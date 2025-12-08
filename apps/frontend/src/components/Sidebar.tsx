@@ -53,28 +53,10 @@ export function Sidebar() {
             textDecoration: "none",
           }}
         >
-          <span>+</span> New Conversation
+          <span>+</span> Nueva Conversación
         </Link>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: "var(--bg-element)",
-            borderRadius: "var(--radius-md)",
-            padding: "var(--space-2)",
-            border: "1px solid transparent",
-          }}
-        >
-          <span style={{ opacity: 0.5, marginRight: "var(--space-2)" }}>
-            🔍
-          </span>
-          <input
-            placeholder="Search..."
-            style={{ width: "100%", fontSize: "0.9rem" }}
-            aria-label="Search conversations"
-          />
-        </div>
+        {/* Search could be here, or global */}
       </div>
 
       {/* Navigation */}
@@ -96,8 +78,9 @@ export function Sidebar() {
             marginTop: "var(--space-2)",
           }}
         >
-          Menu
+          Historial
         </div>
+        {/* We can map recent projects here later */}
         {navItems.map((item) => (
           <Link
             key={item.path}
@@ -115,9 +98,10 @@ export function Sidebar() {
               display: "flex",
               alignItems: "center",
               gap: "var(--space-2)",
+              textDecoration: "none",
             }}
           >
-            Dashboard
+            Punto de Control
           </Link>
         ))}
       </nav>

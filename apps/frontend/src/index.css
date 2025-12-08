@@ -166,6 +166,15 @@ button:focus {
 .w-full {
   width: 100%;
 }
+.grid {
+  display: grid;
+}
+.items-start {
+  align-items: flex-start;
+}
+.opacity-50 {
+  opacity: 0.5;
+}
 
 /* -- Typography -- */
 h1,
