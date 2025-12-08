@@ -28,6 +28,12 @@ const kivoPath = path.join(__dirname, "../../kivo/www");
 app.use("/kivo", express.static(kivoPath)); // sirve index.html + css + js
 
 // --------------------------------------------------
+// STATIC FRONTEND (WADI MAIN UI)
+// --------------------------------------------------
+const frontendPath = path.join(__dirname, "../../frontend/dist");
+app.use(express.static(frontendPath));
+
+// --------------------------------------------------
 // API ROUTES
 // --------------------------------------------------
 app.use("/api", routes);
@@ -35,18 +41,25 @@ app.use("/api/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
 app.use("/webhooks", webhookRoutes);
 
-// ROOT DEBUG
-app.get("/", (req, res) => {
-  res.json({
-    service: "wadi-api",
-    status: "online",
-    endpoints: [
-      "/api",
-      "/kivo",
-      "/system/health",
-      "/system/ready",
-      "/webhooks/whatsapp",
-    ],
+// --------------------------------------------------
+// SPA CATCH-ALL (Frontend Routing)
+// --------------------------------------------------
+// Cualquier ruta no atrapada por API o estáticos -> index.html
+app.get("*", (req, res) => {
+  if (req.path.startsWith("/api") || req.path.startsWith("/kivo")) {
+    return res.status(404).json({ error: "Not found" });
+  }
+  // Si existe el index.html lo enviamos, sino retornamos json básico info
+  // (útil si no se ha hecho build)
+  res.sendFile(path.join(frontendPath, "index.html"), (err) => {
+    if (err) {
+      res.json({
+        service: "wadi-api",
+        status: "online",
+        note: "Frontend build not found. Please run build script.",
+        endpoints: ["/api", "/kivo", "/system/health"],
+      });
+    }
   });
 });
 

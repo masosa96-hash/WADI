@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build": "pnpm --filter frontend build"
   },
   "workspaces": [
     "apps/api",
