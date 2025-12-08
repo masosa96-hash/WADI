@@ -45,7 +45,7 @@ app.use("/webhooks", webhookRoutes);
 // SPA CATCH-ALL (Frontend Routing)
 // --------------------------------------------------
 // Cualquier ruta no atrapada por API o estáticos -> index.html
-app.get("*", (req, res) => {
+app.get("(.*)", (req, res) => {
   if (req.path.startsWith("/api") || req.path.startsWith("/kivo")) {
     return res.status(404).json({ error: "Not found" });
   }
