@@ -24,8 +24,7 @@ app.use(express.json());
 // --------------------------------------------------
 // REDIRECT LEGACY KIVO
 // --------------------------------------------------
-app.get("/kivo", (req, res) => res.redirect("/"));
-app.get("/kivo/*", (req, res) => res.redirect("/"));
+app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
 
 // --------------------------------------------------
 // STATIC FRONTEND (WADI MAIN UI)
