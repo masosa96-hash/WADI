@@ -2,8 +2,9 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-// Importamos un logo placeholder si no hay uno definido, o usamos texto
-// import logo from "../assets/logo.svg";
+import { Card } from "../components/common/Card";
+import { Input } from "../components/common/Input";
+import { Button } from "../components/common/Button";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,14 +26,10 @@ export default function Login() {
 
     try {
       if (isRegistering) {
-        // Registro
         const { error } = await signUp(email, password);
         if (error) throw error;
-        // Si no hay error, podríamos redirigir o mostrar un mensaje
-        // A veces Supabase requiere confirmar email.
         navigate("/projects");
       } else {
-        // Login
         const { error } = await signIn(email, password);
         if (error) throw error;
         navigate("/projects");
@@ -51,20 +48,16 @@ export default function Login() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "var(--bg-app)", // Usa el fondo oscuro global
+        background: "var(--bg-app)",
         color: "var(--text-primary)",
       }}
     >
-      <div
+      <Card
         style={{
           width: "100%",
           maxWidth: "400px",
-          padding: "40px",
-          background: "var(--bg-panel)",
-          borderRadius: "16px",
-          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.3)", // Sombra elegante
-          border: "1px solid var(--border-color)",
           textAlign: "center",
+          boxShadow: "var(--shadow-lg)",
         }}
       >
         {/* LOGO / BRAND */}
@@ -107,90 +100,34 @@ export default function Login() {
           onSubmit={handleSubmit}
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          <div style={{ textAlign: "left" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "6px",
-                fontSize: "0.85rem",
-                color: "var(--text-secondary)",
-                fontWeight: 500,
-              }}
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="nombre@ejemplo.com"
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                background: "var(--bg-element)",
-                border: "1px solid var(--border-color)",
-                borderRadius: "8px",
-                color: "var(--text-primary)",
-                fontSize: "1rem",
-                outline: "none",
-                transition: "border-color 0.2s",
-              }}
-              className="focus:border-accent" // Si tienes clases de utilidad, o style inline
-            />
-          </div>
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="nombre@ejemplo.com"
+          />
 
-          <div style={{ textAlign: "left" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "6px",
-                fontSize: "0.85rem",
-                color: "var(--text-secondary)",
-                fontWeight: 500,
-              }}
-            >
-              Contraseña
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                background: "var(--bg-element)",
-                border: "1px solid var(--border-color)",
-                borderRadius: "8px",
-                color: "var(--text-primary)",
-                fontSize: "1rem",
-                outline: "none",
-              }}
-            />
-          </div>
+          <Input
+            label="Contraseña"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            style={{
-              marginTop: "1rem",
-              padding: "12px",
-              background: loading ? "var(--bg-element)" : "var(--text-primary)", // Blanco/Contraste fuerte
-              color: loading ? "var(--text-tertiary)" : "var(--bg-app)", // Texto invertido
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "1rem",
-              fontWeight: 600,
-              cursor: loading ? "not-allowed" : "pointer",
-              transition: "transform 0.1s, opacity 0.2s",
-            }}
+            fullWidth
+            style={{ marginTop: "1rem" }}
           >
             {loading
               ? "Procesando..."
               : isRegistering
                 ? "Registrarse"
                 : "Continuar"}
-          </button>
+          </Button>
         </form>
 
         {/* TOGGLE LOGIN/REGISTER */}
@@ -211,17 +148,16 @@ export default function Login() {
             style={{
               background: "none",
               border: "none",
-              color: "var(--accent-color, #4facfe)", // Fallback azul si no hay accent
+              color: "var(--accent-primary)",
               fontWeight: 600,
               cursor: "pointer",
-              textDecoration: "none",
               padding: 0,
             }}
           >
             {isRegistering ? "Iniciar Sesión" : "Registrate"}
           </button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
