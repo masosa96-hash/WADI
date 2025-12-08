@@ -1,51 +1,80 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useRunsStore } from "../store/runsStore";
+import { ChatInterface } from "../components/ChatInterface";
+import type { ChatMessage } from "../components/ChatInterface";
+import { Layout } from "../components/Layout";
 
 export default function ProjectDetail() {
   const { id } = useParams();
   const { runs, fetchRuns, createRun, loading } = useRunsStore();
 
-  const [input, setInput] = useState("");
-
   useEffect(() => {
-    fetchRuns(id!);
-  }, [id]);
+    if (id) {
+      fetchRuns(id);
+    }
+  }, [id, fetchRuns]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-    await createRun(id!, input);
-    setInput("");
+  const handleSend = async (text: string) => {
+    if (!id || !text.trim()) return;
+    await createRun(id, text);
   };
 
+  // Transform runs (Run[]) into ChatMessage[]
+  // Runs are stored [newest, ..., oldest] in store
+  // We want to display [oldest, ..., newest] in ChatInterface typically
+  const messages = useMemo(() => {
+    const msgs: ChatMessage[] = [];
+
+    // Process in reverse (oldest first) to build chat history
+    // Since 'runs' is [newest...oldest], we slice().reverse()
+    const sortedRuns = runs.slice().reverse();
+
+    sortedRuns.forEach((run) => {
+      // User Message
+      msgs.push({
+        id: `${run.id}-user`,
+        role: "user",
+        content: run.input,
+        timestamp: new Date(run.created_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      });
+
+      // Assistant Message (if output exists)
+      if (run.output) {
+        msgs.push({
+          id: `${run.id}-ai`,
+          role: "assistant",
+          content: run.output,
+          timestamp: new Date(run.created_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          // Technically output might be later, but for now using run time is fine
+        });
+      }
+    });
+
+    return msgs;
+  }, [runs]);
+
   return (
-    <div style={{ padding: 40 }}>
-      <h2>Proyecto {id}</h2>
-
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Escribí algo..."
-        style={{ width: "100%", height: 100 }}
+    <Layout>
+      <ChatInterface
+        title={`Project ${id}`}
+        status={loading ? "Processing..." : "Ready"}
+        messages={messages}
+        onSendMessage={handleSend}
+        isThinking={loading}
+        suggestions={[
+          "Analyze this code",
+          "Explain the architecture",
+          "Suggest improvements",
+          "Write a test case",
+        ]}
       />
-
-      <br />
-
-      <button onClick={handleSend} disabled={loading}>
-        Enviar
-      </button>
-
-      <hr />
-
-      {runs.map((r) => (
-        <div key={r.id} style={{ marginBottom: 20 }}>
-          <b>Input:</b> {r.input}
-          <br />
-          <b>Output:</b> {r.output}
-          <br />
-          <small>{r.created_at}</small>
-        </div>
-      ))}
-    </div>
+    </Layout>
   );
 }
