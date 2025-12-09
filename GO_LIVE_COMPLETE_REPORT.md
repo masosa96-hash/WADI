@@ -33,18 +33,12 @@ Go to [Render Dashboard](https://dashboard.render.com/) > WADI Service > Environ
 
 ```env
 NODE_ENV=production
-# Groq API Key (Recommended for performance/cost)
-GROQ_API_KEY=gsk_...
-# Fallback / Alternative
-OPENAI_API_KEY=sk-...
-SUPABASE_URL=https://...
-SUPABASE_KEY=ey... (Service Role Key)
-ADMIN_KEY=... (Secure Hash)
-```
-
-SUPABASE_KEY=ey... (Your Service Role Key)
+GROQ_API_KEY=gsk_... (Your Real Key)
+GROQ_MODEL=llama-3.1-8b-instant
+SUPABASE_URL=https://smkbiguvgiscojwxgbae.supabase.co
+# NOTA: En el backend usamos la SERVICE KEY (la larga que empieza con eyJ...RoleIsIm...)
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNta2JpZ3V2Z2lzY29qd3hnYmFlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzQxMTgyMywiZXhwIjoyMDc4OTg3ODIzfQ.uDFNhOGqGb4kv3DWcVHdRoPjCSUhL_IJURaTRtqJZNE
 ADMIN_KEY=9b03e6028bbb01b40aebfecdf86b6025a74c6513ec25cc1cae0f8c3597d92
-
 ```
 
 _(The service will auto-restart when you save these)._
@@ -58,4 +52,7 @@ WhatsApp and Telegram integrations have been temporarily disabled.
 - Monitor logs in Railway for the first 24h.
 - Share the Kivo URL with users.
 - Relax! WADI is taking care of the rest.
+
+```
+
 ```

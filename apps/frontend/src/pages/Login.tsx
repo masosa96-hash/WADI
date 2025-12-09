@@ -6,6 +6,8 @@ import { Card } from "../components/common/Card";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
 
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+
 export default function Login() {
   const navigate = useNavigate();
   const { signIn, signUp, loading } = useAuthStore();
@@ -14,6 +16,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -26,7 +29,11 @@ export default function Login() {
 
     try {
       if (isRegistering) {
-        const { error } = await signUp(email, password);
+        if (!captchaToken) {
+          setErrorMsg("Por favor completá el CAPTCHA.");
+          return;
+        }
+        const { error } = await signUp(email, password, captchaToken);
         if (error) throw error;
         navigate("/projects");
       } else {
@@ -96,6 +103,7 @@ export default function Login() {
         )}
 
         {/* FORM */}
+        {/* FORM */}
         <form
           onSubmit={handleSubmit}
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
@@ -115,6 +123,24 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
           />
+
+          {isRegistering && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "1rem",
+              }}
+            >
+              <HCaptcha
+                sitekey={
+                  import.meta.env.VITE_HCAPTCHA_SITE_KEY ||
+                  "10000000-ffff-ffff-ffff-000000000001"
+                }
+                onVerify={(token) => setCaptchaToken(token)}
+              />
+            </div>
+          )}
 
           <Button
             type="submit"
@@ -144,6 +170,7 @@ export default function Login() {
             onClick={() => {
               setIsRegistering(!isRegistering);
               setErrorMsg("");
+              setCaptchaToken(""); // Reset captcha on toggle
             }}
             style={{
               background: "none",

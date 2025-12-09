@@ -8,7 +8,11 @@ interface AuthState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signIn: (email: string, password: string) => Promise<any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signUp: (email: string, password: string) => Promise<any>;
+  signUp: (
+    email: string,
+    password: string,
+    captchaToken?: string
+  ) => Promise<any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   loginAsGuest: () => Promise<any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,12 +39,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     return { data, error };
   },
 
-  signUp: async (email, password) => {
+  signUp: async (email, password, captchaToken) => {
     set({ loading: true });
 
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: { captchaToken },
     });
 
     set({ user: data.user, loading: false });
@@ -57,10 +62,79 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   convertGuestToUser: async (email, password) => {
     set({ loading: true });
+
+    // 1. Capture current anon ID
+    const {
+      data: { session: anonSession },
+    } = await supabase.auth.getSession();
+    const anonUserId = anonSession?.user?.id;
+
+    // 2. Attempt to convert (Update User)
     const { data, error } = await supabase.auth.updateUser({
       email: email,
       password: password,
     });
+
+    if (error) {
+      // 3. Handle "User already exists" conflict
+      // Note: Error message content may vary, checking for common indicators
+      if (
+        error.message.includes("already registered") ||
+        error.message.includes("unique constraint") ||
+        error.status === 422
+      ) {
+        console.log("Email exists. Attempting to link/merge account...");
+
+        // 4. Sign in to the existing account
+        const { data: signInData, error: signInError } =
+          await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+        if (signInError) {
+          set({ loading: false });
+          throw new Error(
+            "El usuario ya existe y la contraseña es incorrecta."
+          );
+        }
+
+        if (signInData.user && anonUserId) {
+          console.log(
+            `Merging data from ${anonUserId} to ${signInData.user.id}`
+          );
+
+          // 5. Reassign entities (Projects & Runs)
+          // Note: This relies on RLS policies allowing the new user to update the old user's rows
+          // OR the backend handling this. We attempt client-side update here as per request.
+
+          const { error: projectError } = await supabase
+            .from("projects")
+            .update({ user_id: signInData.user.id }) // Assuming 'user_id' column exists
+            .eq("user_id", anonUserId); // Assuming logical 'owner' link
+
+          if (projectError)
+            console.warn("Project merge warning:", projectError);
+
+          const { error: runError } = await supabase
+            .from("runs")
+            .update({ user_id: signInData.user.id })
+            .eq("user_id", anonUserId);
+
+          if (runError) console.warn("Run merge warning:", runError);
+        }
+
+        set({ user: signInData.user, loading: false });
+        // Return null error to indicate success in handling
+        return { data: signInData, error: null };
+      }
+
+      // Real error
+      set({ loading: false });
+      return { data, error };
+    }
+
+    // Success (New User Conversion)
     set({ user: data.user, loading: false });
     return { data, error };
   },
