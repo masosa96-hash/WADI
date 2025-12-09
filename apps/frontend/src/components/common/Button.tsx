@@ -69,6 +69,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
+        className={className}
         style={baseStyle}
         onMouseEnter={(e) => {
           if (!props.disabled && variant === "primary") {

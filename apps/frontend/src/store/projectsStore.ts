@@ -52,7 +52,7 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
         try {
           const err = await res.json();
           if (err.message) msg = err.message;
-        } catch (e) {
+        } catch {
           /* ignore */
         }
         throw new Error(msg);
