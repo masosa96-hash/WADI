@@ -14,6 +14,9 @@ interface RunsState {
   createRun: (projectId: string, input: string) => Promise<void>;
 }
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://wadi-wxg7.onrender.com";
+
 export const useRunsStore = create<RunsState>((set) => ({
   runs: [],
   loading: false,
@@ -21,26 +24,30 @@ export const useRunsStore = create<RunsState>((set) => ({
   fetchRuns: async (projectId) => {
     set({ loading: true });
 
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/projects/${projectId}/runs`
-    );
-    const data = await res.json();
-
-    set({ runs: data, loading: false });
+    try {
+      const res = await fetch(`${API_URL}/api/projects/${projectId}/runs`);
+      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      const data = await res.json();
+      set({ runs: data, loading: false });
+    } catch (e) {
+      console.error("Failed to fetch runs", e);
+      set({ loading: false });
+    }
   },
 
   createRun: async (projectId, input) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/projects/${projectId}/runs`,
-      {
+    try {
+      const res = await fetch(`${API_URL}/api/projects/${projectId}/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input }),
-      }
-    );
-
-    const data = await res.json();
-
-    set((state) => ({ runs: [data, ...state.runs] }));
+      });
+      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      const data = await res.json();
+      set((state) => ({ runs: [data, ...state.runs] }));
+    } catch (e) {
+      console.error("Failed to create run", e);
+      throw e;
+    }
   },
 }));
