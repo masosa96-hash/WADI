@@ -2,21 +2,27 @@ import { create } from "zustand";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../config/supabase";
 
+interface AuthResponse {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  error: any;
+}
+
 interface AuthState {
   user: User | null;
   loading: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signIn: (email: string, password: string) => Promise<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  signIn: (email: string, password: string) => Promise<AuthResponse>;
   signUp: (
     email: string,
     password: string,
     captchaToken?: string
-  ) => Promise<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  loginAsGuest: () => Promise<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  convertGuestToUser: (email: string, password: string) => Promise<any>;
+  ) => Promise<AuthResponse>;
+  loginAsGuest: () => Promise<AuthResponse>;
+  convertGuestToUser: (
+    email: string,
+    password: string
+  ) => Promise<AuthResponse>;
   signOut: () => Promise<void>;
   setUser: (user: User | null) => void;
 }
