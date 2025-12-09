@@ -11,4 +11,6 @@ export const openai = new OpenAI({
   baseURL: useGroq ? "https://api.groq.com/openai/v1" : undefined,
 });
 
-export const AI_MODEL = useGroq ? "llama-3.3-70b-versatile" : "gpt-4o-mini";
+export const AI_MODEL = useGroq
+  ? process.env.GROQ_MODEL || "llama-3.1-8b-instant"
+  : "gpt-4o-mini";
