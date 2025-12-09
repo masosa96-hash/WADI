@@ -7,7 +7,6 @@ import dotenv from "dotenv";
 import routes from "./routes.js";
 import kivoRoutes from "./routes/kivo.js";
 import monitoringRoutes from "./routes/monitoring.js";
-import webhookRoutes from "./routes/webhooks.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -38,7 +37,6 @@ app.use(express.static(frontendPath));
 app.use("/api", routes);
 app.use("/api/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
-app.use("/webhooks", webhookRoutes);
 
 // --------------------------------------------------
 // SPA CATCH-ALL (Frontend Routing)
