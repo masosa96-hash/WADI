@@ -1,47 +1,33 @@
 # WADI Final Go-Live Validation Checklist 🚀
 
-## 1. Verificación de Deployment (Railway/Render) ✅
+## 1. Verificación de Deployment (Render) ✅
 
-- [ ] **Build Status**: Confirmar que el commit "fix(api): force binding..." se construyó exitosamente (Green check).
-- [ ] **Logs de Arranque**: Buscar en la consola la línea:
-  > `🚀 API v1.0.1 running on port XXXX`
-  > `Health check available at: http://0.0.0.0:XXXX/system/health`
-- [ ] **Network Binding**: Confirmar que no hay errores de "Address already in use" o "Connection refused".
+- [ ] **Build Status**: Confirmar que el deploy en Render fue exitoso.
+- [ ] **Logs de Arranque**: Buscar que el servidor escuche en `0.0.0.0`.
+- [ ] **Health Check**: `https://wadi-wxg7.onrender.com/system/health` responde `200 OK`.
 
 ## 2. Configuración de Variables (Production Environment) 🔐
 
-Asegurar que las siguientes variables están definidas en el dashboard del proveedor:
+Asegurar que las siguientes variables están definidas en el dashboard de Render:
 
-| Variable                | Estado Ideal                       | Validado? |
-| :---------------------- | :--------------------------------- | :-------- |
-| `NODE_ENV`              | `production`                       | [ ]       |
-| `ADMIN_KEY`             | _(Valor Hex Hash seguro)_          | [ ]       |
-| `SUPABASE_URL`          | `https://<PROJECT-ID>.supabase.co` | [ ]       |
-| `SUPABASE_KEY`          | _(Service Role Key)_               | [ ]       |
-| `OPENAI_API_KEY`        | `sk-...` (Con créditos activos)    | [ ]       |
-| `WHATSAPP_VERIFY_TOKEN` | _(Valor de DEPLOY_GUIDE.md)_       | [ ]       |
+| Variable       | Estado Ideal                       | Validado? |
+| :------------- | :--------------------------------- | :-------- |
+| `NODE_ENV`     | `production`                       | [ ]       |
+| `GROQ_API_KEY` | `gsk_...` (Groq API)               | [ ]       |
+| `SUPABASE_URL` | `https://<PROJECT-ID>.supabase.co` | [ ]       |
+| `SUPABASE_KEY` | _(Service Role Key)_               | [ ]       |
 
 ## 3. Pruebas de Salud (Smoke Tests) 🩺
 
-Ejecutar desde terminal local o navegador, apuntando a la URL de producción:
+Ejecutar desde terminal local o navegador:
 
-1.  **Status General**:
-    `curl https://<TU-APP>.up.railway.app/`
-    - _Experado_: `{"status":"online", "endpoints":[...], ...}`
+1.  **Status General**: `curl https://wadi-wxg7.onrender.com/api` (404 expected or json info)
 
-2.  **Health Check (Vital para Railway)**:
-    `curl https://<TU-APP>.up.railway.app/system/health`
-    - _Esperado_: `{"status":"ok", "uptime":...}`
+2.  **Health Check**: `curl https://wadi-wxg7.onrender.com/system/health` -> `{"status":"ok",...}`
 
-3.  **Readiness Probe (DB Connection)**:
-    `curl https://<TU-APP>.up.railway.app/system/ready`
-    - _Esperado_: `{"status":"ready", ...}` (Si las vars de Supabase están bien).
-    - _Fallback_: `{"status":"ready"}` con placeholders si faltan vars (pero no crashea).
+## 4. (Removed)
 
-## 4. Webhooks (Conectividad Externa) 📡
-
-- [ ] **WhatsApp Cloud API**: URL configurada en Meta apuntando a `/webhooks/whatsapp`.
-- [ ] **Telegram Bot**: Webhook set apuntando a `/webhooks/telegram`.
+Webhooks removed per user request.
 
 ## 5. Monitorización Post-Deploy 👁️
 
