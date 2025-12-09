@@ -37,31 +37,13 @@ OPENAI_API_KEY=sk-proj-... (Your Real Key)
 SUPABASE_URL=https://... (Your Real URL)
 SUPABASE_KEY=ey... (Your Service Role Key)
 ADMIN_KEY=9b03e6028bbb01b40aebfecdf86b6025a74c6513ec25cc1cae0f8c3597d92
-WHATSAPP_VERIFY_TOKEN=wadi_verify_token_secure_2025
-TELEGRAM_SECRET_TOKEN=wadi_telegram_secret_8823
 ```
 
 _(The service will auto-restart when you save these)._
 
-### B. WhatsApp Cloud API (Meta) 💬
+### B. (Removed)
 
-1. Go to Meta Developers Console.
-2. Select your App > WhatsApp > Configuration.
-3. **Callback URL**: `https://wadi-api-production.up.railway.app/webhooks/whatsapp`
-4. **Verify Token**: `wadi_verify_token_secure_2025`
-5. Click **Verify and Save**.
-
-### C. Telegram Bot ✈️
-
-Run this command in your local terminal (PowerShell) to register the webhook:
-
-```powershell
-$BOT_TOKEN="YOUR_BOT_TOKEN_HERE"
-$WEBHOOK_URL="https://wadi-api-production.up.railway.app/webhooks/telegram"
-$SECRET="wadi_telegram_secret_8823"
-
-curl -F "url=$WEBHOOK_URL" -F "secret_token=$SECRET" https://api.telegram.org/bot$BOT_TOKEN/setWebhook
-```
+WhatsApp and Telegram integrations have been temporarily disabled.
 
 ## 4. Next Steps 🚀
 
