@@ -73,6 +73,19 @@ export function ChatInterface({
               }}
             />
             <small>{status || "Online"}</small>
+            {isThinking && (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--text-secondary)",
+                  fontStyle: "italic",
+                  animation: "pulse 1s infinite",
+                  marginLeft: "var(--space-2)",
+                }}
+              >
+                Thinking...
+              </span>
+            )}
           </div>
         </div>
         <div className="actions">

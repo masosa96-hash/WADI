@@ -39,7 +39,39 @@ export function MessageBubble({
           boxShadow: "var(--shadow-sm)",
         }}
       >
-        {content}
+        {isUser ? (
+          content
+        ) : (
+          <div>
+            {content.split(/(?=^#{1,3}\s)/m).map((block, i) => {
+              const match = block.match(/^(#{1,3})\s+(.+)(\r?\n|$)/);
+              if (match) {
+                const title = match[2].trim();
+                const body = block.replace(match[0], "").trim();
+                return (
+                  <div key={i} style={{ marginBottom: "1rem" }}>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        fontSize: "1.05em",
+                        marginBottom: "0.5rem",
+                        color: "var(--accent-primary)",
+                      }}
+                    >
+                      {title}
+                    </div>
+                    <div style={{ whiteSpace: "pre-wrap" }}>{body}</div>
+                  </div>
+                );
+              }
+              return (
+                <div key={i} style={{ whiteSpace: "pre-wrap" }}>
+                  {block.trim()}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
       {timestamp && (
         <small

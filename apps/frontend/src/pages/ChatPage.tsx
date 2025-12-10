@@ -5,7 +5,15 @@ import { Button } from "../components/common/Button";
 import { Card } from "../components/common/Card";
 
 export default function ChatPage() {
-  const { messages, isLoading, error, sendMessage, resetChat } = useChatStore();
+  const {
+    messages,
+    isLoading,
+    error,
+    sendMessage,
+    resetChat,
+    tutorMode,
+    stopTutorMode,
+  } = useChatStore();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -59,10 +67,12 @@ export default function ChatPage() {
         >
           <div>
             <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>
-              Nueva conversación
+              {tutorMode.active ? "🎓 Modo Tutor" : "Nueva conversación"}
             </h2>
             <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-              WADI AI Assistant
+              {tutorMode.active
+                ? `${tutorMode.topic} (${tutorMode.level})`
+                : "WADI AI Assistant"}
             </p>
           </div>
           <Button
@@ -75,7 +85,89 @@ export default function ChatPage() {
           </Button>
         </header>
 
-        {/* Messages Area */}
+        {/* Tutor Progress Banner */}
+        {tutorMode.active && (
+          <div
+            style={{
+              padding: "0.75rem var(--space-4)",
+              backgroundColor: "var(--bg-element)",
+              borderBottom: "1px solid var(--border-subtle)",
+              display: "flex",
+              alignItems: "center",
+              gap: "1rem",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "0.75rem",
+                  marginBottom: "0.25rem",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <span>
+                  Paso {tutorMode.currentStep} de {tutorMode.totalSteps || "?"}
+                </span>
+                <span>
+                  {tutorMode.totalSteps > 0
+                    ? Math.round(
+                        (tutorMode.currentStep / tutorMode.totalSteps) * 100
+                      )
+                    : 0}
+                  %
+                </span>
+              </div>
+              <div
+                style={{
+                  height: "6px",
+                  borderRadius: "3px",
+                  backgroundColor: "var(--border-subtle)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${
+                      tutorMode.totalSteps > 0
+                        ? (tutorMode.currentStep / tutorMode.totalSteps) * 100
+                        : 5
+                    }%`,
+                    backgroundColor: "var(--accent-primary)",
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={stopTutorMode}
+              style={{
+                fontSize: "0.75rem",
+                height: "auto",
+                padding: "4px 8px",
+              }}
+            >
+              Salir
+            </Button>
+          </div>
+        )}
+
+        {/* Use ChatInterface which is much cleaner than the manual one in ChatPage,
+            BUT ChatPage was manually implementing it.
+            Actually, let's verify if ChatInterface works. I will replace the manual implementation 
+            with ChatInterface ONLY IF I am sure. 
+            The file `ChatInterface.tsx` exists and looks correct.
+            However, the user asked to "UI de progreso del Modo Tutor en la página de chat".
+            Replacing the whole page logic might be risky if ChatInterface is not fully wired up same way.
+            I will stick to modifying the existing manual implementation in ChatPage for safety,
+            as I did for the banner above.
+         */}
+
+        {/* Messages Area - Existing Manual Implementation */}
         <div
           style={{
             flex: 1,
@@ -101,44 +193,51 @@ export default function ChatPage() {
               }}
             >
               <div>
-                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✨</div>
-                <h3>¿En qué puedo ayudarte hoy?</h3>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
+                  {tutorMode.active ? "📚" : "✨"}
+                </div>
+                <h3>
+                  {tutorMode.active
+                    ? "¡Listo para aprender!"
+                    : "¿En qué puedo ayudarte hoy?"}
+                </h3>
               </div>
 
-              {/* Quick Suggestions */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "1rem",
-                  width: "100%",
-                  maxWidth: "600px",
-                }}
-              >
-                {[
-                  "Explícame conceptos de React",
-                  "Escribe un poema sobre programación",
-                  "Ayúdame a debuggear un error",
-                  "Ideas para una app nueva",
-                ].map((s) => (
-                  <Card
-                    key={s}
-                    hoverable
-                    onClick={() => {
-                      setInput(s);
-                      // Optional: auto-send
-                    }}
-                    style={{
-                      padding: "1rem",
-                      fontSize: "0.9rem",
-                      cursor: "pointer",
-                      textAlign: "center",
-                    }}
-                  >
-                    "{s}"
-                  </Card>
-                ))}
-              </div>
+              {!tutorMode.active && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: "1rem",
+                    width: "100%",
+                    maxWidth: "600px",
+                  }}
+                >
+                  {[
+                    "Explícame conceptos de React",
+                    "Escribe un poema sobre programación",
+                    "Ayúdame a debuggear un error",
+                    "Ideas para una app nueva",
+                  ].map((s) => (
+                    <Card
+                      key={s}
+                      hoverable
+                      onClick={() => {
+                        setInput(s);
+                        // Optional: auto-send
+                      }}
+                      style={{
+                        padding: "1rem",
+                        fontSize: "0.9rem",
+                        cursor: "pointer",
+                        textAlign: "center",
+                      }}
+                    >
+                      "{s}"
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -169,7 +268,6 @@ export default function ChatPage() {
                     lineHeight: "1.5",
                   }}
                 >
-                  {/* Markdown or simple text - simple for now */}
                   <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
                 </div>
               </div>
@@ -245,7 +343,11 @@ export default function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Escribe algo para empezar..."
+              placeholder={
+                tutorMode.active
+                  ? "Escribe tu respuesta o duda..."
+                  : "Escribe algo para empezar..."
+              }
               disabled={isLoading}
               style={{
                 flex: 1,
@@ -264,7 +366,6 @@ export default function ChatPage() {
               }}
               rows={1}
               onInput={(e) => {
-                // Auto-expand
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = "auto";
                 target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
@@ -294,8 +395,9 @@ export default function ChatPage() {
               color: "var(--text-tertiary)",
             }}
           >
-            WADI puede cometer errores. Considera verificar la información
-            importante.
+            {tutorMode.active
+              ? "Sugerencia: podés escribir ‘listo con este paso’ cuando quieras avanzar al siguiente."
+              : "WADI puede cometer errores. Considera verificar la información importante."}
           </div>
         </div>
       </div>

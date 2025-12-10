@@ -7,15 +7,14 @@ export const getUserPreferences = async (userId) => {
   // TODO: Conectar con DB real (tabla profiles o user_settings)
   console.log(`[Preferences] Fetching for user ${userId}`);
   return {
-    language: "auto", // 'en', 'es', 'pt', 'auto'
-    responseLength: "normal", // 'short', 'normal', 'long'
-    tone: "neutral", // 'casual', 'neutral', 'technical'
-    theme: "system", // 'dark', 'light', 'system'
+    idiomaPreferido: "auto", // 'es', 'en', 'auto'
+    longitudRespuesta: "normal", // 'breve', 'normal', 'detallada'
+    tono: "neutro", // 'casual', 'neutro', 'tecnico'
   };
 };
 
 export const saveUserPreferences = async (userId, newPrefs) => {
-  // TODO: Guardar en DB
+  // TODO: Guardar en DB cuando estemos listos
   console.log(`[Preferences] Saving for user ${userId}`, newPrefs);
   return { success: true, userId, updated: newPrefs };
 };

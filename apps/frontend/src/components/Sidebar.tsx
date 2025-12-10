@@ -7,13 +7,17 @@ import { Modal } from "./common/Modal";
 import { Input } from "./common/Input";
 import { Button } from "./common/Button";
 
+import { TutorSetupModal } from "./tutor/TutorSetupModal";
+
 export function Sidebar() {
   const location = useLocation();
   const { user, convertGuestToUser, signOut } = useAuthStore();
-  const { resetChat } = useChatStore();
+  const { resetChat, preferences, setPreferences } = useChatStore();
   const isAnonymous = user?.is_anonymous;
 
   const [showRegister, setShowRegister] = useState(false);
+  const [showStyleModal, setShowStyleModal] = useState(false);
+  const [showTutorModal, setShowTutorModal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -132,6 +136,28 @@ export function Sidebar() {
             Punto de Control
           </Link>
         ))}
+
+        <div
+          style={{
+            margin: "var(--space-3) 0",
+            borderTop: "1px solid var(--border-subtle)",
+          }}
+        />
+
+        <Button
+          variant="ghost"
+          style={{ justifyContent: "flex-start", gap: "var(--space-2)" }}
+          onClick={() => setShowStyleModal(true)}
+        >
+          ⚙️ Ajustar estilo de WADI
+        </Button>
+        <Button
+          variant="ghost"
+          style={{ justifyContent: "flex-start", gap: "var(--space-2)" }}
+          onClick={() => setShowTutorModal(true)}
+        >
+          📚 Modo Tutor
+        </Button>
       </nav>
 
       {/* Footer / Profile */}
@@ -290,6 +316,114 @@ export function Sidebar() {
           </div>
         </form>
       </Modal>
+
+      {/* Style Modal */}
+      <Modal
+        isOpen={showStyleModal}
+        onClose={() => setShowStyleModal(false)}
+        title="Ajustar Estilo de WADI"
+      >
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+        >
+          <div>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.9rem",
+              }}
+            >
+              Tono de respuesta
+            </label>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              {(["neutro", "casual", "tecnico"] as const).map((t) => (
+                <Button
+                  key={t}
+                  variant={preferences.tone === t ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setPreferences({ tone: t })}
+                  style={{ textTransform: "capitalize" }}
+                >
+                  {t}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.9rem",
+              }}
+            >
+              Longitud
+            </label>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              {(["corta", "media", "larga"] as const).map((l) => (
+                <Button
+                  key={l}
+                  variant={preferences.length === l ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setPreferences({ length: l })}
+                  style={{ textTransform: "capitalize" }}
+                >
+                  {l}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.9rem",
+              }}
+            >
+              Idioma
+            </label>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              {(
+                [
+                  { val: "auto", label: "Auto" },
+                  { val: "es", label: "Español" },
+                  { val: "en", label: "English" },
+                ] as const
+              ).map((lang) => (
+                <Button
+                  key={lang.val}
+                  variant={
+                    preferences.language === lang.val ? "primary" : "outline"
+                  }
+                  size="sm"
+                  onClick={() => setPreferences({ language: lang.val })}
+                >
+                  {lang.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: "1rem",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button onClick={() => setShowStyleModal(false)}>Listo</Button>
+          </div>
+        </div>
+      </Modal>
+
+      <TutorSetupModal
+        isOpen={showTutorModal}
+        onClose={() => setShowTutorModal(false)}
+      />
     </aside>
   );
 }

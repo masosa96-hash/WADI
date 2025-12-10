@@ -29,6 +29,16 @@ export const toolRegistry = {
       console.log("[Tool] Simulating scenario:", scenario);
       return { outcome: "positive", confidence: 0.85 };
     },
+    manageCampaign: async (action, campaignId) => {
+      console.log(`[Tool] Managing campaign ${campaignId}: ${action}`);
+      return { success: true, newStatus: "active" };
+    },
+  },
+  projects: {
+    manageProject: async (action, projectId) => {
+      console.log(`[Tool] Managing project ${projectId}: ${action}`);
+      return { success: true, tasksUpdated: 0 };
+    },
   },
   database: {
     connect: async (connectionString) => {

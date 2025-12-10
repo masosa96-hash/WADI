@@ -26,11 +26,15 @@ class Project {
   }
 }
 
-export const createProject = async (name) => {
-  console.log("[Project] Creating project:", name);
+export const createProjectDraft = async (name) => {
+  console.log("[Project] Creating project draft:", name);
   return new Project(name);
 };
 
-export const listProjects = async () => {
-  return []; // Placeholder
+export const listExampleTasks = async () => {
+  return [
+    new Task("Definir alcance del MVP", "todo"),
+    new Task("Configurar repo y CI/CD", "in-progress"),
+    new Task("Diseñar esquema de base de datos", "todo"),
+  ];
 };
