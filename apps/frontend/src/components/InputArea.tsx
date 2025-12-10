@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { KeyboardEvent } from "react";
-import { useChatStore } from "../store/chatStore";
 
 interface InputAreaProps {
   onSend: (text: string) => void;
@@ -15,7 +14,6 @@ export function InputArea({
   placeholder,
   suggestions,
 }: InputAreaProps) {
-  const { preferences, setPreferences } = useChatStore();
   const [text, setText] = useState("");
 
   const handleSend = () => {
@@ -152,66 +150,6 @@ export function InputArea({
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
         </button>
-      </div>
-
-      {/* Controls Bar */}
-      <div
-        style={{
-          display: "flex",
-          gap: "var(--space-3)",
-          alignItems: "center",
-          justifyContent: "flex-end", // Align right or center? Prompt doesn't say. Let's start left or center.
-          marginTop: "var(--space-1)",
-        }}
-      >
-        <select
-          value={preferences.tone}
-          onChange={(e) => setPreferences({ tone: e.target.value as any })}
-          style={{
-            fontSize: "0.75rem",
-            padding: "4px 8px",
-            borderRadius: "6px",
-            border: "1px solid var(--border-subtle)",
-            backgroundColor: "var(--bg-element)",
-            color: "var(--text-secondary)",
-          }}
-        >
-          <option value="neutro">Neutro</option>
-          <option value="casual">Casual</option>
-          <option value="tecnico">Técnico</option>
-        </select>
-        <select
-          value={preferences.length}
-          onChange={(e) => setPreferences({ length: e.target.value as any })}
-          style={{
-            fontSize: "0.75rem",
-            padding: "4px 8px",
-            borderRadius: "6px",
-            border: "1px solid var(--border-subtle)",
-            backgroundColor: "var(--bg-element)",
-            color: "var(--text-secondary)",
-          }}
-        >
-          <option value="corta">Corta</option>
-          <option value="media">Media</option>
-          <option value="larga">Larga</option>
-        </select>
-        <select
-          value={preferences.language}
-          onChange={(e) => setPreferences({ language: e.target.value as any })}
-          style={{
-            fontSize: "0.75rem",
-            padding: "4px 8px",
-            borderRadius: "6px",
-            border: "1px solid var(--border-subtle)",
-            backgroundColor: "var(--bg-element)",
-            color: "var(--text-secondary)",
-          }}
-        >
-          <option value="auto">Auto (Idioma)</option>
-          <option value="es">Español</option>
-          <option value="en">English</option>
-        </select>
       </div>
 
       <small style={{ textAlign: "center", opacity: 0.5, fontSize: "0.7rem" }}>

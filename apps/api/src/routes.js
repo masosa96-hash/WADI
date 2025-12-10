@@ -1,17 +1,36 @@
 import { Router } from "express";
 import { openai, AI_MODEL } from "./openai.js";
-import { WADI_SYSTEM_PROMPT } from "./wadi-brain.js";
+import { WADI_SYSTEM_PROMPT, generateSystemPrompt } from "./wadi-brain.js";
 
 const router = Router();
 
 router.post("/chat", async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, preferences, tutorMode, mode, tone } = req.body;
+
+    // Determine Mode and Tone
+    // Prioritize explicit top-level fields, fallback to preferences/tutorMode if needed
+    // However, frontend will likely send them in top-level or preferences.
+    // Let's assume frontend sends: { message, mode, tone, ... } OR uses preferences.
+    // The previous frontend code sent {...preferences}, so we might receive `tone` directly.
+    // But `mode` is new.
+
+    // Effective Mode:
+    // If tutorMode.active is true, force "tutor" unless "mode" is explicitly something else?
+    // Actually, user said: "mode = tutor activates tutor instructions".
+    // So if tutorMode.active is true, we should probably default mode to 'tutor'.
+    // But let's rely on the `mode` field passed from frontend which we will implement next.
+    // Fallback to 'general' if missing.
+
+    const safeMode = mode || (tutorMode?.active ? "tutor" : "general");
+    const safeTone = tone || preferences?.tone || "explanatory";
+
+    const systemPrompt = generateSystemPrompt(safeMode, safeTone);
 
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
       messages: [
-        { role: "system", content: WADI_SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: message },
       ],
     });

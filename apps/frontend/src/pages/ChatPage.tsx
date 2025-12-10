@@ -13,6 +13,8 @@ export default function ChatPage() {
     resetChat,
     tutorMode,
     stopTutorMode,
+    preferences,
+    setPreferences,
   } = useChatStore();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -60,29 +62,126 @@ export default function ChatPage() {
           style={{
             padding: "var(--space-4)",
             borderBottom: "1px solid var(--border-subtle)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
           }}
         >
-          <div>
-            <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>
-              {tutorMode.active ? "🎓 Modo Tutor" : "Nueva conversación"}
-            </h2>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-              {tutorMode.active
-                ? `${tutorMode.topic} (${tutorMode.level})`
-                : "WADI AI Assistant"}
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={resetChat}
-            title="Borrar chat"
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "1rem",
+            }}
           >
-            🗑️
-          </Button>
+            <div>
+              <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>
+                {tutorMode.active ? "🎓 Modo Tutor" : "Nueva conversación"}
+              </h2>
+              <p
+                style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}
+              >
+                {tutorMode.active
+                  ? `${tutorMode.topic} (${tutorMode.level})`
+                  : "WADI AI Assistant"}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetChat}
+              title="Borrar chat"
+            >
+              🗑️
+            </Button>
+          </div>
+
+          {/* Mode & Tone Selectors */}
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            {/* Mode Selector */}
+            <div
+              style={{
+                display: "flex",
+                gap: "0.25rem",
+                backgroundColor: "var(--bg-element)",
+                padding: "0.25rem",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--border-subtle)",
+              }}
+            >
+              {(
+                [
+                  { id: "general", label: "General" },
+                  { id: "tech", label: "Tech" },
+                  { id: "biz", label: "Negocios" },
+                  { id: "tutor", label: "Tutor" },
+                ] as const
+              ).map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    setPreferences({ mode: m.id });
+                    // If user manually clicks Tutor, do we start the flow?
+                    // Maybe we assume they just want the persona for now.
+                    // Or we could trigger the modal if they switch TO tutor?
+                    // For now, simpler: just set the mode.
+                  }}
+                  style={{
+                    fontSize: "0.75rem",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    border: "none",
+                    cursor: "pointer",
+                    backgroundColor:
+                      preferences.mode === m.id
+                        ? "var(--bg-panel)"
+                        : "transparent",
+                    color:
+                      preferences.mode === m.id
+                        ? "var(--text-primary)"
+                        : "var(--text-tertiary)",
+                    fontWeight: preferences.mode === m.id ? 600 : 400,
+                    boxShadow:
+                      preferences.mode === m.id ? "var(--shadow-sm)" : "none",
+                  }}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tone Selector */}
+            <select
+              value={preferences.tone}
+              onChange={(e) =>
+                setPreferences({
+                  tone: e.target.value as
+                    | "direct"
+                    | "explanatory"
+                    | "step_by_step",
+                })
+              }
+              style={{
+                fontSize: "0.8rem",
+                padding: "4px 8px",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--border-subtle)",
+                backgroundColor: "var(--bg-element)",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                outline: "none",
+              }}
+            >
+              <option value="explanatory">Explicado (Normal)</option>
+              <option value="direct">Ultra Directo</option>
+              <option value="step_by_step">Paso a paso</option>
+            </select>
+          </div>
         </header>
 
         {/* Tutor Progress Banner */}

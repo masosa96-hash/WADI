@@ -8,8 +8,8 @@ interface Message {
 }
 
 interface ChatPreferences {
-  tone: "neutro" | "casual" | "tecnico";
-  length: "corta" | "media" | "larga";
+  mode: "general" | "tech" | "biz" | "tutor";
+  tone: "direct" | "explanatory" | "step_by_step";
   language: "auto" | "es" | "en";
 }
 
@@ -59,8 +59,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isLoading: false,
   error: null,
   preferences: {
-    tone: "neutro",
-    length: "media",
+    mode: "general",
+    tone: "explanatory",
     language: "auto",
   },
   tutorMode: { ...INITIAL_TUTOR_STATE },
@@ -76,7 +76,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setPreferences: (prefs) =>
     set((state) => ({ preferences: { ...state.preferences, ...prefs } })),
 
-  stopTutorMode: () => set({ tutorMode: { ...INITIAL_TUTOR_STATE } }),
+  stopTutorMode: () =>
+    set((state) => ({
+      tutorMode: { ...INITIAL_TUTOR_STATE },
+      preferences: { ...state.preferences, mode: "general" },
+    })),
 
   updateTutorProgress: (current, total) =>
     set((state) => ({
@@ -89,7 +93,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   startTutorConversation: async ({ topic, level, targetTime }) => {
     // 1. Set Local State
-    set(() => ({
+    set((state) => ({
       tutorMode: {
         active: true,
         topic,
@@ -98,9 +102,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         currentStep: 1,
         totalSteps: 1, // Will update when backend replies
       },
-      // Reset chat for clean slate or keep? User request implies "Start Tutor Mode" prompts the system.
-      // Usually better to clear or start fresh context, but let's keep messages if they want context.
-      // If we want a fresh start we could call resetChat() here. Let's assume we want a fresh start for a new specific mode.
+      preferences: { ...state.preferences, mode: "tutor" },
     }));
 
     // 2. Send System Prompt via sendMessage
