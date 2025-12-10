@@ -19,7 +19,10 @@ export const requestLogger = (req, res, next) => {
       path: req.originalUrl,
       status: res.statusCode,
       latency: duration,
-      userId: req.query.user_id || req.body.user_id || "anonymous", // Best effort
+      userId:
+        (req.query && req.query.user_id) ||
+        (req.body && req.body.user_id) ||
+        "anonymous", // Best effort
       userAgent: req.get("user-agent"),
     });
   });
