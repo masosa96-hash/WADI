@@ -4,15 +4,12 @@ import Login from "./pages/Login";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import ChatPage from "./pages/ChatPage";
+import LandingPage from "./pages/LandingPage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <AuthLoader>
-        <Projects />
-      </AuthLoader>
-    ),
+    element: <LandingPage />,
   },
   {
     path: "/login",

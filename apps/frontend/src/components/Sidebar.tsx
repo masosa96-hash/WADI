@@ -100,6 +100,28 @@ export function Sidebar() {
           overflowY: "auto",
         }}
       >
+        <Link
+          to="/"
+          style={{
+            padding: "var(--space-2) var(--space-3)",
+            borderRadius: "var(--radius-md)",
+            backgroundColor: isActive("/")
+              ? "var(--bg-element)"
+              : "transparent",
+            color: isActive("/")
+              ? "var(--text-primary)"
+              : "var(--text-secondary)",
+            transition: "background-color 0.2s",
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--space-2)",
+            textDecoration: "none",
+            marginBottom: "var(--space-2)",
+          }}
+        >
+          <span>🏠</span> Ir a inicio
+        </Link>
+
         <div
           style={{
             fontSize: "0.75rem",
