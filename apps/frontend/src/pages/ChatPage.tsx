@@ -50,10 +50,6 @@ export default function ChatPage() {
     }
   };
 
-  const handleSuggestionClick = async (text: string) => {
-    await sendMessage(text);
-  };
-
   return (
     <Layout>
       <div
@@ -305,15 +301,15 @@ export default function ChatPage() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                height: "100%",
-                gap: "3rem",
+                minHeight: "100%", // changed from height to minHeight for safety
+                gap: "2rem",
                 marginTop: "-2rem",
               }}
             >
               <div style={{ textAlign: "center" }}>
                 <h3
                   style={{
-                    fontSize: "var(--text-2xl)",
+                    fontSize: "var(--text-3xl)", // Slightly larger
                     fontWeight: 800,
                     marginBottom: "0.5rem",
                     background: "var(--grad-main)",
@@ -323,33 +319,88 @@ export default function ChatPage() {
                 >
                   {tutorMode.active
                     ? "Modo Tutor Activado"
-                    : "¿Qué construimos hoy?"}
+                    : "¿Con qué querés que te ayude hoy?"}
                 </h3>
+                {!tutorMode.active && (
+                  <p
+                    style={{
+                      fontSize: "var(--text-base)",
+                      color: "var(--color-text-soft)",
+                      margin: 0,
+                    }}
+                  >
+                    Elegí una categoría o escribí directamente abajo.
+                  </p>
+                )}
               </div>
 
               {!tutorMode.active && (
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
                     gap: "1rem",
                     width: "100%",
-                    maxWidth: "700px",
+                    maxWidth: "900px", // Increased width for 2 columns
                   }}
                 >
                   {[
-                    "Explícame un concepto técnico.",
-                    "Ayúdame a planear mi negocio.",
-                    "Debuggea este error de código.",
-                    "Crea un plan de aprendizaje.",
-                  ].map((s) => (
+                    {
+                      title: "Aprendizaje & estudio",
+                      desc: "Explicaciones simples, resúmenes y planes para aprender algo.",
+                      prompt:
+                        "Quiero aprender algo y necesito que me armes un plan paso a paso. Te cuento: ",
+                    },
+                    {
+                      title: "Código & debugging",
+                      desc: "Ayuda con código, errores, arquitectura o buenas prácticas.",
+                      prompt:
+                        "Tengo un problema con código / un error y necesito ayuda para debuggear. Te cuento: ",
+                    },
+                    {
+                      title: "Negocios & dinero",
+                      desc: "Ideas de negocio, validación, precios, ventas y marketing.",
+                      prompt:
+                        "Quiero trabajar una idea de negocio o mejorar ingresos. Te cuento mi contexto: ",
+                    },
+                    {
+                      title: "Creatividad & contenido",
+                      desc: "Textos, ideas de posts, guiones, branding y contenido creativo.",
+                      prompt:
+                        "Necesito ideas y ayuda creativa para contenido. Esto es lo que quiero hacer: ",
+                    },
+                    {
+                      title: "Productividad & organización",
+                      desc: "Ordenar tareas, proyectos, hábitos y sistemas para tu día a día.",
+                      prompt:
+                        "Estoy desordenado y necesito ayuda para ordenar mis proyectos y tareas. Te cuento: ",
+                    },
+                    {
+                      title: "Soporte técnico & dispositivos",
+                      desc: "Problemas con PC, consola, internet u otros dispositivos.",
+                      prompt:
+                        "Tengo un problema técnico con PC / consola / internet. Lo que está pasando es: ",
+                    },
+                  ].map((item) => (
                     <Card
-                      key={s}
+                      key={item.title}
                       hoverable
-                      onClick={() => handleSuggestionClick(s)}
+                      onClick={() => {
+                        setInput(item.prompt);
+                        const textarea = document.querySelector(
+                          'textarea[name="chat-input"]'
+                        ) as HTMLTextAreaElement;
+                        if (textarea) {
+                          textarea.focus();
+                          // Adjust height for the new text
+                          setTimeout(() => {
+                            textarea.style.height = "auto";
+                            textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+                          }, 0);
+                        }
+                      }}
                       style={{
                         padding: "1.25rem",
-                        fontSize: "var(--text-sm)",
                         cursor: "pointer",
                         border: "1px solid var(--color-border)",
                         background: "rgba(255,255,255,0.8)",
@@ -358,9 +409,21 @@ export default function ChatPage() {
                         boxShadow: "var(--shadow-sm)",
                         transition: "all 0.2s",
                         color: "var(--color-text-main)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.5rem",
                       }}
                     >
-                      <span style={{ marginRight: "0.5rem" }}>👉</span> {s}
+                      <strong style={{ fontSize: "1rem" }}>{item.title}</strong>
+                      <span
+                        style={{
+                          fontSize: "0.85rem",
+                          color: "var(--color-text-soft)",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {item.desc}
+                      </span>
                     </Card>
                   ))}
                 </div>
@@ -465,7 +528,7 @@ export default function ChatPage() {
                 placeholder={
                   tutorMode.active
                     ? "Escribe tu respuesta o duda..."
-                    : "Empezá a escribir..."
+                    : "Contame qué tenés en la cabeza..."
                 }
                 disabled={isLoading}
                 rows={1}
@@ -535,13 +598,31 @@ export default function ChatPage() {
             style={{
               textAlign: "center",
               marginTop: "0.75rem",
-              fontSize: "var(--text-xs)",
-              color: "var(--text-tertiary)",
+              fontSize: "0.8rem",
+              color: "var(--color-text-soft)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.25rem",
             }}
           >
-            {tutorMode.active
-              ? "💡 Tip: Escribí 'listo' o 'siguiente' para avanzar."
-              : "WADI AI | Agentic Workspace v3.0"}
+            {tutorMode.active ? (
+              <span>💡 Tip: Escribí 'listo' o 'siguiente' para avanzar.</span>
+            ) : (
+              <>
+                <span>
+                  WADI puede equivocarse. Usalo como copiloto, no como verdad
+                  absoluta.
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    opacity: 0.8,
+                  }}
+                >
+                  Tip: Enter para enviar · Shift+Enter para nueva línea.
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
