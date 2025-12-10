@@ -8,7 +8,6 @@ export default function ChatPage() {
   const {
     messages,
     isLoading,
-    error,
     sendMessage,
     resetChat,
     tutorMode,
@@ -32,7 +31,6 @@ export default function ChatPage() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    // Logic to send
     const text = input;
     setInput("");
     await sendMessage(text);
@@ -45,6 +43,10 @@ export default function ChatPage() {
     }
   };
 
+  const handleSuggestionClick = async (text: string) => {
+    await sendMessage(text);
+  };
+
   return (
     <Layout>
       <div
@@ -52,16 +54,22 @@ export default function ChatPage() {
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          maxWidth: "900px",
+          maxWidth: "1000px",
           margin: "0 auto",
           position: "relative",
+          backgroundColor: "var(--bg-app)", // Using new Y2K base
         }}
       >
-        {/* Header */}
+        {/* Header Y2K Style */}
         <header
           style={{
-            padding: "var(--space-4)",
+            padding: "1.5rem",
             borderBottom: "1px solid var(--border-subtle)",
+            background: "rgba(255,255,255,0.5)",
+            backdropFilter: "blur(10px)",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
           }}
         >
           <div
@@ -73,15 +81,21 @@ export default function ChatPage() {
             }}
           >
             <div>
-              <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>
-                {tutorMode.active ? "🎓 Modo Tutor" : "Nueva conversación"}
-              </h2>
-              <p
-                style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}
+              <h2
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: 700,
+                  background: "var(--grad-main)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
               >
+                {tutorMode.active ? "🎓 Modo Tutor" : "WADI Chat"}
+              </h2>
+              <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
                 {tutorMode.active
                   ? `${tutorMode.topic} (${tutorMode.level})`
-                  : "WADI AI Assistant"}
+                  : "Tu copiloto de ideas a planes."}
               </p>
             </div>
             <Button
@@ -89,12 +103,13 @@ export default function ChatPage() {
               size="sm"
               onClick={resetChat}
               title="Borrar chat"
+              style={{ color: "var(--text-tertiary)" }}
             >
-              🗑️
+              🗑️ Limpiar
             </Button>
           </div>
 
-          {/* Mode & Tone Selectors */}
+          {/* Controls: Tabs & Dropdown */}
           <div
             style={{
               display: "flex",
@@ -103,84 +118,97 @@ export default function ChatPage() {
               flexWrap: "wrap",
             }}
           >
-            {/* Mode Selector */}
+            {/* Mode/Topic Selector Tabs */}
             <div
               style={{
                 display: "flex",
                 gap: "0.25rem",
                 backgroundColor: "var(--bg-element)",
                 padding: "0.25rem",
-                borderRadius: "0.5rem",
+                borderRadius: "var(--radius-full)",
                 border: "1px solid var(--border-subtle)",
               }}
             >
               {(
                 [
                   { id: "general", label: "General" },
-                  { id: "tech", label: "Tech" },
+                  { id: "tech", label: "Tech / Dev" },
                   { id: "biz", label: "Negocios" },
-                  { id: "tutor", label: "Tutor" },
+                  { id: "tutor", label: "Tutor Mode" },
                 ] as const
-              ).map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => {
-                    setPreferences({ mode: m.id });
-                    // If user manually clicks Tutor, do we start the flow?
-                    // Maybe we assume they just want the persona for now.
-                    // Or we could trigger the modal if they switch TO tutor?
-                    // For now, simpler: just set the mode.
-                  }}
-                  style={{
-                    fontSize: "0.75rem",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    border: "none",
-                    cursor: "pointer",
-                    backgroundColor:
-                      preferences.mode === m.id
-                        ? "var(--bg-panel)"
-                        : "transparent",
-                    color:
-                      preferences.mode === m.id
+              ).map((m) => {
+                const isActive = preferences.activeTab === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setPreferences({ activeTab: m.id })}
+                    style={{
+                      fontSize: "0.85rem",
+                      padding: "6px 16px",
+                      borderRadius: "var(--radius-full)",
+                      border: "none",
+                      cursor: "pointer",
+                      background: isActive
                         ? "var(--text-primary)"
-                        : "var(--text-tertiary)",
-                    fontWeight: preferences.mode === m.id ? 600 : 400,
-                    boxShadow:
-                      preferences.mode === m.id ? "var(--shadow-sm)" : "none",
-                  }}
-                >
-                  {m.label}
-                </button>
-              ))}
+                        : "transparent",
+                      color: isActive
+                        ? "var(--bg-panel)"
+                        : "var(--text-secondary)",
+                      fontWeight: isActive ? 600 : 500,
+                      transition: "all 0.2s ease",
+                      boxShadow: isActive
+                        ? "0 2px 5px rgba(0,0,0,0.1)"
+                        : "none",
+                    }}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Tone Selector */}
-            <select
-              value={preferences.tone}
-              onChange={(e) =>
-                setPreferences({
-                  tone: e.target.value as
-                    | "direct"
-                    | "explanatory"
-                    | "step_by_step",
-                })
-              }
-              style={{
-                fontSize: "0.8rem",
-                padding: "4px 8px",
-                borderRadius: "0.5rem",
-                border: "1px solid var(--border-subtle)",
-                backgroundColor: "var(--bg-element)",
-                color: "var(--text-secondary)",
-                cursor: "pointer",
-                outline: "none",
-              }}
-            >
-              <option value="explanatory">Explicado (Normal)</option>
-              <option value="direct">Ultra Directo</option>
-              <option value="step_by_step">Paso a paso</option>
-            </select>
+            {/* Explain Level Dropdown */}
+            <div style={{ position: "relative" }}>
+              <select
+                value={preferences.explainLevel}
+                onChange={(e) =>
+                  setPreferences({
+                    explainLevel: e.target.value as
+                      | "short"
+                      | "normal"
+                      | "detailed",
+                  })
+                }
+                style={{
+                  fontSize: "0.85rem",
+                  padding: "6px 12px 6px 30px", // space for icon
+                  borderRadius: "var(--radius-lg)",
+                  border: "1px solid var(--border-subtle)",
+                  backgroundColor: "var(--bg-panel)",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  outline: "none",
+                  appearance: "none", // Reset for custom arrow if needed, mostly for style
+                  minWidth: "140px",
+                }}
+              >
+                <option value="short">Corto (Resumen)</option>
+                <option value="normal">Explicado (Normal)</option>
+                <option value="detailed">Detallado (Paso a paso)</option>
+              </select>
+              <span
+                style={{
+                  position: "absolute",
+                  left: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: "0.8rem",
+                  pointerEvents: "none",
+                }}
+              >
+                🎚️
+              </span>
+            </div>
           </div>
         </header>
 
@@ -188,8 +216,8 @@ export default function ChatPage() {
         {tutorMode.active && (
           <div
             style={{
-              padding: "0.75rem var(--space-4)",
-              backgroundColor: "var(--bg-element)",
+              padding: "0.75rem 1.5rem",
+              background: "linear-gradient(90deg, #f0f0f0 0%, #ffffff 100%)",
               borderBottom: "1px solid var(--border-subtle)",
               display: "flex",
               alignItems: "center",
@@ -201,8 +229,9 @@ export default function ChatPage() {
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  fontSize: "0.75rem",
+                  fontSize: "0.8rem",
                   marginBottom: "0.25rem",
+                  fontWeight: 600,
                   color: "var(--text-secondary)",
                 }}
               >
@@ -220,64 +249,40 @@ export default function ChatPage() {
               </div>
               <div
                 style={{
-                  height: "6px",
-                  borderRadius: "3px",
-                  backgroundColor: "var(--border-subtle)",
+                  height: "8px",
+                  borderRadius: "4px",
+                  backgroundColor: "#e0e0e0",
                   overflow: "hidden",
                 }}
               >
                 <div
                   style={{
                     height: "100%",
-                    width: `${
-                      tutorMode.totalSteps > 0
-                        ? (tutorMode.currentStep / tutorMode.totalSteps) * 100
-                        : 5
-                    }%`,
-                    backgroundColor: "var(--accent-primary)",
-                    transition: "width 0.3s ease",
+                    width: `${tutorMode.totalSteps > 0 ? (tutorMode.currentStep / tutorMode.totalSteps) * 100 : 5}%`,
+                    background: "var(--grad-secondary)",
+                    transition: "width 0.4s ease",
                   }}
                 />
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={stopTutorMode}
-              style={{
-                fontSize: "0.75rem",
-                height: "auto",
-                padding: "4px 8px",
-              }}
-            >
+            <Button variant="outline" size="sm" onClick={stopTutorMode}>
               Salir
             </Button>
           </div>
         )}
 
-        {/* Use ChatInterface which is much cleaner than the manual one in ChatPage,
-            BUT ChatPage was manually implementing it.
-            Actually, let's verify if ChatInterface works. I will replace the manual implementation 
-            with ChatInterface ONLY IF I am sure. 
-            The file `ChatInterface.tsx` exists and looks correct.
-            However, the user asked to "UI de progreso del Modo Tutor en la página de chat".
-            Replacing the whole page logic might be risky if ChatInterface is not fully wired up same way.
-            I will stick to modifying the existing manual implementation in ChatPage for safety,
-            as I did for the banner above.
-         */}
-
-        {/* Messages Area - Existing Manual Implementation */}
+        {/* Messages */}
         <div
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: "var(--space-4)",
+            padding: "2rem",
             display: "flex",
             flexDirection: "column",
-            gap: "var(--space-4)",
-            backgroundColor: "var(--bg-app)",
+            gap: "1.5rem",
           }}
         >
+          {/* Empty State */}
           {messages.length === 0 && (
             <div
               style={{
@@ -286,19 +291,24 @@ export default function ChatPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 height: "100%",
-                opacity: 0.7,
-                textAlign: "center",
-                gap: "2rem",
+                gap: "3rem",
+                marginTop: "-2rem",
               }}
             >
-              <div>
-                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
-                  {tutorMode.active ? "📚" : "✨"}
-                </div>
-                <h3>
+              <div style={{ textAlign: "center" }}>
+                <h3
+                  style={{
+                    fontSize: "2rem",
+                    fontWeight: 800,
+                    marginBottom: "0.5rem",
+                    background: "var(--grad-main)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
                   {tutorMode.active
-                    ? "¡Listo para aprender!"
-                    : "¿En qué puedo ayudarte hoy?"}
+                    ? "Modo Tutor Activado"
+                    : "¿Qué construimos hoy?"}
                 </h3>
               </div>
 
@@ -306,33 +316,35 @@ export default function ChatPage() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gridTemplateColumns: "1fr 1fr",
                     gap: "1rem",
                     width: "100%",
-                    maxWidth: "600px",
+                    maxWidth: "700px",
                   }}
                 >
                   {[
-                    "Explícame conceptos de React",
-                    "Escribe un poema sobre programación",
-                    "Ayúdame a debuggear un error",
-                    "Ideas para una app nueva",
+                    "Explícame un concepto técnico como si tuviera 12 años.",
+                    "Ayúdame a bajar una idea de negocio a un plan.",
+                    "Ayúdame a debuggear un error de código.",
+                    "Armemos un plan de estudio sobre Python.",
                   ].map((s) => (
                     <Card
                       key={s}
                       hoverable
-                      onClick={() => {
-                        setInput(s);
-                        // Optional: auto-send
-                      }}
+                      onClick={() => handleSuggestionClick(s)}
                       style={{
-                        padding: "1rem",
-                        fontSize: "0.9rem",
+                        padding: "1.5rem",
+                        fontSize: "1rem",
                         cursor: "pointer",
-                        textAlign: "center",
+                        border: "1px solid var(--border-subtle)",
+                        background: "rgba(255,255,255,0.6)",
+                        backdropFilter: "blur(5px)",
+                        borderRadius: "16px",
+                        boxShadow: "0 4px 10px rgba(0,0,0,0.03)",
+                        transition: "transform 0.2s, box-shadow 0.2s",
                       }}
                     >
-                      "{s}"
+                      <span style={{ marginRight: "0.5rem" }}>👉</span> {s}
                     </Card>
                   ))}
                 </div>
@@ -340,6 +352,7 @@ export default function ChatPage() {
             </div>
           )}
 
+          {/* Bubbles */}
           {messages.map((msg) => {
             const isUser = msg.role === "user";
             return (
@@ -352,19 +365,23 @@ export default function ChatPage() {
               >
                 <div
                   style={{
-                    maxWidth: "70%",
-                    padding: "1rem",
-                    borderRadius: "1rem",
-                    borderTopRightRadius: isUser ? "0.2rem" : "1rem",
-                    borderTopLeftRadius: isUser ? "1rem" : "0.2rem",
-                    backgroundColor: isUser
-                      ? "var(--accent-primary)"
+                    maxWidth: "75%",
+                    padding: "1.25rem 1.5rem",
+                    borderRadius: "1.25rem",
+                    borderTopRightRadius: isUser ? "0.25rem" : "1.25rem",
+                    borderTopLeftRadius: isUser ? "1.25rem" : "0.25rem",
+                    background: isUser
+                      ? "var(--msg-user-bg)"
                       : "var(--bg-panel)",
                     color: isUser
-                      ? "var(--accent-text)"
+                      ? "var(--msg-user-text)"
                       : "var(--text-primary)",
-                    boxShadow: "var(--shadow-sm)",
-                    lineHeight: "1.5",
+                    boxShadow: isUser
+                      ? "0 5px 15px rgba(121, 40, 202, 0.2)"
+                      : "var(--shadow-sm)",
+                    lineHeight: "1.6",
+                    fontSize: "1.05rem",
+                    border: isUser ? "none" : "1px solid var(--border-subtle)",
                   }}
                 >
                   <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
@@ -377,42 +394,27 @@ export default function ChatPage() {
             <div style={{ display: "flex", justifyContent: "flex-start" }}>
               <div
                 style={{
-                  padding: "0.5rem 1rem",
-                  backgroundColor: "var(--bg-panel)",
-                  borderRadius: "1rem",
-                  fontSize: "0.85rem",
+                  padding: "0.75rem 1.5rem",
+                  background: "var(--bg-panel)",
+                  borderRadius: "2rem",
+                  fontSize: "0.9rem",
                   color: "var(--text-secondary)",
-                  fontStyle: "italic",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
+                <div
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    background: "var(--accent-primary)",
+                    borderRadius: "50%",
+                    animation: "pulse 1s infinite",
+                  }}
+                ></div>
                 WADI está pensando...
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div
-              style={{
-                width: "100%",
-                padding: "1rem",
-                backgroundColor: "#ffeaea",
-                color: "#d63031",
-                borderRadius: "var(--radius-md)",
-                textAlign: "center",
-                margin: "1rem 0",
-              }}
-            >
-              {error}
-              <div style={{ marginTop: "0.5rem" }}>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    sendMessage(messages[messages.length - 1]?.content || "")
-                  }
-                >
-                  Reintentar
-                </Button>
               </div>
             </div>
           )}
@@ -423,65 +425,87 @@ export default function ChatPage() {
         {/* Input Area */}
         <div
           style={{
-            padding: "var(--space-4)",
+            padding: "1.5rem",
+            background: "rgba(255,255,255,0.8)",
+            backdropFilter: "blur(20px)",
             borderTop: "1px solid var(--border-subtle)",
-            backgroundColor: "var(--bg-panel)",
           }}
         >
           <form
             onSubmit={handleSubmit}
             style={{
               display: "flex",
-              gap: "var(--space-2)",
-              maxWidth: "800px",
+              gap: "1rem",
+              maxWidth: "900px",
               margin: "0 auto",
               position: "relative",
+              alignItems: "flex-end",
             }}
           >
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                tutorMode.active
-                  ? "Escribe tu respuesta o duda..."
-                  : "Escribe algo para empezar..."
-              }
-              disabled={isLoading}
-              style={{
-                flex: 1,
-                padding: "1rem",
-                borderRadius: "var(--radius-lg)",
-                border: "1px solid var(--border-subtle)",
-                backgroundColor: "var(--bg-app)",
-                color: "var(--text-primary)",
-                resize: "none",
-                minHeight: "50px",
-                maxHeight: "200px",
-                fontFamily: "inherit",
-                fontSize: "1rem",
-                outline: "none",
-                boxShadow: "var(--shadow-sm)",
-              }}
-              rows={1}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-              }}
-            />
+            <div style={{ flex: 1, position: "relative" }}>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={
+                  tutorMode.active
+                    ? "Escribe tu respuesta o duda..."
+                    : "Escribe tu mensaje..."
+                }
+                disabled={isLoading}
+                rows={1}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                }}
+                style={{
+                  width: "100%",
+                  padding: "1rem 1.25rem",
+                  borderRadius: "1.5rem",
+                  border: "2px solid var(--border-subtle)",
+                  backgroundColor: "#fff",
+                  color: "var(--text-primary)",
+                  resize: "none",
+                  minHeight: "56px",
+                  maxHeight: "200px",
+                  fontSize: "1rem",
+                  outline: "none",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                  transition: "border-color 0.2s",
+                }}
+                onFocus={(e) =>
+                  (e.target.style.borderColor = "var(--border-focus)")
+                }
+                onBlur={(e) =>
+                  (e.target.style.borderColor = "var(--border-subtle)")
+                }
+              />
+            </div>
             <Button
               type="submit"
               disabled={isLoading || !input.trim()}
               style={{
-                height: "50px",
-                width: "50px",
+                height: "56px",
+                width: "56px",
                 borderRadius: "50%",
+                background: "var(--grad-secondary)", // Lime/Cyan gradient
+                color: "#000",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
+                boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+                border: "2px solid #fff",
+                fontSize: "1.2rem",
+                transition: "transform 0.1s",
               }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "scale(1.05)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
             >
               ➤
             </Button>
@@ -489,14 +513,14 @@ export default function ChatPage() {
           <div
             style={{
               textAlign: "center",
-              marginTop: "0.5rem",
-              fontSize: "0.75rem",
+              marginTop: "0.75rem",
+              fontSize: "0.8rem",
               color: "var(--text-tertiary)",
             }}
           >
             {tutorMode.active
-              ? "Sugerencia: podés escribir ‘listo con este paso’ cuando quieras avanzar al siguiente."
-              : "WADI puede cometer errores. Considera verificar la información importante."}
+              ? "💡 Tip: Escribí 'listo' o 'siguiente' para avanzar."
+              : "WADI AI | Agentic Workspace v3.0"}
           </div>
         </div>
       </div>

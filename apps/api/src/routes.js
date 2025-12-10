@@ -6,26 +6,17 @@ const router = Router();
 
 router.post("/chat", async (req, res) => {
   try {
-    const { message, preferences, tutorMode, mode, tone } = req.body;
+    const { message, mode, topic, explainLevel, tutorMode } = req.body;
 
-    // Determine Mode and Tone
-    // Prioritize explicit top-level fields, fallback to preferences/tutorMode if needed
-    // However, frontend will likely send them in top-level or preferences.
-    // Let's assume frontend sends: { message, mode, tone, ... } OR uses preferences.
-    // The previous frontend code sent {...preferences}, so we might receive `tone` directly.
-    // But `mode` is new.
+    // Default values if missing
+    const safeMode = mode || "normal";
+    const safeTopic = topic || "general";
+    const safeLevel = explainLevel || "normal";
 
-    // Effective Mode:
-    // If tutorMode.active is true, force "tutor" unless "mode" is explicitly something else?
-    // Actually, user said: "mode = tutor activates tutor instructions".
-    // So if tutorMode.active is true, we should probably default mode to 'tutor'.
-    // But let's rely on the `mode` field passed from frontend which we will implement next.
-    // Fallback to 'general' if missing.
+    const systemPrompt = generateSystemPrompt(safeMode, safeTopic, safeLevel);
 
-    const safeMode = mode || (tutorMode?.active ? "tutor" : "general");
-    const safeTone = tone || preferences?.tone || "explanatory";
-
-    const systemPrompt = generateSystemPrompt(safeMode, safeTone);
+    // Future: Use tutorMode currentStep logic here if we were implementing "Smart Tutor" backend state.
+    // For now, prompt instruction handles "Guia paso a paso".
 
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
@@ -35,7 +26,17 @@ router.post("/chat", async (req, res) => {
       ],
     });
 
-    res.json({ reply: completion.choices[0].message.content });
+    // Mock Tutor Meta for now (could be real in future)
+    let tutorMeta = null;
+    if (safeMode === "tutor" && tutorMode) {
+      // Simple increment logic mock
+      tutorMeta = {
+        currentStep: (tutorMode.currentStep || 0) + 0, // No increment logic yet, just echo
+        totalSteps: tutorMode.totalSteps || 5,
+      };
+    }
+
+    res.json({ reply: completion.choices[0].message.content, tutorMeta });
   } catch (e) {
     res.status(500).json({ error: String(e) });
   }

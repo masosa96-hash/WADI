@@ -51,9 +51,11 @@ export default function Projects() {
       <div
         style={{
           width: "100%",
-          maxWidth: "900px",
+          maxWidth: "1000px",
           margin: "0 auto",
-          padding: "var(--space-6) var(--space-4)",
+          padding: "2rem",
+          background: "var(--bg-app)",
+          minHeight: "100%",
         }}
       >
         {/* Header simple */}
@@ -61,34 +63,38 @@ export default function Projects() {
           style={{
             display: "flex",
             justifyContent: "flex-end",
-            marginBottom: "var(--space-8)",
+            marginBottom: "2rem",
           }}
         >
-          {/* User profile placeholder */}
+          {/* User profile placeholder if we wanted one, handled by Sidebar */}
         </header>
 
         {/* Hero Section */}
-        <div style={{ textAlign: "center", marginBottom: "var(--space-10)" }}>
+        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <div
             style={{
-              width: "64px",
-              height: "64px",
-              backgroundColor: "var(--bg-element)",
+              width: "72px",
+              height: "72px",
+              background: "var(--grad-secondary)",
               borderRadius: "50%",
-              margin: "0 auto var(--space-4)",
+              margin: "0 auto 1.5rem",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "2rem",
+              fontSize: "2.5rem",
+              boxShadow: "0 0 20px rgba(52, 211, 153, 0.4)",
             }}
           >
             🚀
           </div>
           <h1
             style={{
-              fontSize: "2rem",
-              fontWeight: 700,
-              marginBottom: "var(--space-2)",
+              fontSize: "2.5rem",
+              fontWeight: 800,
+              marginBottom: "0.5rem",
+              background: "var(--grad-main)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
             Punto de Control
@@ -102,9 +108,9 @@ export default function Projects() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "var(--space-4)",
-            marginBottom: "var(--space-10)",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "1.5rem",
+            marginBottom: "3rem",
           }}
         >
           {/* Card 1: New Project */}
@@ -114,26 +120,39 @@ export default function Projects() {
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "var(--space-2)",
+              gap: "1rem",
               alignItems: "flex-start",
               textAlign: "left",
+              padding: "2rem",
+              border: "1px solid var(--accent-primary)",
+              background: "rgba(124, 58, 237, 0.03)",
             }}
           >
-            <div style={{ color: "var(--accent-primary)", fontSize: "1.5rem" }}>
+            <div style={{ color: "var(--accent-primary)", fontSize: "2rem" }}>
               ✨
             </div>
-            <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-              Crear nuevo proyecto
-            </span>
-            <span
-              style={{
-                fontSize: "0.9rem",
-                color: "var(--text-tertiary)",
-                lineHeight: 1.4,
-              }}
-            >
-              Inicia una nueva sesión de trabajo desde cero.
-            </span>
+            <div>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "1.2rem",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                Crear nuevo proyecto
+              </span>
+              <span
+                style={{
+                  fontSize: "0.95rem",
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.5,
+                }}
+              >
+                Inicia una nueva sesión de trabajo desde cero.
+              </span>
+            </div>
           </Card>
 
           {/* Card 2: Explore */}
@@ -141,25 +160,35 @@ export default function Projects() {
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "var(--space-2)",
-              opacity: 0.7,
+              gap: "1rem",
+              opacity: 0.8,
+              padding: "2rem",
+              background: "#fff",
             }}
           >
-            <div style={{ color: "var(--success)", fontSize: "1.5rem" }}>
-              📚
+            <div style={{ color: "var(--success)", fontSize: "2rem" }}>📚</div>
+            <div>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "1.2rem",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                Explorar recursos
+              </span>
+              <span
+                style={{
+                  fontSize: "0.95rem",
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.5,
+                }}
+              >
+                Documentación y guías (Próximamente).
+              </span>
             </div>
-            <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-              Explorar recursos
-            </span>
-            <span
-              style={{
-                fontSize: "0.9rem",
-                color: "var(--text-tertiary)",
-                lineHeight: 1.4,
-              }}
-            >
-              Documentación y guías (Próximamente).
-            </span>
           </Card>
         </div>
 
@@ -167,26 +196,29 @@ export default function Projects() {
         <div>
           <h3
             style={{
-              fontSize: "1rem",
-              fontWeight: 600,
-              color: "var(--text-secondary)",
-              marginBottom: "var(--space-4)",
+              fontSize: "0.9rem",
+              fontWeight: 700,
+              color: "var(--text-tertiary)",
+              marginBottom: "1rem",
               textTransform: "uppercase",
-              letterSpacing: "1px",
+              letterSpacing: "1.5px",
+              paddingLeft: "0.5rem",
             }}
           >
             Recientes
           </h3>
 
           {loading && (
-            <p style={{ color: "var(--text-tertiary)" }}>Cargando...</p>
+            <p style={{ color: "var(--text-tertiary)", paddingLeft: "0.5rem" }}>
+              Cargando...
+            </p>
           )}
 
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "var(--space-2)",
+              gap: "1rem",
             }}
           >
             {projects.map((p) => (
@@ -198,25 +230,43 @@ export default function Projects() {
                 <Card
                   hoverable
                   style={{
-                    padding: "var(--space-3) var(--space-4)",
+                    padding: "1.25rem 1.5rem",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
+                    borderRadius: "1rem",
+                    border: "1px solid var(--border-subtle)",
+                    transition: "transform 0.2s, box-shadow 0.2s",
                   }}
                 >
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "var(--space-3)",
+                      gap: "1rem",
                     }}
                   >
-                    <span style={{ fontSize: "1.2rem" }}>📄</span>
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        background: "var(--bg-element)",
+                        borderRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "1.2rem",
+                      }}
+                    >
+                      📄
+                    </div>
                     <div>
                       <div
                         style={{
-                          fontWeight: 500,
+                          fontWeight: 600,
+                          fontSize: "1.05rem",
                           color: "var(--text-primary)",
+                          marginBottom: "0.2rem",
                         }}
                       >
                         {p.name}
@@ -235,8 +285,11 @@ export default function Projects() {
                   </div>
                   <span
                     style={{
-                      fontSize: "0.85rem",
+                      fontSize: "0.8rem",
                       color: "var(--text-tertiary)",
+                      background: "var(--bg-element)",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
                     }}
                   >
                     {new Date(p.created_at).toLocaleDateString()}
@@ -246,9 +299,19 @@ export default function Projects() {
             ))}
 
             {projects.length === 0 && !loading && (
-              <p style={{ color: "var(--text-tertiary)", fontStyle: "italic" }}>
-                No hay proyectos recientes. ¡Crea el primero arriba!
-              </p>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "3rem",
+                  background: "rgba(255,255,255,0.5)",
+                  borderRadius: "1rem",
+                  border: "1px dashed var(--border-subtle)",
+                }}
+              >
+                <p style={{ color: "var(--text-secondary)" }}>
+                  No hay proyectos recientes. ¡Crea el primero arriba!
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -264,7 +327,7 @@ export default function Projects() {
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "var(--space-3)",
+              gap: "1rem",
             }}
           >
             <Input
@@ -289,8 +352,8 @@ export default function Projects() {
               style={{
                 display: "flex",
                 justifyContent: "flex-end",
-                gap: "var(--space-2)",
-                marginTop: "var(--space-2)",
+                gap: "0.5rem",
+                marginTop: "1rem",
               }}
             >
               <Button
@@ -301,7 +364,7 @@ export default function Projects() {
                 Cancelar
               </Button>
               <Button type="submit" variant="primary">
-                Crear
+                Crear Proyecto
               </Button>
             </div>
           </form>

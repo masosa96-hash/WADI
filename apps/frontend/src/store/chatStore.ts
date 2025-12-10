@@ -8,8 +8,8 @@ interface Message {
 }
 
 interface ChatPreferences {
-  mode: "general" | "tech" | "biz" | "tutor";
-  tone: "direct" | "explanatory" | "step_by_step";
+  activeTab: "general" | "tech" | "biz" | "tutor";
+  explainLevel: "short" | "normal" | "detailed";
   language: "auto" | "es" | "en";
 }
 
@@ -59,8 +59,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isLoading: false,
   error: null,
   preferences: {
-    mode: "general",
-    tone: "explanatory",
+    activeTab: "general",
+    explainLevel: "normal",
     language: "auto",
   },
   tutorMode: { ...INITIAL_TUTOR_STATE },
@@ -71,6 +71,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       error: null,
       isLoading: false,
       tutorMode: { ...INITIAL_TUTOR_STATE },
+      preferences: {
+        activeTab: "general",
+        explainLevel: "normal",
+        language: "auto",
+      },
     }),
 
   setPreferences: (prefs) =>
@@ -79,7 +84,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   stopTutorMode: () =>
     set((state) => ({
       tutorMode: { ...INITIAL_TUTOR_STATE },
-      preferences: { ...state.preferences, mode: "general" },
+      preferences: { ...state.preferences, activeTab: "general" },
     })),
 
   updateTutorProgress: (current, total) =>
@@ -102,7 +107,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         currentStep: 1,
         totalSteps: 1, // Will update when backend replies
       },
-      preferences: { ...state.preferences, mode: "tutor" },
+      preferences: { ...state.preferences, activeTab: "tutor" },
     }));
 
     // 2. Send System Prompt via sendMessage
@@ -133,14 +138,24 @@ Adaptá tu estilo a un tutor interactivo.`;
 
     try {
       const { preferences, tutorMode } = get();
+
+      // Mapping for backend
+      // If tutorMode is active (via modal) OR tab is tutor, we are in tutor mode.
+      const isTutor = preferences.activeTab === "tutor" || tutorMode.active;
+      const modeMap = isTutor ? "tutor" : "normal";
+
+      const payload = {
+        message: text,
+        mode: modeMap,
+        topic: preferences.activeTab,
+        explainLevel: preferences.explainLevel,
+        tutorMode,
+      };
+
       const res = await fetch(`${API_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-          ...preferences,
-          tutorMode, // Sending the full state object
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {

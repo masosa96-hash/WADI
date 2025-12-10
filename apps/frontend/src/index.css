@@ -33,54 +33,70 @@
   --shadow-lg:
     0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
-  /* -- Color Palette (Default Dark) -- */
-  --bg-app: #18191a; /* Very dark grey, almost black */
-  --bg-panel: #242526; /* Slightly lighter for sidebars/panels */
-  --bg-element: #3a3b3c; /* Inputs, cards */
-  --bg-element-hover: #4e4f50;
+  /* -- Y2K Palette -- */
+  --y2k-fushia: #ff00ff;
+  --y2k-lime: #ccff00;
+  --y2k-cyan: #00ffff;
+  --y2k-purple: #7928ca;
 
-  --text-primary: #e4e6eb;
-  --text-secondary: #b0b3b8;
-  --text-tertiary: #888;
+  --grad-main: linear-gradient(
+    135deg,
+    var(--y2k-fushia) 0%,
+    var(--y2k-purple) 100%
+  );
+  --grad-secondary: linear-gradient(
+    135deg,
+    var(--y2k-cyan) 0%,
+    var(--y2k-lime) 100%
+  );
+  --grad-glass: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  --grad-dark-glass: linear-gradient(
+    180deg,
+    rgba(30, 30, 30, 0.8) 0%,
+    rgba(10, 10, 10, 0.6) 100%
+  );
 
-  --accent-primary: #4a90e2; /* Soft Blue */
-  --accent-primary-hover: #357abd;
+  /* -- Override Defaults with Y2K flair -- */
+  --bg-app: #f4f4f4; /* Light minimalist base to let gradients pop */
+  --bg-panel: #ffffff;
+  --bg-element: #f0f0f0;
+  --bg-element-hover: #e8e8e8;
+
+  --text-primary: #111111;
+  --text-secondary: #444444;
+  --text-tertiary: #888888;
+
+  --accent-primary: var(--y2k-fushia);
+  --accent-primary-hover: #e000e0;
   --accent-text: #ffffff;
 
-  --border-subtle: #3a3b3c;
-  --border-focus: #4a90e2;
+  --border-subtle: #dddddd;
+  --border-focus: var(--y2k-cyan);
 
-  --msg-user-bg: #4a90e2;
+  --msg-user-bg: var(--y2k-purple);
   --msg-user-text: #ffffff;
-  --msg-ai-bg: #3a3b3c;
-  --msg-ai-text: #e4e6eb;
+  --msg-ai-bg: #ffffff;
+  --msg-ai-text: #111111;
 
-  --success: #31a24c;
-  --error: #f02849;
-  --warning: #f5c344;
+  --shadow-y2k: 0 4px 0 rgba(0, 0, 0, 0.1); /* Chunky shadow */
 }
 
-[data-theme="light"] {
-  --bg-app: #f0f2f5;
-  --bg-panel: #ffffff;
-  --bg-element: #e4e6eb;
-  --bg-element-hover: #d8dadf;
+[data-theme="dark"] {
+  --bg-app: #101010;
+  --bg-panel: #1a1a1a;
+  --bg-element: #2a2a2a;
+  --bg-element-hover: #333333;
 
-  --text-primary: #050505;
-  --text-secondary: #65676b;
-  --text-tertiary: #8a8d91;
+  --text-primary: #f0f0f0;
+  --text-secondary: #aaaaaa;
 
-  --accent-primary: #1877f2;
-  --accent-primary-hover: #166fe5;
-  --accent-text: #ffffff;
-
-  --border-subtle: #ced0d4;
-  --border-focus: #1877f2;
-
-  --msg-user-bg: #1877f2;
-  --msg-user-text: #ffffff;
-  --msg-ai-bg: #e4e6eb;
-  --msg-ai-text: #050505;
+  --border-subtle: #333333;
+  --msg-ai-bg: #2a2a2a;
+  --msg-ai-text: #f0f0f0;
 }
 
 /* -- Reset & Base -- */

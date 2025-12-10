@@ -44,21 +44,41 @@ export function Sidebar() {
   return (
     <aside
       style={{
-        width: "260px",
+        width: "280px",
         height: "100vh",
-        backgroundColor: "var(--bg-panel)",
+        background: "var(--bg-panel)",
         borderRight: "1px solid var(--border-subtle)",
         display: "flex",
         flexDirection: "column",
-        padding: "var(--space-4)",
+        padding: "1.5rem",
+        backdropFilter: "blur(20px)",
       }}
     >
       {/* Brand */}
-      <div style={{ marginBottom: "var(--space-6)" }}>
-        <h2 style={{ fontSize: "1.25rem", color: "var(--accent-primary)" }}>
+      <div style={{ marginBottom: "2rem" }}>
+        <h2
+          style={{
+            fontSize: "1.8rem",
+            fontWeight: 900,
+            letterSpacing: "-0.5px",
+            background: "var(--grad-main)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            margin: 0,
+          }}
+        >
           WADI
         </h2>
-        <small>Agentic Workspace</small>
+        <small
+          style={{
+            fontSize: "0.8rem",
+            color: "var(--text-tertiary)",
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+          }}
+        >
+          Agentic Workspace
+        </small>
       </div>
 
       {/* New Chat & Search */}
@@ -67,7 +87,7 @@ export function Sidebar() {
           display: "flex",
           flexDirection: "column",
           gap: "var(--space-3)",
-          marginBottom: "var(--space-4)",
+          marginBottom: "2rem",
         }}
       >
         <Link
@@ -77,16 +97,22 @@ export function Sidebar() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: "var(--space-2)",
-            backgroundColor: "var(--accent-primary)",
-            color: "var(--accent-text)",
-            padding: "var(--space-2)",
-            borderRadius: "var(--radius-md)",
-            fontWeight: 500,
+            gap: "0.5rem",
+            background: "var(--grad-secondary)",
+            color: "#000",
+            padding: "0.8rem",
+            borderRadius: "var(--radius-lg)",
+            fontWeight: 700,
             textDecoration: "none",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+            transition: "transform 0.2s",
           }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.transform = "scale(1.02)")
+          }
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <span>+</span> Nueva Conversación
+          <span style={{ fontSize: "1.2rem" }}>+</span> Nueva Conversación
         </Link>
       </div>
 
@@ -96,81 +122,86 @@ export function Sidebar() {
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          gap: "var(--space-1)",
+          gap: "0.5rem",
           overflowY: "auto",
         }}
       >
         <Link
           to="/"
           style={{
-            padding: "var(--space-2) var(--space-3)",
+            padding: "0.75rem 1rem",
             borderRadius: "var(--radius-md)",
-            backgroundColor: isActive("/")
-              ? "var(--bg-element)"
-              : "transparent",
+            backgroundColor: isActive("/") ? "rgba(0,0,0,0.05)" : "transparent",
             color: isActive("/")
               ? "var(--text-primary)"
               : "var(--text-secondary)",
-            transition: "background-color 0.2s",
+            transition: "all 0.2s",
             display: "flex",
             alignItems: "center",
-            gap: "var(--space-2)",
+            gap: "0.75rem",
             textDecoration: "none",
-            marginBottom: "var(--space-2)",
+            fontWeight: isActive("/") ? 600 : 400,
+            border: isActive("/")
+              ? "1px solid var(--border-subtle)"
+              : "1px solid transparent",
           }}
         >
-          <span>🏠</span> Ir a inicio
+          <span>🏠</span> Home
         </Link>
-
-        <div
-          style={{
-            fontSize: "0.75rem",
-            textTransform: "uppercase",
-            color: "var(--text-tertiary)",
-            marginBottom: "var(--space-2)",
-            marginTop: "var(--space-2)",
-          }}
-        >
-          Historial
-        </div>
 
         {navItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
             style={{
-              padding: "var(--space-2) var(--space-3)",
+              padding: "0.75rem 1rem",
               borderRadius: "var(--radius-md)",
               backgroundColor: isActive(item.path)
-                ? "var(--bg-element)"
+                ? "rgba(0,0,0,0.05)"
                 : "transparent",
               color: isActive(item.path)
                 ? "var(--text-primary)"
                 : "var(--text-secondary)",
-              transition: "background-color 0.2s",
+              transition: "all 0.2s",
               display: "flex",
               alignItems: "center",
-              gap: "var(--space-2)",
+              gap: "0.75rem",
               textDecoration: "none",
+              fontWeight: isActive(item.path) ? 600 : 400,
+              border: isActive(item.path)
+                ? "1px solid var(--border-subtle)"
+                : "1px solid transparent",
             }}
           >
-            Punto de Control
+            <span>🚀</span> {item.label}
           </Link>
         ))}
 
         <div
           style={{
-            margin: "var(--space-3) 0",
-            borderTop: "1px solid var(--border-subtle)",
+            fontSize: "0.7rem",
+            textTransform: "uppercase",
+            color: "var(--text-tertiary)",
+            marginBottom: "0.5rem",
+            marginTop: "1.5rem",
+            letterSpacing: "1px",
+            paddingLeft: "1rem",
           }}
-        />
+        >
+          Herramientas
+        </div>
 
         <Button
           variant="ghost"
-          style={{ justifyContent: "flex-start", gap: "var(--space-2)" }}
+          style={{
+            justifyContent: "flex-start",
+            gap: "0.75rem",
+            color: "var(--text-secondary)",
+            fontWeight: 400,
+          }}
           onClick={() => setShowTutorModal(true)}
         >
-          📚 Modo Tutor
+          <span>📚</span> Modo Tutor
         </Button>
       </nav>
 
@@ -179,10 +210,10 @@ export function Sidebar() {
         style={{
           marginTop: "auto",
           borderTop: "1px solid var(--border-subtle)",
-          paddingTop: "var(--space-4)",
+          paddingTop: "1.5rem",
           display: "flex",
           flexDirection: "column",
-          gap: "var(--space-4)",
+          gap: "1rem",
         }}
       >
         <ThemeToggle />
@@ -190,28 +221,30 @@ export function Sidebar() {
         {isAnonymous ? (
           <div
             style={{
-              backgroundColor: "var(--bg-element)",
-              padding: "var(--space-3)",
-              borderRadius: "var(--radius-md)",
+              backgroundColor: "rgba(255,255,255,0.5)",
+              padding: "1rem",
+              borderRadius: "1rem",
+              border: "1px solid var(--border-subtle)",
             }}
           >
             <p
               style={{
-                fontSize: "0.85rem",
+                fontSize: "0.8rem",
                 color: "var(--text-secondary)",
-                marginBottom: "var(--space-2)",
+                marginBottom: "0.75rem",
+                lineHeight: "1.4",
               }}
             >
-              Modo Invitado
+              Estás en Modo Invitado.
             </p>
             <Button
               variant="outline"
               size="sm"
               fullWidth
               onClick={() => setShowRegister(true)}
-              style={{ fontSize: "0.8rem" }}
+              style={{ fontSize: "0.85rem", background: "#fff" }}
             >
-              ☁️ Guardar mis chats
+              ☁️ Crear Cuenta
             </Button>
           </div>
         ) : (
@@ -219,8 +252,11 @@ export function Sidebar() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "var(--space-2)",
+              gap: "0.75rem",
               justifyContent: "space-between",
+              padding: "0.5rem",
+              borderRadius: "0.5rem",
+              background: "rgba(0,0,0,0.03)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -229,7 +265,7 @@ export function Sidebar() {
                   width: 32,
                   height: 32,
                   borderRadius: "50%",
-                  backgroundColor: "var(--accent-primary)",
+                  background: "var(--grad-main)",
                   color: "#fff",
                   display: "flex",
                   alignItems: "center",
@@ -250,7 +286,7 @@ export function Sidebar() {
                 <span
                   style={{
                     fontSize: "0.8rem",
-                    fontWeight: 500,
+                    fontWeight: 600,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -268,6 +304,8 @@ export function Sidebar() {
                 cursor: "pointer",
                 color: "var(--text-tertiary)",
                 fontSize: "1.2rem",
+                padding: "4px",
+                borderRadius: "4px",
               }}
               title="Cerrar sesión"
             >
@@ -280,17 +318,16 @@ export function Sidebar() {
       <Modal
         isOpen={showRegister}
         onClose={() => setShowRegister(false)}
-        title="Guardar Cuenta"
+        title="Crear tu cuenta"
       >
         <p
           style={{
             fontSize: "0.9rem",
             color: "var(--text-secondary)",
-            marginBottom: "1rem",
+            marginBottom: "1.5rem",
           }}
         >
-          Registrate para no perder tus chats y acceder desde cualquier
-          dispositivo.
+          Guardá tus proyectos y accedé a todas las funciones premium de WADI.
         </p>
         <form
           onSubmit={handleRegister}
@@ -302,6 +339,7 @@ export function Sidebar() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            placeholder="tu@email.com"
           />
           <Input
             label="Contraseña"
@@ -309,12 +347,14 @@ export function Sidebar() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            placeholder="••••••••"
           />
           <div
             style={{
               display: "flex",
               justifyContent: "flex-end",
               gap: "0.5rem",
+              marginTop: "1rem",
             }}
           >
             <Button
@@ -324,8 +364,12 @@ export function Sidebar() {
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Crear Cuenta"}
+            <Button
+              type="submit"
+              disabled={loading}
+              style={{ background: "var(--grad-main)", border: "none" }}
+            >
+              {loading ? "Creando..." : "Registrarme"}
             </Button>
           </div>
         </form>
