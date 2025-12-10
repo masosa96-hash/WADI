@@ -5,11 +5,21 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import ChatPage from "./pages/ChatPage";
 import LandingPage from "./pages/LandingPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />,
+  },
+  {
+    path: "/terminos",
+    element: <TermsPage />,
+  },
+  {
+    path: "/privacidad",
+    element: <PrivacyPage />,
   },
   {
     path: "/login",
