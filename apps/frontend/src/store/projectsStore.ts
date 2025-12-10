@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useAuthStore } from "./authStore";
 
 interface Project {
   id: string;
@@ -24,7 +25,10 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
   fetchProjects: async () => {
     set({ loading: true });
     try {
-      const res = await fetch(`${API_URL}/api/projects`);
+      const user = useAuthStore.getState().user;
+      const query = user ? `?user_id=${user.id}` : "";
+
+      const res = await fetch(`${API_URL}/api/projects${query}`);
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
       const contentType = res.headers.get("content-type");
@@ -42,10 +46,16 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
 
   createProject: async (name, description) => {
     try {
+      const user = useAuthStore.getState().user;
+
       const res = await fetch(`${API_URL}/api/projects`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({
+          name,
+          description,
+          user_id: user?.id,
+        }),
       });
 
       if (!res.ok) {

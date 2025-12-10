@@ -22,19 +22,27 @@ router.post("/chat", async (req, res) => {
 import { supabase } from "./supabase.js";
 
 router.get("/projects", async (req, res) => {
-  const { data, error } = await supabase
+  const { user_id } = req.query;
+
+  let query = supabase
     .from("projects")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (user_id) {
+    query = query.eq("user_id", user_id);
+  }
+
+  const { data, error } = await query;
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
 router.post("/projects", async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, user_id } = req.body;
   const { data, error } = await supabase
     .from("projects")
-    .insert([{ name, description }])
+    .insert([{ name, description, user_id }])
     .select()
     .single();
   if (error) return res.status(500).json({ error: error.message });
