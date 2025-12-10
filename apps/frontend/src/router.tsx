@@ -3,6 +3,7 @@ import { AuthLoader } from "./components/AuthLoader";
 import Login from "./pages/Login";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
+import ChatPage from "./pages/ChatPage";
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,14 @@ export const router = createBrowserRouter([
     element: (
       <AuthLoader>
         <ProjectDetail />
+      </AuthLoader>
+    ),
+  },
+  {
+    path: "/chat",
+    element: (
+      <AuthLoader>
+        <ChatPage />
       </AuthLoader>
     ),
   },

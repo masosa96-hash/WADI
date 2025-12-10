@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuthStore } from "../store/authStore";
+import { useChatStore } from "../store/chatStore";
 import { useState } from "react";
 import { Modal } from "./common/Modal";
 import { Input } from "./common/Input";
@@ -9,6 +10,7 @@ import { Button } from "./common/Button";
 export function Sidebar() {
   const location = useLocation();
   const { user, convertGuestToUser, signOut } = useAuthStore();
+  const { resetChat } = useChatStore();
   const isAnonymous = user?.is_anonymous;
 
   const [showRegister, setShowRegister] = useState(false);
@@ -66,7 +68,8 @@ export function Sidebar() {
         }}
       >
         <Link
-          to="/projects"
+          to="/chat"
+          onClick={resetChat}
           style={{
             display: "flex",
             alignItems: "center",
