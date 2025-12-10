@@ -41,7 +41,7 @@ export const AuthLoader = ({ children }: { children: React.ReactNode }) => {
           color: "var(--text-primary)",
         }}
       >
-        Cargando WADI...
+        Preparando tu espacio de conversación...
       </div>
     );
   }

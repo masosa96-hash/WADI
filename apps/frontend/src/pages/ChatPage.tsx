@@ -4,6 +4,8 @@ import { useChatStore } from "../store/chatStore";
 import { Button } from "../components/common/Button";
 import { Card } from "../components/common/Card";
 
+const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un sueño?"];
+
 export default function ChatPage() {
   const {
     messages,
@@ -17,6 +19,20 @@ export default function ChatPage() {
   } = useChatStore();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Placeholder logic
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentPlaceholder = tutorMode.active
+    ? "Escribe tu respuesta o duda..."
+    : PLACEHOLDERS[placeholderIndex];
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -322,15 +338,28 @@ export default function ChatPage() {
                     : "¿Con qué querés que te ayude hoy?"}
                 </h3>
                 {!tutorMode.active && (
-                  <p
-                    style={{
-                      fontSize: "var(--text-base)",
-                      color: "var(--color-text-soft)",
-                      margin: 0,
-                    }}
-                  >
-                    Elegí una categoría o escribí directamente abajo.
-                  </p>
+                  <>
+                    <p
+                      style={{
+                        fontSize: "var(--text-base)",
+                        color: "var(--color-text-soft)",
+                        margin: 0,
+                      }}
+                    >
+                      Elegí una categoría o escribí directamente abajo.
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "var(--text-xs)",
+                        color: "var(--color-text-soft)",
+                        opacity: 0.8,
+                        marginTop: "0.5rem",
+                      }}
+                    >
+                      Ej: Explicame algo difícil · Ayudame a ordenar mi día ·
+                      Tengo un bug raro
+                    </p>
+                  </>
                 )}
               </div>
 
@@ -346,37 +375,37 @@ export default function ChatPage() {
                 >
                   {[
                     {
-                      title: "Aprendizaje & estudio",
+                      title: "Quiero entender algo mejor",
                       desc: "Explicaciones simples, resúmenes y planes para aprender algo.",
                       prompt:
                         "Quiero aprender algo y necesito que me armes un plan paso a paso. Te cuento: ",
                     },
                     {
-                      title: "Código & debugging",
+                      title: "Tengo un problema con código",
                       desc: "Ayuda con código, errores, arquitectura o buenas prácticas.",
                       prompt:
                         "Tengo un problema con código / un error y necesito ayuda para debuggear. Te cuento: ",
                     },
                     {
-                      title: "Negocios & dinero",
+                      title: "Estoy pensando en un negocio",
                       desc: "Ideas de negocio, validación, precios, ventas y marketing.",
                       prompt:
                         "Quiero trabajar una idea de negocio o mejorar ingresos. Te cuento mi contexto: ",
                     },
                     {
-                      title: "Creatividad & contenido",
+                      title: "Quiero crear algo nuevo",
                       desc: "Textos, ideas de posts, guiones, branding y contenido creativo.",
                       prompt:
                         "Necesito ideas y ayuda creativa para contenido. Esto es lo que quiero hacer: ",
                     },
                     {
-                      title: "Productividad & organización",
+                      title: "Necesito ordenar mis ideas",
                       desc: "Ordenar tareas, proyectos, hábitos y sistemas para tu día a día.",
                       prompt:
                         "Estoy desordenado y necesito ayuda para ordenar mis proyectos y tareas. Te cuento: ",
                     },
                     {
-                      title: "Soporte técnico & dispositivos",
+                      title: "Algo no me funciona",
                       desc: "Problemas con PC, consola, internet u otros dispositivos.",
                       prompt:
                         "Tengo un problema técnico con PC / consola / internet. Lo que está pasando es: ",
@@ -525,11 +554,7 @@ export default function ChatPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={
-                  tutorMode.active
-                    ? "Escribe tu respuesta o duda..."
-                    : "Contame qué tenés en la cabeza..."
-                }
+                placeholder={currentPlaceholder}
                 disabled={isLoading}
                 rows={1}
                 onInput={(e) => {
@@ -610,8 +635,7 @@ export default function ChatPage() {
             ) : (
               <>
                 <span>
-                  WADI puede equivocarse. Usalo como copiloto, no como verdad
-                  absoluta.
+                  WADI puede fallar. Usalo como copiloto, no como única verdad.
                 </span>
                 <span
                   style={{
