@@ -14,8 +14,8 @@ interface RunsState {
   createRun: (projectId: string, input: string) => Promise<void>;
 }
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://wadi-wxg7.onrender.com";
+const rawUrl = import.meta.env.VITE_API_URL || "https://wadi-wxg7.onrender.com";
+const API_URL = rawUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
 
 export const useRunsStore = create<RunsState>((set) => ({
   runs: [],

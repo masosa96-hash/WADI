@@ -14,8 +14,8 @@ interface ProjectsState {
   createProject: (name: string, description: string) => Promise<void>;
 }
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://wadi-wxg7.onrender.com";
+const rawUrl = import.meta.env.VITE_API_URL || "https://wadi-wxg7.onrender.com";
+const API_URL = rawUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
 
 export const useProjectsStore = create<ProjectsState>((set) => ({
   projects: [],
