@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { openai, AI_MODEL } from "./openai.js";
+import { WADI_SYSTEM_PROMPT } from "./wadi-brain.js";
 
 const router = Router();
 
@@ -9,7 +10,10 @@ router.post("/chat", async (req, res) => {
 
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
-      messages: [{ role: "user", content: message }],
+      messages: [
+        { role: "system", content: WADI_SYSTEM_PROMPT },
+        { role: "user", content: message },
+      ],
     });
 
     res.json({ reply: completion.choices[0].message.content });
