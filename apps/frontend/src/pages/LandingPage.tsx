@@ -62,10 +62,7 @@ export default function LandingPage() {
               fontWeight: 500,
             }}
           >
-            Este Asistente es como hablar con alguien que lo ordena todo. Le
-            cuentas cualquier cosa y te ayuda a transformarla, al momento, en
-            proyectos definidos, planes de acción claros y lo que necesitas
-            aprender.
+            Hablar es empezar a conversar
           </p>
 
           <button
