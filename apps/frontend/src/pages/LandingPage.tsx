@@ -1,18 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
 
-// Landing specific theme constants
-const THEME = {
-  primary: "#7C6CFF",
-  gradHero: "linear-gradient(135deg, #7C6CFF 0%, #5FD6FF 100%)",
-  gradCTA: "linear-gradient(135deg, #5FD6FF 0%, #7C6CFF 100%)",
-  bg: "#F5F7FB",
-  textMain: "#111827",
-  textSecondary: "#4B5563",
-  btnBg: "#111827",
-  btnText: "#FFFFFF",
-  cardShadow: "0 18px 60px rgba(15,23,42,0.18)",
-};
-
 export default function LandingPage() {
   const navigate = useNavigate();
 
@@ -21,9 +8,9 @@ export default function LandingPage() {
   return (
     <div
       style={{
-        fontFamily: "'Inter', sans-serif", // Ensure Inter is loaded or available
-        color: THEME.textMain,
-        backgroundColor: THEME.bg,
+        fontFamily: "var(--font-sans)",
+        color: "var(--color-text-main)",
+        backgroundColor: "var(--color-bg)",
         minHeight: "100vh",
         overflowX: "hidden",
       }}
@@ -48,7 +35,7 @@ export default function LandingPage() {
               lineHeight: 1,
               letterSpacing: "-0.03em",
               marginBottom: "1.5rem",
-              background: THEME.gradHero,
+              background: "var(--grad-main)", // CSS var
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -57,8 +44,8 @@ export default function LandingPage() {
             <br />
             <span
               style={{
-                color: THEME.textMain,
-                WebkitTextFillColor: THEME.textMain,
+                color: "var(--color-text-main)",
+                WebkitTextFillColor: "var(--color-text-main)",
               }}
             >
               al plan.
@@ -69,7 +56,7 @@ export default function LandingPage() {
             style={{
               fontSize: "1.25rem",
               lineHeight: 1.6,
-              color: THEME.textSecondary,
+              color: "var(--color-text-soft)",
               maxWidth: "600px",
               margin: "0 auto 2.5rem",
               fontWeight: 500,
@@ -83,35 +70,34 @@ export default function LandingPage() {
           <button
             onClick={handleStart}
             style={{
-              background: THEME.btnBg,
-              color: THEME.btnText,
+              background: "var(--color-text-main)", // Dark btn
+              color: "#FFFFFF",
               border: "none",
               padding: "1rem 3rem",
               borderRadius: "9999px",
               fontSize: "1.1rem",
               fontWeight: 600,
               cursor: "pointer",
-              boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+              boxShadow: "var(--shadow-lg)",
               transition: "transform 0.2s, box-shadow 0.2s",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 15px 30px rgba(0,0,0,0.15)";
-              // Mild hover lighten effect
+              e.currentTarget.style.boxShadow = "var(--shadow-soft)";
               e.currentTarget.style.background = "#1F2937";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
-              e.currentTarget.style.background = THEME.btnBg;
+              e.currentTarget.style.boxShadow = "var(--shadow-lg)";
+              e.currentTarget.style.background = "var(--color-text-main)";
             }}
           >
-            Empezar
+            Conversemos
           </button>
         </div>
       </section>
 
-      {/* 2. CÓMO TE AYUDA WADI (Feature Cards) */}
+      {/* 2. CÓMO TE AYUDA WADI (Feature Cards - Non-clickable) */}
       <section
         style={{ padding: "4rem 2rem", maxWidth: "1200px", margin: "0 auto" }}
       >
@@ -121,7 +107,7 @@ export default function LandingPage() {
             fontWeight: 700,
             textAlign: "center",
             marginBottom: "3rem",
-            color: THEME.textMain,
+            color: "var(--color-text-main)",
           }}
         >
           Cómo te ayuda WADI
@@ -166,27 +152,18 @@ export default function LandingPage() {
               desc: "Organiza tu día, prioriza tareas y te recuerda lo importante sin abrumarte.",
             },
           ].map((item, i) => (
-            <div
+            <article
               key={i}
               style={{
-                background: "#FFFFFF",
+                background: "var(--color-surface)",
                 borderRadius: "24px",
                 padding: "2rem",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                boxShadow: "var(--shadow-sm)",
                 border: "1px solid rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
                 gap: "1rem",
-                transition: "transform 0.2s, box-shadow 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-5px)";
-                e.currentTarget.style.boxShadow =
-                  "0 10px 30px rgba(0,0,0,0.06)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.03)";
+                cursor: "default", // Non-clickable
               }}
             >
               <div style={{ fontSize: "2rem" }}>{item.emoji}</div>
@@ -194,7 +171,7 @@ export default function LandingPage() {
                 style={{
                   fontSize: "1.25rem",
                   fontWeight: 700,
-                  color: THEME.textMain,
+                  color: "var(--color-text-main)",
                   margin: 0,
                 }}
               >
@@ -203,20 +180,20 @@ export default function LandingPage() {
               <p
                 style={{
                   fontSize: "1rem",
-                  color: THEME.textSecondary,
+                  color: "var(--color-text-soft)",
                   lineHeight: 1.5,
                   margin: 0,
                 }}
               >
                 {item.desc}
               </p>
-            </div>
+            </article>
           ))}
         </div>
       </section>
 
       {/* 3. INTERFAZ DISEÑADA PARA EL FOCO */}
-      <section style={{ padding: "6rem 2rem", background: "#F5F7FB" }}>
+      <section style={{ padding: "6rem 2rem", background: "var(--color-bg)" }}>
         <div
           style={{ maxWidth: "1000px", margin: "0 auto", textAlign: "center" }}
         >
@@ -225,7 +202,7 @@ export default function LandingPage() {
               fontSize: "2.5rem",
               fontWeight: 800,
               marginBottom: "0.5rem",
-              color: THEME.textMain,
+              color: "var(--color-text-main)",
             }}
           >
             Interfaz diseñada para el foco
@@ -233,23 +210,26 @@ export default function LandingPage() {
           <p
             style={{
               fontSize: "1.2rem",
-              color: THEME.textSecondary,
+              color: "var(--color-text-soft)",
               marginBottom: "3rem",
+              maxWidth: "700px",
+              marginInline: "auto",
+              lineHeight: 1.6,
             }}
           >
-            Un espacio de conversación limpio para pensar tranquilo. Sin paneles
-            raros, solo vos y tus ideas.
+            Una vista de chat limpia, sin distracciones, con tipografía clara y
+            espacio suficiente para leer y escribir tranquilo.
           </p>
 
           {/* Chat Mockup */}
           <div
             style={{
-              background: "#FFFFFF",
+              background: "var(--color-surface)",
               borderRadius: "24px",
-              boxShadow: THEME.cardShadow,
+              boxShadow: "var(--shadow-soft)",
               padding: "2rem",
               maxWidth: "700px",
-              margin: "0 auto",
+              margin: "3rem auto 0",
               border: "1px solid rgba(0,0,0,0.05)",
               position: "relative",
               overflow: "hidden",
@@ -294,8 +274,8 @@ export default function LandingPage() {
               </div>
               <div
                 style={{
-                  background: "#EEF2FF",
-                  color: THEME.primary,
+                  background: "var(--color-surface-soft)",
+                  color: "var(--color-primary)",
                   padding: "0.25rem 0.75rem",
                   borderRadius: "999px",
                   fontSize: "0.8rem",
@@ -319,11 +299,11 @@ export default function LandingPage() {
               <div style={{ alignSelf: "flex-start", maxWidth: "80%" }}>
                 <div
                   style={{
-                    background: "#F3F4F6",
+                    background: "var(--color-surface-soft)",
                     padding: "1rem 1.5rem",
                     borderRadius: "1.5rem",
                     borderTopLeftRadius: "4px",
-                    color: THEME.textMain,
+                    color: "var(--color-text-main)",
                     lineHeight: 1.5,
                   }}
                 >
@@ -335,7 +315,7 @@ export default function LandingPage() {
               <div style={{ alignSelf: "flex-end", maxWidth: "80%" }}>
                 <div
                   style={{
-                    background: THEME.primary,
+                    background: "var(--color-primary)",
                     color: "#fff",
                     padding: "1rem 1.5rem",
                     borderRadius: "1.5rem",
@@ -353,11 +333,11 @@ export default function LandingPage() {
               <div style={{ alignSelf: "flex-start", maxWidth: "80%" }}>
                 <div
                   style={{
-                    background: "#F3F4F6",
+                    background: "var(--color-surface-soft)",
                     padding: "1rem 1.5rem",
                     borderRadius: "1.5rem",
                     borderTopLeftRadius: "4px",
-                    color: THEME.textMain,
+                    color: "var(--color-text-main)",
                     lineHeight: 1.5,
                   }}
                 >
@@ -373,9 +353,9 @@ export default function LandingPage() {
                 style={{
                   width: "100%",
                   height: "56px",
-                  background: "#F9FAFB",
+                  background: "var(--color-bg)",
                   borderRadius: "999px",
-                  border: "1px solid #E5E7EB",
+                  border: "1px solid var(--color-border)",
                   display: "flex",
                   alignItems: "center",
                   padding: "0 1.5rem",
@@ -391,7 +371,7 @@ export default function LandingPage() {
                   top: "8px",
                   width: "40px",
                   height: "40px",
-                  background: THEME.textMain,
+                  background: "var(--color-text-main)",
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
@@ -409,12 +389,12 @@ export default function LandingPage() {
       {/* 4. FOOTER */}
       <footer
         style={{
-          background: "#FFFFFF",
-          borderTop: "1px solid #E5E7EB",
+          background: "var(--color-surface)",
+          borderTop: "1px solid var(--color-border)",
           padding: "4rem 2rem",
           textAlign: "center",
           fontSize: "0.9rem",
-          color: THEME.textSecondary,
+          color: "var(--color-text-soft)",
         }}
       >
         <div
@@ -430,7 +410,7 @@ export default function LandingPage() {
             style={{
               fontWeight: 800,
               fontSize: "1.5rem",
-              color: THEME.textMain,
+              color: "var(--color-text-main)",
             }}
           >
             WADI
@@ -440,13 +420,19 @@ export default function LandingPage() {
           <div style={{ display: "flex", gap: "2rem", fontWeight: 500 }}>
             <Link
               to="/terminos"
-              style={{ color: THEME.textMain, textDecoration: "none" }}
+              style={{
+                color: "var(--color-text-main)",
+                textDecoration: "none",
+              }}
             >
               Términos
             </Link>
             <Link
               to="/privacidad"
-              style={{ color: THEME.textMain, textDecoration: "none" }}
+              style={{
+                color: "var(--color-text-main)",
+                textDecoration: "none",
+              }}
             >
               Privacidad
             </Link>

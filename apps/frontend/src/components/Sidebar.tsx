@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { ThemeToggle } from "./ThemeToggle";
+
 import { useAuthStore } from "../store/authStore";
 import { useChatStore } from "../store/chatStore";
 import { useState } from "react";
@@ -224,8 +224,6 @@ export function Sidebar() {
           gap: "1rem",
         }}
       >
-        <ThemeToggle />
-
         {isAnonymous ? (
           <div
             style={{

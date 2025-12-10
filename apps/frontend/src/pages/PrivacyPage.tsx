@@ -62,7 +62,8 @@ export default function PrivacyPage() {
             Procesamos el contenido de las conversaciones que mantienes con WADI
             para generar respuestas. También recopilamos datos técnicos básicos
             necesarios para el funcionamiento del servicio, como dirección IP y
-            tipo de navegador, únicamente con fines de seguridad y diagnóstico.
+            metadatos de uso, únicamente con fines de seguridad y mejora del
+            servicio.
           </p>
         </section>
 
@@ -88,12 +89,10 @@ export default function PrivacyPage() {
               marginTop: "0.5rem",
             }}
           >
-            <li>Proveer y mantener el servicio.</li>
+            <li>Proveer y mantener el servicio operativo.</li>
             <li>Generar respuestas contextualizadas a tus consultas.</li>
             <li>Mejorar la calidad de nuestro modelo y herramientas.</li>
-            <li>
-              Guardar el historial de tus proyectos para que puedas retomarlos.
-            </li>
+            <li>Garantizar la seguridad de la plataforma.</li>
           </ul>
         </section>
 
@@ -111,7 +110,8 @@ export default function PrivacyPage() {
             No vendemos tus datos personales. Compartimos información
             estrictamente necesaria con proveedores de infraestructura (como
             servicios de hosting y proveedores de modelos de lenguaje) que
-            operan bajo acuerdos de confidencialidad y seguridad.
+            operan bajo acuerdos de confidencialidad. También podemos divulgar
+            información si así lo exige la ley.
           </p>
         </section>
 
@@ -123,12 +123,67 @@ export default function PrivacyPage() {
               marginBottom: "1rem",
             }}
           >
-            4. Derechos del usuario
+            4. Retención y eliminación
           </h2>
           <p style={{ lineHeight: 1.6, color: "#4B5563" }}>
-            Tienes derecho a acceder a tus datos y solicitar su eliminación.
-            Dado que actualmente operamos en fase beta, puedes contactarnos
-            directamente para ejercer estos derechos.
+            Mantenemos los datos mientras tu cuenta esté activa o sea necesario
+            para prestar el servicio. Puedes solicitar la eliminación de tu
+            cuenta y datos asociados en cualquier momento contactándonos.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "2rem" }}>
+          <h2
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              marginBottom: "1rem",
+            }}
+          >
+            5. Seguridad
+          </h2>
+          <p style={{ lineHeight: 1.6, color: "#4B5563" }}>
+            Implementamos medidas de seguridad técnicas y organizativas para
+            proteger tus datos contra el acceso no autorizado, la pérdida o la
+            alteración.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "2rem" }}>
+          <h2
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              marginBottom: "1rem",
+            }}
+          >
+            6. Derechos del usuario
+          </h2>
+          <p style={{ lineHeight: 1.6, color: "#4B5563" }}>
+            Tienes derecho a acceder, corregir y eliminar tus datos personales.
+            Para ejercer estos derechos, contáctanos en:{" "}
+            <a
+              href="mailto:privacidad@wadi.app"
+              style={{ color: "#7C6CFF", fontWeight: 600 }}
+            >
+              privacidad@wadi.app
+            </a>
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "2rem" }}>
+          <h2
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              marginBottom: "1rem",
+            }}
+          >
+            7. Uso con menores
+          </h2>
+          <p style={{ lineHeight: 1.6, color: "#4B5563" }}>
+            WADI no está dirigido a menores de 13 años. No recopilamos
+            intencionalmente información personal de niños menores de esta edad.
           </p>
         </section>
 
@@ -140,17 +195,16 @@ export default function PrivacyPage() {
               marginBottom: "1rem",
             }}
           >
-            5. Contacto
+            8. Cambios en la política
           </h2>
           <p style={{ lineHeight: 1.6, color: "#4B5563" }}>
-            Si tienes dudas sobre nuestra política de privacidad, puedes
-            escribirnos a:{" "}
-            <a
-              href="mailto:contacto@wadi.app"
-              style={{ color: "#7C6CFF", fontWeight: 600 }}
-            >
-              contacto@wadi.app
-            </a>
+            Podemos actualizar esta política ocasionalmente. Notificaremos los
+            cambios publicando la nueva política en esta página.
+          </p>
+          <p
+            style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#6B7280" }}
+          >
+            Última actualización: Diciembre 2025
           </p>
         </section>
       </main>
