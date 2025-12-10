@@ -20,27 +20,32 @@ export function InputArea({
     if (!text.trim() || disabled) return;
     onSend(text);
     setText("");
+    // Reset height manually if needed, though state change might cause re-render which resets style if we were not careful.
+    // Ideally we reset height via ref, but let's stick to the simple onInput for now.
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+      // Reset height
+      (e.target as HTMLTextAreaElement).style.height = "auto";
     }
   };
 
   return (
     <div
       style={{
-        padding: "var(--space-4)",
-        borderTop: "1px solid var(--border-subtle)",
-        backgroundColor: "var(--bg-app)",
+        padding: "1rem 1.5rem 1.5rem",
+        borderTop: "1px solid var(--color-border)",
+        backgroundColor: "var(--color-bg)",
         display: "flex",
         flexDirection: "column",
-        gap: "var(--space-3)",
+        gap: "0.75rem",
         position: "sticky",
         bottom: 0,
         zIndex: 10,
+        transition: "background-color 0.2s",
       }}
     >
       {/* Suggestions */}
@@ -48,9 +53,10 @@ export function InputArea({
         <div
           style={{
             display: "flex",
-            gap: "var(--space-2)",
+            gap: "0.5rem",
             overflowX: "auto",
-            paddingBottom: "var(--space-1)",
+            paddingBottom: "0.5rem",
+            scrollbarWidth: "none", // Hide scrollbar for cleaner look
           }}
         >
           {suggestions.map((s, i) => (
@@ -59,13 +65,31 @@ export function InputArea({
               onClick={() => onSend(s)}
               disabled={disabled}
               style={{
-                fontSize: "0.85rem",
-                padding: "var(--space-1) var(--space-3)",
-                backgroundColor: "var(--bg-element)",
-                color: "var(--text-secondary)",
-                borderRadius: "var(--radius-full)",
-                border: "1px solid var(--border-subtle)",
+                fontSize: "var(--text-xs)",
+                padding: "0.4rem 1rem",
+                backgroundColor: "var(--color-surface)",
+                color: "var(--color-text-soft)",
+                borderRadius: "999px",
+                border: "1px solid var(--color-border)",
                 whiteSpace: "nowrap",
+                cursor: disabled ? "default" : "pointer",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                if (!disabled) {
+                  e.currentTarget.style.backgroundColor =
+                    "var(--color-surface-soft)";
+                  e.currentTarget.style.borderColor = "var(--color-primary)";
+                  e.currentTarget.style.color = "var(--color-primary)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!disabled) {
+                  e.currentTarget.style.backgroundColor =
+                    "var(--color-surface)";
+                  e.currentTarget.style.borderColor = "var(--color-border)";
+                  e.currentTarget.style.color = "var(--color-text-soft)";
+                }
               }}
             >
               {s}
@@ -79,61 +103,71 @@ export function InputArea({
         style={{
           display: "flex",
           alignItems: "flex-end",
-          gap: "var(--space-2)",
-          backgroundColor: "var(--bg-element)",
-          padding: "var(--space-2)",
-          borderRadius: "var(--radius-xl)",
-          border: "1px solid var(--border-subtle)",
-          transition: "border-color 0.2s",
+          gap: "0.75rem",
+          backgroundColor: "var(--color-surface)",
+          padding: "0.75rem 1rem",
+          borderRadius: "1.5rem", // More rounded
+          border: "1px solid var(--color-border)",
+          transition: "border-color 0.2s, box-shadow 0.2s",
         }}
-        onFocus={(e) =>
-          (e.currentTarget.style.borderColor = "var(--border-focus)")
-        }
-        onBlur={(e) =>
-          (e.currentTarget.style.borderColor = "var(--border-subtle)")
-        }
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = "var(--color-primary)";
+          e.currentTarget.style.boxShadow = "0 0 0 2px rgba(139, 92, 246, 0.1)";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = "var(--color-border)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
       >
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || "Type a message..."}
+          placeholder={placeholder || "Escribe un mensaje..."}
           disabled={disabled}
           rows={1}
           style={{
             flex: 1,
             resize: "none",
-            maxHeight: "150px",
+            maxHeight: "120px",
             minHeight: "24px",
-            padding: "var(--space-1) var(--space-2)",
+            padding: "0.25rem 0",
             background: "transparent",
             border: "none",
             outline: "none",
+            fontSize: "var(--text-base)",
+            color: "var(--color-text-main)",
+            fontFamily: "var(--font-sans)",
+            lineHeight: 1.5,
           }}
           onInput={(e) => {
             const target = e.target as HTMLTextAreaElement;
             target.style.height = "auto";
-            target.style.height = `${Math.min(target.scrollHeight, 150)}px`;
+            target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
           }}
         />
         <button
           onClick={handleSend}
           disabled={!text.trim() || disabled}
           style={{
-            padding: "var(--space-2)",
+            padding: "0.5rem",
             borderRadius: "50%",
-            backgroundColor: text.trim()
-              ? "var(--accent-primary)"
-              : "transparent",
-            color: text.trim() ? "white" : "var(--text-tertiary)",
+            backgroundColor:
+              text.trim() && !disabled
+                ? "var(--color-primary)"
+                : "var(--color-surface-soft)",
+            color:
+              text.trim() && !disabled ? "white" : "var(--color-text-soft)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             width: "36px",
             height: "36px",
-            transition: "background-color 0.2s",
+            transition: "all 0.2s",
+            cursor: text.trim() && !disabled ? "pointer" : "default",
+            opacity: disabled ? 0.7 : 1,
           }}
-          aria-label="Send"
+          aria-label="Enviar"
         >
           {/* Simple Arrow Icon */}
           <svg
@@ -152,8 +186,15 @@ export function InputArea({
         </button>
       </div>
 
-      <small style={{ textAlign: "center", opacity: 0.5, fontSize: "0.7rem" }}>
-        AI can make mistakes. Please verify important information.
+      <small
+        style={{
+          textAlign: "center",
+          opacity: 0.6,
+          fontSize: "0.75rem",
+          color: "var(--color-text-soft)",
+        }}
+      >
+        WADI puede cometer errores. Verifica la información importante.
       </small>
     </div>
   );

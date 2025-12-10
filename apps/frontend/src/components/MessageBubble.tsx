@@ -19,7 +19,7 @@ export function MessageBubble({
         display: "flex",
         flexDirection: "column",
         alignItems: isUser ? "flex-end" : "flex-start",
-        marginBottom: "var(--space-4)",
+        marginBottom: "1rem", // Use explicit unit
         maxWidth: "80%",
         alignSelf: isUser ? "flex-end" : "flex-start",
         width: "100%",
@@ -27,16 +27,20 @@ export function MessageBubble({
     >
       <div
         style={{
-          backgroundColor: isUser ? "var(--msg-user-bg)" : "var(--msg-ai-bg)",
-          color: isUser ? "var(--msg-user-text)" : "var(--msg-ai-text)",
-          padding: "var(--space-3) var(--space-4)",
-          borderRadius: "var(--radius-lg)",
-          borderBottomRightRadius: isUser ? "2px" : "var(--radius-lg)",
-          borderBottomLeftRadius: !isUser ? "2px" : "var(--radius-lg)",
-          lineHeight: 1.5,
+          backgroundColor: isUser
+            ? "var(--color-primary)"
+            : "var(--color-surface)",
+          color: isUser ? "#FFFFFF" : "var(--color-text-main)",
+          padding: "0.8rem 1.2rem", // Explicit padding
+          borderRadius: "1rem", // Explicit radius
+          borderBottomRightRadius: isUser ? "4px" : "1rem",
+          borderBottomLeftRadius: !isUser ? "4px" : "1rem",
+          lineHeight: 1.6,
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
           boxShadow: "var(--shadow-sm)",
+          fontSize: "var(--text-base)",
+          fontWeight: isUser ? 500 : 400,
         }}
       >
         {isUser ? (
@@ -52,10 +56,10 @@ export function MessageBubble({
                   <div key={i} style={{ marginBottom: "1rem" }}>
                     <div
                       style={{
-                        fontWeight: 600,
+                        fontWeight: 700,
                         fontSize: "1.05em",
                         marginBottom: "0.5rem",
-                        color: "var(--accent-primary)",
+                        color: "var(--color-primary)",
                       }}
                     >
                       {title}
@@ -76,10 +80,12 @@ export function MessageBubble({
       {timestamp && (
         <small
           style={{
-            marginTop: "var(--space-1)",
-            marginRight: isUser ? "var(--space-1)" : 0,
-            marginLeft: !isUser ? "var(--space-1)" : 0,
+            marginTop: "0.25rem",
+            marginRight: isUser ? "0.25rem" : 0,
+            marginLeft: !isUser ? "0.25rem" : 0,
             opacity: 0.7,
+            fontSize: "0.75rem",
+            color: "var(--color-text-soft)",
           }}
         >
           {timestamp}

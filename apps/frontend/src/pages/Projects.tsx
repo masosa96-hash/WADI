@@ -54,7 +54,7 @@ export default function Projects() {
           maxWidth: "1000px",
           margin: "0 auto",
           padding: "2rem",
-          background: "var(--bg-app)",
+          background: "var(--color-bg)",
           minHeight: "100%",
         }}
       >
@@ -75,21 +75,21 @@ export default function Projects() {
             style={{
               width: "72px",
               height: "72px",
-              background: "var(--grad-secondary)",
+              background: "var(--grad-secondary)", // Cyan to Lime
               borderRadius: "50%",
               margin: "0 auto 1.5rem",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "2.5rem",
-              boxShadow: "0 0 20px rgba(52, 211, 153, 0.4)",
+              boxShadow: "0 0 20px rgba(34, 211, 238, 0.4)", // Cyan shadow
             }}
           >
             🚀
           </div>
           <h1
             style={{
-              fontSize: "2.5rem",
+              fontSize: "var(--text-3xl)",
               fontWeight: 800,
               marginBottom: "0.5rem",
               background: "var(--grad-main)",
@@ -99,7 +99,12 @@ export default function Projects() {
           >
             Punto de Control
           </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "1.1rem" }}>
+          <p
+            style={{
+              color: "var(--color-text-soft)",
+              fontSize: "var(--text-lg)",
+            }}
+          >
             ¿En qué trabajamos hoy?
           </p>
         </div>
@@ -124,20 +129,21 @@ export default function Projects() {
               alignItems: "flex-start",
               textAlign: "left",
               padding: "2rem",
-              border: "1px solid var(--accent-primary)",
-              background: "rgba(124, 58, 237, 0.03)",
+              border: "1px solid var(--color-primary)",
+              background: "rgba(139, 92, 246, 0.05)", // Very soft violet
+              boxShadow: "var(--shadow-sm)",
             }}
           >
-            <div style={{ color: "var(--accent-primary)", fontSize: "2rem" }}>
+            <div style={{ color: "var(--color-primary)", fontSize: "2rem" }}>
               ✨
             </div>
             <div>
               <span
                 style={{
                   display: "block",
-                  fontSize: "1.2rem",
+                  fontSize: "var(--text-xl)",
                   fontWeight: 700,
-                  color: "var(--text-primary)",
+                  color: "var(--color-text-main)",
                   marginBottom: "0.5rem",
                 }}
               >
@@ -145,8 +151,8 @@ export default function Projects() {
               </span>
               <span
                 style={{
-                  fontSize: "0.95rem",
-                  color: "var(--text-secondary)",
+                  fontSize: "var(--text-sm)",
+                  color: "var(--color-text-soft)",
                   lineHeight: 1.5,
                 }}
               >
@@ -161,19 +167,22 @@ export default function Projects() {
               display: "flex",
               flexDirection: "column",
               gap: "1rem",
-              opacity: 0.8,
+              opacity: 0.9,
               padding: "2rem",
-              background: "#fff",
+              background: "var(--color-surface)",
+              border: "1px solid var(--color-border)",
             }}
           >
-            <div style={{ color: "var(--success)", fontSize: "2rem" }}>📚</div>
+            <div style={{ color: "var(--color-success)", fontSize: "2rem" }}>
+              📚
+            </div>
             <div>
               <span
                 style={{
                   display: "block",
-                  fontSize: "1.2rem",
+                  fontSize: "var(--text-xl)",
                   fontWeight: 700,
-                  color: "var(--text-primary)",
+                  color: "var(--color-text-main)",
                   marginBottom: "0.5rem",
                 }}
               >
@@ -181,8 +190,8 @@ export default function Projects() {
               </span>
               <span
                 style={{
-                  fontSize: "0.95rem",
-                  color: "var(--text-secondary)",
+                  fontSize: "var(--text-sm)",
+                  color: "var(--color-text-soft)",
                   lineHeight: 1.5,
                 }}
               >
@@ -196,9 +205,9 @@ export default function Projects() {
         <div>
           <h3
             style={{
-              fontSize: "0.9rem",
+              fontSize: "var(--text-xs)",
               fontWeight: 700,
-              color: "var(--text-tertiary)",
+              color: "var(--color-text-soft)",
               marginBottom: "1rem",
               textTransform: "uppercase",
               letterSpacing: "1.5px",
@@ -209,7 +218,9 @@ export default function Projects() {
           </h3>
 
           {loading && (
-            <p style={{ color: "var(--text-tertiary)", paddingLeft: "0.5rem" }}>
+            <p
+              style={{ color: "var(--color-text-soft)", paddingLeft: "0.5rem" }}
+            >
               Cargando...
             </p>
           )}
@@ -235,8 +246,10 @@ export default function Projects() {
                     alignItems: "center",
                     justifyContent: "space-between",
                     borderRadius: "1rem",
-                    border: "1px solid var(--border-subtle)",
+                    border: "1px solid var(--color-border)",
                     transition: "transform 0.2s, box-shadow 0.2s",
+                    background: "var(--color-surface)",
+                    boxShadow: "var(--shadow-sm)",
                   }}
                 >
                   <div
@@ -250,7 +263,7 @@ export default function Projects() {
                       style={{
                         width: "40px",
                         height: "40px",
-                        background: "var(--bg-element)",
+                        background: "var(--color-surface-soft)",
                         borderRadius: "8px",
                         display: "flex",
                         alignItems: "center",
@@ -264,8 +277,8 @@ export default function Projects() {
                       <div
                         style={{
                           fontWeight: 600,
-                          fontSize: "1.05rem",
-                          color: "var(--text-primary)",
+                          fontSize: "var(--text-base)",
+                          color: "var(--color-text-main)",
                           marginBottom: "0.2rem",
                         }}
                       >
@@ -274,8 +287,8 @@ export default function Projects() {
                       {p.description && (
                         <div
                           style={{
-                            fontSize: "0.85rem",
-                            color: "var(--text-tertiary)",
+                            fontSize: "var(--text-sm)",
+                            color: "var(--color-text-soft)",
                           }}
                         >
                           {p.description}
@@ -285,9 +298,9 @@ export default function Projects() {
                   </div>
                   <span
                     style={{
-                      fontSize: "0.8rem",
-                      color: "var(--text-tertiary)",
-                      background: "var(--bg-element)",
+                      fontSize: "var(--text-xs)",
+                      color: "var(--color-text-soft)",
+                      background: "var(--color-surface-soft)",
                       padding: "4px 8px",
                       borderRadius: "6px",
                     }}
@@ -303,12 +316,12 @@ export default function Projects() {
                 style={{
                   textAlign: "center",
                   padding: "3rem",
-                  background: "rgba(255,255,255,0.5)",
+                  background: "var(--color-surface-soft)",
                   borderRadius: "1rem",
-                  border: "1px dashed var(--border-subtle)",
+                  border: "1px dashed var(--color-border)",
                 }}
               >
-                <p style={{ color: "var(--text-secondary)" }}>
+                <p style={{ color: "var(--color-text-soft)" }}>
                   No hay proyectos recientes. ¡Crea el primero arriba!
                 </p>
               </div>
@@ -363,7 +376,11 @@ export default function Projects() {
               >
                 Cancelar
               </Button>
-              <Button type="submit" variant="primary">
+              <Button
+                type="submit"
+                variant="primary"
+                style={{ background: "var(--color-primary)", border: "none" }}
+              >
                 Crear Proyecto
               </Button>
             </div>

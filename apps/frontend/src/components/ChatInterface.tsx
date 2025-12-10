@@ -46,22 +46,29 @@ export function ChatInterface({
       {/* Header */}
       <header
         style={{
-          padding: "var(--space-4)",
-          borderBottom: "1px solid var(--border-subtle)",
+          padding: "1rem",
+          borderBottom: "1px solid var(--color-border)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          backgroundColor: "var(--bg-app)", // Sticky header if needed
+          backgroundColor: "var(--color-surface)", // Sticky header if needed
           zIndex: 5,
         }}
       >
         <div>
-          <h2 style={{ fontSize: "1.1rem" }}>{title || "New Conversation"}</h2>
+          <h2
+            style={{
+              fontSize: "var(--text-lg)",
+              color: "var(--color-text-main)",
+            }}
+          >
+            {title || "New Conversation"}
+          </h2>
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "var(--space-2)",
+              gap: "0.5rem",
             }}
           >
             <span
@@ -69,49 +76,32 @@ export function ChatInterface({
                 width: 8,
                 height: 8,
                 borderRadius: "50%",
-                backgroundColor: "var(--success)",
+                backgroundColor: "var(--color-success)",
+                boxShadow: "0 0 5px var(--color-success)",
               }}
             />
-            <small>{status || "Online"}</small>
+            <small
+              style={{
+                color: "var(--color-text-soft)",
+                fontSize: "var(--text-xs)",
+              }}
+            >
+              {status || "Online"}
+            </small>
             {isThinking && (
               <span
                 style={{
-                  fontSize: "0.75rem",
-                  color: "var(--text-secondary)",
+                  fontSize: "var(--text-xs)",
+                  color: "var(--color-primary)",
                   fontStyle: "italic",
-                  animation: "pulse 1s infinite",
-                  marginLeft: "var(--space-2)",
+                  animation: "pulse 1.5s infinite",
+                  marginLeft: "0.5rem",
                 }}
               >
-                Thinking...
+                WADI está pensando...
               </span>
             )}
           </div>
-        </div>
-        <div className="actions">
-          {/* Placeholder for future actions like 'Clear Chat', 'Search', etc */}
-          <button
-            style={{
-              padding: "var(--space-2)",
-              color: "var(--text-secondary)",
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="12" cy="5" r="1"></circle>
-              <circle cx="12" cy="19" r="1"></circle>
-            </svg>
-          </button>
         </div>
       </header>
 
@@ -120,9 +110,10 @@ export function ChatInterface({
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: "var(--space-4)",
+          padding: "1.5rem",
           display: "flex",
           flexDirection: "column",
+          gap: "1rem", // Gap between messages
         }}
       >
         {messages.length === 0 && (
@@ -133,15 +124,33 @@ export function ChatInterface({
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              opacity: 0.5,
               textAlign: "center",
+              gap: "1rem",
+              opacity: 0.8,
             }}
           >
-            <div style={{ fontSize: "3rem", marginBottom: "var(--space-4)" }}>
+            <div
+              style={{
+                fontSize: "4rem",
+                background: "var(--grad-main)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                filter: "drop-shadow(0 0 10px rgba(139, 92, 246, 0.3))",
+              }}
+            >
               👋
             </div>
-            <h3>Welcome to WADI</h3>
-            <p>Start a conversation to begin.</p>
+            <h3
+              style={{
+                fontSize: "var(--text-2xl)",
+                color: "var(--color-text-main)",
+              }}
+            >
+              Bienvenido a WADI
+            </h3>
+            <p style={{ color: "var(--color-text-soft)" }}>
+              Comenzá una conversación para empezar a crear.
+            </p>
           </div>
         )}
 
@@ -156,16 +165,26 @@ export function ChatInterface({
 
         {isThinking && (
           <div
-            className="flex items-center gap-2"
-            style={{ padding: "var(--space-4)", opacity: 0.7 }}
+            style={{
+              padding: "1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              opacity: 0.8,
+              color: "var(--color-text-soft)",
+              fontSize: "var(--text-sm)",
+            }}
           >
             <div
-              className="typing-dot"
-              style={{ animation: "pulse 1s infinite" }}
-            >
-              ●
-            </div>
-            <small>Thinking...</small>
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: "var(--color-primary)",
+                animation: "pulse 1s infinite",
+              }}
+            />
+            <span>Generando respuesta...</span>
           </div>
         )}
 

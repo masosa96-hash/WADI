@@ -1,10 +1,19 @@
-/* WADI Design System - Minimal & Accessible */
+/* WADI Design System - Calm Y2K & Accessible */
 :root {
   /* -- Fonts -- */
   --font-sans:
     "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+
+  /* -- Typography Scale -- */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
 
   /* -- Spacing -- */
   --space-1: 0.25rem;
@@ -14,6 +23,7 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
   --space-8: 3rem;
+  --space-10: 4rem;
 
   /* -- Radius -- */
   --radius-sm: 4px;
@@ -22,81 +32,100 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* -- Transitions -- */
-  --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
-
   /* -- Shadows -- */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md:
     0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg:
     0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-y2k: 0 4px 12px rgba(139, 92, 246, 0.15);
 
-  /* -- Y2K Palette -- */
-  --y2k-fushia: #ff00ff;
-  --y2k-lime: #ccff00;
-  --y2k-cyan: #00ffff;
-  --y2k-purple: #7928ca;
+  /* -- Calm Y2K Colors (Light) -- */
+  --color-bg: #f5f7fb; /* Cool neutral */
+  --color-surface: #ffffff;
+  --color-surface-soft: #eef1f8;
 
-  --grad-main: linear-gradient(
-    135deg,
-    var(--y2k-fushia) 0%,
-    var(--y2k-purple) 100%
-  );
-  --grad-secondary: linear-gradient(
-    135deg,
-    var(--y2k-cyan) 0%,
-    var(--y2k-lime) 100%
-  );
+  --color-primary: #8b5cf6; /* Soft Y2K Violet */
+  --color-primary-soft: #c4b5fd;
+  --color-primary-hover: #7c3aed;
+
+  --color-secondary: #22d3ee; /* Cyan */
+  --color-accent: #fde047; /* Yellow */
+
+  --color-text-main: #111827; /* Dark Grey */
+  --color-text-soft: #6b7280; /* Medium Grey */
+  --color-text-inverse: #ffffff;
+
+  --color-border: #e5e7eb;
+  --color-border-active: #a78bfa;
+
+  --color-error: #ef4444;
+  --color-success: #10b981;
+
+  /* Gradients */
+  --grad-main: linear-gradient(135deg, #8b5cf6, #22d3ee);
+  --grad-surface: linear-gradient(180deg, #ffffff, #f8fafc);
+
+  /* Legacy mapping for compatibility using new vars */
+  --bg-app: var(--color-bg);
+  --bg-panel: var(--color-surface);
+  --bg-element: var(--color-surface-soft);
+  --text-primary: var(--color-text-main);
+  --text-secondary: var(--color-text-soft);
+  --text-tertiary: #9ca3af;
+  --accent-primary: var(--color-primary);
+  --accent-text: var(--color-text-inverse);
+  --border-subtle: var(--color-border);
+  --msg-user-bg: var(--color-primary);
+  --msg-user-text: var(--color-text-inverse);
+  --msg-ai-bg: var(--color-surface);
+  --msg-ai-text: var(--color-text-main);
   --grad-glass: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.7) 0%,
-    rgba(255, 255, 255, 0.3) 100%
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.4) 100%
   );
-  --grad-dark-glass: linear-gradient(
-    180deg,
-    rgba(30, 30, 30, 0.8) 0%,
-    rgba(10, 10, 10, 0.6) 100%
-  );
-
-  /* -- Override Defaults with Y2K flair -- */
-  --bg-app: #f4f4f4; /* Light minimalist base to let gradients pop */
-  --bg-panel: #ffffff;
-  --bg-element: #f0f0f0;
-  --bg-element-hover: #e8e8e8;
-
-  --text-primary: #111111;
-  --text-secondary: #444444;
-  --text-tertiary: #888888;
-
-  --accent-primary: var(--y2k-fushia);
-  --accent-primary-hover: #e000e0;
-  --accent-text: #ffffff;
-
-  --border-subtle: #dddddd;
-  --border-focus: var(--y2k-cyan);
-
-  --msg-user-bg: var(--y2k-purple);
-  --msg-user-text: #ffffff;
-  --msg-ai-bg: #ffffff;
-  --msg-ai-text: #111111;
-
-  --shadow-y2k: 0 4px 0 rgba(0, 0, 0, 0.1); /* Chunky shadow */
 }
 
 [data-theme="dark"] {
-  --bg-app: #101010;
-  --bg-panel: #1a1a1a;
-  --bg-element: #2a2a2a;
-  --bg-element-hover: #333333;
+  /* -- Calm Y2K Colors (Dark) -- */
+  --color-bg: #020617; /* Deep Blue Grey */
+  --color-surface: #0f172a;
+  --color-surface-soft: #1e293b;
 
-  --text-primary: #f0f0f0;
-  --text-secondary: #aaaaaa;
+  --color-primary: #a78bfa;
+  --color-primary-soft: #4c1d95;
+  --color-primary-hover: #8b5cf6;
 
-  --border-subtle: #333333;
-  --msg-ai-bg: #2a2a2a;
-  --msg-ai-text: #f0f0f0;
+  --color-secondary: #06b6d4;
+
+  --color-text-main: #f9fafb;
+  --color-text-soft: #94a3b8;
+
+  --color-border: #1e293b;
+  --color-border-active: #8b5cf6;
+
+  /* Gradients */
+  --grad-main: linear-gradient(135deg, #7c3aed, #0891b2);
+  --grad-surface: linear-gradient(180deg, #0f172a, #020617);
+  --grad-glass: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.8) 0%,
+    rgba(2, 6, 23, 0.4) 100%
+  );
+
+  /* Legacy mapping overrides */
+  --bg-app: var(--color-bg);
+  --bg-panel: var(--color-surface);
+  --bg-element: var(--color-surface-soft);
+  --text-primary: var(--color-text-main);
+  --text-secondary: var(--color-text-soft);
+  --text-tertiary: #64748b;
+  --accent-primary: var(--color-primary);
+  --border-subtle: var(--color-border);
+  --msg-user-bg: var(--color-primary);
+  --msg-ai-bg: var(--color-surface-soft);
+  --msg-ai-text: var(--color-text-main);
 }
 
 /* -- Reset & Base -- */
@@ -110,8 +139,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
-  background-color: var(--bg-app);
-  color: var(--text-primary);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -162,58 +191,23 @@ button:focus {
 .gap-4 {
   gap: var(--space-4);
 }
-
-.hidden {
-  display: none;
+.text-xs {
+  font-size: var(--text-xs);
 }
-.block {
-  display: block;
+.text-sm {
+  font-size: var(--text-sm);
 }
-.absolute {
-  position: absolute;
+.text-base {
+  font-size: var(--text-base);
 }
-.relative {
-  position: relative;
+.text-lg {
+  font-size: var(--text-lg);
 }
-
-.h-full {
-  height: 100%;
+.text-xl {
+  font-size: var(--text-xl);
 }
-.w-full {
-  width: 100%;
-}
-.grid {
-  display: grid;
-}
-.items-start {
-  align-items: flex-start;
-}
-.opacity-50 {
-  opacity: 0.5;
-}
-
-/* -- Typography -- */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-p {
-  margin: 0 0 var(--space-4) 0;
-}
-p:last-child {
-  margin-bottom: 0;
-}
-
-small {
-  color: var(--text-tertiary);
-  font-size: 0.875rem;
+.text-2xl {
+  font-size: var(--text-2xl);
 }
 
 /* -- Scrollbar -- */
@@ -225,17 +219,17 @@ small {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-element);
+  background: var(--color-surface-soft);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+  background: var(--color-text-soft);
 }
 
 @keyframes pulse {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.6;
   }
   50% {
     opacity: 1;

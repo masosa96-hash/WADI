@@ -46,12 +46,12 @@ export function Sidebar() {
       style={{
         width: "280px",
         height: "100vh",
-        background: "var(--bg-panel)",
-        borderRight: "1px solid var(--border-subtle)",
+        background: "var(--color-surface)", // New token
+        borderRight: "1px solid var(--color-border)",
         display: "flex",
         flexDirection: "column",
         padding: "1.5rem",
-        backdropFilter: "blur(20px)",
+        transition: "background-color 0.2s, border-color 0.2s",
       }}
     >
       {/* Brand */}
@@ -72,7 +72,7 @@ export function Sidebar() {
         <small
           style={{
             fontSize: "0.8rem",
-            color: "var(--text-tertiary)",
+            color: "var(--color-text-soft)",
             letterSpacing: "1px",
             textTransform: "uppercase",
           }}
@@ -86,7 +86,7 @@ export function Sidebar() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "var(--space-3)",
+          gap: "1rem",
           marginBottom: "2rem",
         }}
       >
@@ -98,19 +98,24 @@ export function Sidebar() {
             alignItems: "center",
             justifyContent: "center",
             gap: "0.5rem",
-            background: "var(--grad-secondary)",
-            color: "#000",
+            background: "var(--color-primary)", // Soft Violet
+            color: "#FFFFFF",
             padding: "0.8rem",
             borderRadius: "var(--radius-lg)",
             fontWeight: 700,
             textDecoration: "none",
-            boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-            transition: "transform 0.2s",
+            boxShadow: "var(--shadow-y2k)",
+            transition: "transform 0.2s, background-color 0.2s",
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.transform = "scale(1.02)")
-          }
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.02)";
+            e.currentTarget.style.backgroundColor =
+              "var(--color-primary-hover)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.backgroundColor = "var(--color-primary)";
+          }}
         >
           <span style={{ fontSize: "1.2rem" }}>+</span> Nueva Conversación
         </Link>
@@ -131,10 +136,12 @@ export function Sidebar() {
           style={{
             padding: "0.75rem 1rem",
             borderRadius: "var(--radius-md)",
-            backgroundColor: isActive("/") ? "rgba(0,0,0,0.05)" : "transparent",
+            backgroundColor: isActive("/")
+              ? "var(--color-surface-soft)"
+              : "transparent",
             color: isActive("/")
-              ? "var(--text-primary)"
-              : "var(--text-secondary)",
+              ? "var(--color-text-main)"
+              : "var(--color-text-soft)",
             transition: "all 0.2s",
             display: "flex",
             alignItems: "center",
@@ -142,7 +149,7 @@ export function Sidebar() {
             textDecoration: "none",
             fontWeight: isActive("/") ? 600 : 400,
             border: isActive("/")
-              ? "1px solid var(--border-subtle)"
+              ? "1px solid var(--color-border-active)"
               : "1px solid transparent",
           }}
         >
@@ -157,11 +164,11 @@ export function Sidebar() {
               padding: "0.75rem 1rem",
               borderRadius: "var(--radius-md)",
               backgroundColor: isActive(item.path)
-                ? "rgba(0,0,0,0.05)"
+                ? "var(--color-surface-soft)"
                 : "transparent",
               color: isActive(item.path)
-                ? "var(--text-primary)"
-                : "var(--text-secondary)",
+                ? "var(--color-text-main)"
+                : "var(--color-text-soft)",
               transition: "all 0.2s",
               display: "flex",
               alignItems: "center",
@@ -169,7 +176,7 @@ export function Sidebar() {
               textDecoration: "none",
               fontWeight: isActive(item.path) ? 600 : 400,
               border: isActive(item.path)
-                ? "1px solid var(--border-subtle)"
+                ? "1px solid var(--color-border-active)"
                 : "1px solid transparent",
             }}
           >
@@ -181,11 +188,12 @@ export function Sidebar() {
           style={{
             fontSize: "0.7rem",
             textTransform: "uppercase",
-            color: "var(--text-tertiary)",
+            color: "var(--color-text-soft)",
             marginBottom: "0.5rem",
             marginTop: "1.5rem",
             letterSpacing: "1px",
             paddingLeft: "1rem",
+            fontWeight: 600,
           }}
         >
           Herramientas
@@ -196,7 +204,7 @@ export function Sidebar() {
           style={{
             justifyContent: "flex-start",
             gap: "0.75rem",
-            color: "var(--text-secondary)",
+            color: "var(--color-text-soft)",
             fontWeight: 400,
           }}
           onClick={() => setShowTutorModal(true)}
@@ -209,7 +217,7 @@ export function Sidebar() {
       <div
         style={{
           marginTop: "auto",
-          borderTop: "1px solid var(--border-subtle)",
+          borderTop: "1px solid var(--color-border)",
           paddingTop: "1.5rem",
           display: "flex",
           flexDirection: "column",
@@ -221,16 +229,16 @@ export function Sidebar() {
         {isAnonymous ? (
           <div
             style={{
-              backgroundColor: "rgba(255,255,255,0.5)",
+              backgroundColor: "var(--color-surface-soft)",
               padding: "1rem",
               borderRadius: "1rem",
-              border: "1px solid var(--border-subtle)",
+              border: "1px solid var(--color-border)",
             }}
           >
             <p
               style={{
                 fontSize: "0.8rem",
-                color: "var(--text-secondary)",
+                color: "var(--color-text-soft)",
                 marginBottom: "0.75rem",
                 lineHeight: "1.4",
               }}
@@ -242,7 +250,11 @@ export function Sidebar() {
               size="sm"
               fullWidth
               onClick={() => setShowRegister(true)}
-              style={{ fontSize: "0.85rem", background: "#fff" }}
+              style={{
+                fontSize: "0.85rem",
+                background: "var(--color-surface)",
+                borderColor: "var(--color-border)",
+              }}
             >
               ☁️ Crear Cuenta
             </Button>
@@ -256,7 +268,7 @@ export function Sidebar() {
               justifyContent: "space-between",
               padding: "0.5rem",
               borderRadius: "0.5rem",
-              background: "rgba(0,0,0,0.03)",
+              background: "var(--color-surface-soft)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -290,9 +302,18 @@ export function Sidebar() {
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    color: "var(--color-text-main)",
                   }}
                 >
                   {user?.email}
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    color: "var(--color-text-soft)",
+                  }}
+                >
+                  Pro User
                 </span>
               </div>
             </div>
@@ -302,7 +323,7 @@ export function Sidebar() {
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
-                color: "var(--text-tertiary)",
+                color: "var(--color-text-soft)",
                 fontSize: "1.2rem",
                 padding: "4px",
                 borderRadius: "4px",
@@ -323,7 +344,7 @@ export function Sidebar() {
         <p
           style={{
             fontSize: "0.9rem",
-            color: "var(--text-secondary)",
+            color: "var(--color-text-soft)",
             marginBottom: "1.5rem",
           }}
         >
@@ -367,7 +388,11 @@ export function Sidebar() {
             <Button
               type="submit"
               disabled={loading}
-              style={{ background: "var(--grad-main)", border: "none" }}
+              style={{
+                background: "var(--grad-main)",
+                border: "none",
+                color: "#FFF",
+              }}
             >
               {loading ? "Creando..." : "Registrarme"}
             </Button>

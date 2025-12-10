@@ -1,214 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-/* Y2K Inline Styles / Constants */
-const COLORS = {
-  bgLight: "#f4f4f4",
-  accentPink: "#ff00ff", // Fuchsia
-  accentLime: "#ccff00", // Lime
-  accentCyan: "#00ffff", // Cyan
-  glassWhite: "rgba(255, 255, 255, 0.4)",
-  glassBorder: "rgba(255, 255, 255, 0.6)",
-  textDark: "#222",
-  textGray: "#666",
-};
-
-const GRADIENTS = {
-  main: "linear-gradient(135deg, #ff00ff 0%, #7928ca 100%)",
-  secondary: "linear-gradient(135deg, #00ffff 0%, #ccff00 100%)",
-  card: "linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%)",
-  metal: "linear-gradient(180deg, #ffffff 0%, #e0e0e0 50%, #b0b0b0 100%)",
-};
-
-const STYLES = {
-  container: {
-    fontFamily: "'Inter', sans-serif", // Assuming Inter or system font
-    color: COLORS.textDark,
-    backgroundColor: COLORS.bgLight,
-    minHeight: "100vh",
-    overflowX: "hidden" as const,
-  },
-  heroSection: {
-    background: GRADIENTS.main,
-    color: "#fff",
-    padding: "6rem 2rem 4rem",
-    display: "flex",
-    flexWrap: "wrap" as const,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "4rem",
-    position: "relative" as const,
-    overflow: "hidden" as const,
-  },
-  heroContent: {
-    maxWidth: "500px",
-    zIndex: 2,
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "1.5rem",
-  },
-  titleH1: {
-    fontSize: "3.5rem",
-    fontWeight: 800,
-    lineHeight: 1.1,
-    letterSpacing: "-0.02em",
-    textShadow: "0px 0px 10px rgba(255,255,255,0.5)",
-  },
-  heroSubtitle: {
-    fontSize: "1.2rem",
-    lineHeight: 1.5,
-    opacity: 0.9,
-    fontWeight: 500,
-  },
-  btnPrimary: {
-    background: COLORS.accentLime,
-    color: "#000",
-    border: "2px solid #fff",
-    padding: "0.75rem 2rem",
-    borderRadius: "999px",
-    fontSize: "1rem",
-    fontWeight: 700,
-    cursor: "pointer",
-    boxShadow: "0 0 15px rgba(204, 255, 0, 0.6)",
-    transition: "transform 0.2s",
-    textDecoration: "none",
-    display: "inline-block",
-  },
-  btnSecondary: {
-    background: "rgba(255,255,255,0.2)",
-    color: "#fff",
-    border: "2px solid rgba(255,255,255,0.5)",
-    padding: "0.75rem 2rem",
-    borderRadius: "999px",
-    fontSize: "1rem",
-    fontWeight: 600,
-    cursor: "pointer",
-    backdropFilter: "blur(5px)",
-    textDecoration: "none",
-    display: "inline-block",
-  },
-  windowFrame: {
-    background: "rgba(255, 255, 255, 0.85)",
-    borderRadius: "12px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-    border: "1px solid rgba(255,255,255,0.6)",
-    width: "100%",
-    maxWidth: "450px",
-    overflow: "hidden" as const,
-    zIndex: 2,
-    backdropFilter: "blur(10px)",
-  },
-  windowHeader: {
-    background: "linear-gradient(to right, #e0e0e0, #ffffff)",
-    padding: "0.5rem 1rem",
-    display: "flex",
-    gap: "0.4rem",
-    borderBottom: "1px solid #ccc",
-  },
-  windowDot: {
-    width: "10px",
-    height: "10px",
-    borderRadius: "50%",
-    background: "#ccc",
-    border: "1px solid #999",
-  },
-  section: {
-    padding: "5rem 2rem",
-    maxWidth: "1200px",
-    margin: "0 auto",
-  },
-  sectionTitle: {
-    fontSize: "2.5rem",
-    fontWeight: 700,
-    textAlign: "center" as const,
-    marginBottom: "3rem",
-    background: GRADIENTS.main,
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  },
-  cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "2rem",
-  },
-  glassCard: {
-    background: GRADIENTS.card,
-    border: `1px solid ${COLORS.glassBorder}`,
-    borderRadius: "20px",
-    padding: "2rem",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
-    backdropFilter: "blur(10px)",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "1rem",
-  },
-  chipContainer: {
-    display: "flex",
-    flexWrap: "wrap" as const,
-    gap: "1rem",
-    justifyContent: "center",
-  },
-  chip: {
-    background: "rgba(255,255,255,0.5)",
-    border: `1px solid ${COLORS.accentCyan}`,
-    padding: "0.5rem 1.5rem",
-    borderRadius: "50px",
-    fontSize: "0.9rem",
-    fontWeight: 600,
-    boxShadow: "0 0 10px rgba(0, 255, 255, 0.2)",
-  },
-  useCaseCard: {
-    background: "#fff",
-    border: "1px solid #ddd",
-    borderRadius: "16px",
-    padding: "1.5rem",
-    position: "relative" as const,
-    boxShadow: "4px 4px 0px rgba(0,0,0,0.1)",
-  },
-  mp3Header: {
-    background: "#eee",
-    borderRadius: "8px 8px 0 0",
-    height: "20px",
-    marginBottom: "1rem",
-    marginTop: "-1.5rem",
-    marginLeft: "-1.5rem",
-    marginRight: "-1.5rem",
-    borderBottom: "1px solid #ddd",
-    display: "flex",
-    alignItems: "center",
-    padding: "0 0.5rem",
-    fontSize: "0.6rem",
-    color: "#999",
-  },
-  mockUISection: {
-    background: "#f0f0f0",
-    padding: "5rem 2rem",
-  },
-  ctaSection: {
-    background: GRADIENTS.secondary,
-    padding: "6rem 2rem",
-    textAlign: "center" as const,
-    color: "#000",
-  },
-  ctaTitle: {
-    fontSize: "3rem",
-    fontWeight: 800,
-    marginBottom: "1rem",
-    color: "#222",
-  },
-  footer: {
-    background: "#111",
-    color: "#888",
-    padding: "3rem 2rem",
-    textAlign: "center" as const,
-    fontSize: "0.9rem",
-  },
-};
-
 export default function LandingPage() {
   const navigate = useNavigate();
-
-  // Handling responsiveness for grid
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -217,54 +11,129 @@ export default function LandingPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleNavigateApp = () => {
-    navigate("/chat");
-  };
+  const handleNavigateApp = () => navigate("/chat");
+  const handleNavigateProjects = () => navigate("/projects");
 
   return (
-    <div style={STYLES.container}>
-      {/* 3.1 HERO SECTION */}
-      <section style={STYLES.heroSection}>
-        {/* Background blobs/glows could be added here as absolute divs */}
-
-        <div style={STYLES.heroContent}>
+    <div
+      style={{
+        fontFamily: "var(--font-sans)",
+        color: "var(--color-text-main)",
+        backgroundColor: "var(--color-bg)",
+        minHeight: "100vh",
+        overflowX: "hidden",
+      }}
+    >
+      {/* HERO SECTION */}
+      <section
+        style={{
+          background: "var(--grad-surface)", // Subtle light/dark gradient
+          padding: "6rem 2rem 4rem",
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "4rem",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "500px",
+            zIndex: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.5rem",
+          }}
+        >
           <div
             style={{
               fontWeight: 800,
               fontSize: "1.5rem",
               letterSpacing: "2px",
+              background: "var(--grad-main)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
             WADI
           </div>
-          <h1 style={STYLES.titleH1}>
+          <h1
+            style={{
+              fontSize: "clamp(3rem, 5vw, 4.5rem)",
+              fontWeight: 800,
+              lineHeight: 1.1,
+              letterSpacing: "-0.02em",
+              color: "var(--color-text-main)",
+            }}
+          >
             Del caos
             <br />
-            al plan.
+            <span style={{ color: "var(--color-primary)" }}>al plan.</span>
           </h1>
-          <p style={STYLES.heroSubtitle}>
+          <p
+            style={{
+              fontSize: "1.2rem",
+              lineHeight: 1.5,
+              color: "var(--color-text-soft)",
+              fontWeight: 500,
+            }}
+          >
             WADI es tu workspace de IA que transforma ideas sueltas en proyectos
             claros, planes accionables y aprendizaje guiado.
           </p>
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             <button
-              style={STYLES.btnPrimary}
               onClick={handleNavigateApp}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "scale(1.05)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.transform = "scale(1)")
-              }
+              style={{
+                background: "var(--color-primary)",
+                color: "#fff",
+                border: "none",
+                padding: "0.75rem 2rem",
+                borderRadius: "999px",
+                fontSize: "1rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "var(--shadow-lg)",
+                transition: "transform 0.2s, background-color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.backgroundColor =
+                  "var(--color-primary-hover)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.backgroundColor = "var(--color-primary)";
+              }}
             >
               Probar WADI ahora →
             </button>
             <button
-              style={STYLES.btnSecondary}
-              onClick={() => {
+              onClick={() =>
                 document
                   .getElementById("mockUI")
-                  ?.scrollIntoView({ behavior: "smooth" });
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              style={{
+                background: "transparent",
+                color: "var(--color-text-main)",
+                border: "2px solid var(--color-border)",
+                padding: "0.75rem 2rem",
+                borderRadius: "999px",
+                fontSize: "1rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-primary)";
+                e.currentTarget.style.color = "var(--color-primary)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-border)";
+                e.currentTarget.style.color = "var(--color-text-main)";
               }}
             >
               Ver demo
@@ -273,13 +142,60 @@ export default function LandingPage() {
         </div>
 
         {/* Mockup Window */}
-        <div style={STYLES.windowFrame}>
-          <div style={STYLES.windowHeader}>
-            <div style={{ ...STYLES.windowDot, background: "#ff5f56" }}></div>
-            <div style={{ ...STYLES.windowDot, background: "#ffbd2e" }}></div>
-            <div style={{ ...STYLES.windowDot, background: "#27c93f" }}></div>
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.6)",
+            borderRadius: "16px",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            width: "100%",
+            maxWidth: "450px",
+            overflow: "hidden",
+            zIndex: 2,
+            backdropFilter: "blur(20px)",
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(255,255,255,0.8)",
+              padding: "0.75rem 1rem",
+              display: "flex",
+              gap: "0.5rem",
+              borderBottom: "1px solid rgba(0,0,0,0.05)",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                width: "10px",
+                height: "10px",
+                borderRadius: "50%",
+                background: "#ff5f56",
+              }}
+            ></div>
+            <div
+              style={{
+                width: "10px",
+                height: "10px",
+                borderRadius: "50%",
+                background: "#ffbd2e",
+              }}
+            ></div>
+            <div
+              style={{
+                width: "10px",
+                height: "10px",
+                borderRadius: "50%",
+                background: "#27c93f",
+              }}
+            ></div>
             <span
-              style={{ fontSize: "0.7rem", color: "#666", marginLeft: "auto" }}
+              style={{
+                fontSize: "0.7rem",
+                color: "#999",
+                marginLeft: "auto",
+                fontWeight: 600,
+              }}
             >
               WADI Chat v3.0
             </span>
@@ -287,52 +203,52 @@ export default function LandingPage() {
           <div
             style={{
               padding: "1.5rem",
-              background: "rgba(255,255,255,0.9)",
-              minHeight: "250px",
+              background: "rgba(255,255,255,0.5)",
+              minHeight: "280px",
               fontSize: "0.9rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
             }}
           >
-            <div
-              style={{
-                marginBottom: "1rem",
-                display: "flex",
-                justifyContent: "flex-end",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <div
                 style={{
-                  background: COLORS.accentPink,
+                  background: "var(--color-primary)",
                   color: "white",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "12px 12px 0 12px",
-                  maxWidth: "80%",
+                  padding: "0.8rem 1.2rem",
+                  borderRadius: "16px 16px 4px 16px",
+                  maxWidth: "85%",
+                  boxShadow: "0 4px 12px rgba(139, 92, 246, 0.2)",
                 }}
               >
-                Tengo una idea de negocio pero no sé por dónde empezar.
+                Tengo una idea de negocio pero no sé por dónde empezar. 🤯
               </div>
             </div>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+            <div style={{ display: "flex", gap: "0.8rem" }}>
               <div
                 style={{
-                  width: "30px",
-                  height: "30px",
-                  background: GRADIENTS.main,
+                  width: "32px",
+                  height: "32px",
+                  background: "var(--grad-main)",
                   borderRadius: "50%",
+                  flexShrink: 0,
                 }}
               ></div>
               <div
                 style={{
-                  background: "#f0f0f0",
+                  background: "#fff",
                   padding: "1rem",
-                  borderRadius: "0 12px 12px 12px",
-                  maxWidth: "85%",
+                  borderRadius: "4px 16px 16px 16px",
+                  maxWidth: "90%",
                   color: "#333",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                 }}
               >
                 <p style={{ margin: 0, marginBottom: "0.5rem" }}>
                   ¡Genial! Transformemos ese caos en un plan. 🚀
                 </p>
-                <p style={{ margin: 0, fontSize: "0.85rem", color: "#555" }}>
+                <p style={{ margin: 0, fontSize: "0.85rem", color: "#666" }}>
                   Activemos el <strong>Modo Negocios</strong>. ¿De qué trata tu
                   idea? ¿Es un producto o servicio para Argentina?
                 </p>
@@ -342,50 +258,104 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3.2 CÓMO TE AYUDA WADI */}
-      <section style={STYLES.section}>
-        <h2 style={STYLES.sectionTitle}>Cómo te ayuda WADI</h2>
-        <div style={STYLES.cardGrid}>
-          {/* Card 1 */}
-          <div style={STYLES.glassCard}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>📅</div>
-            <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>
-              Planificador personal
-            </h3>
-            <p style={{ lineHeight: 1.6, color: COLORS.textGray }}>
-              Convierte objetivos vagos en hojas de ruta paso a paso. Definí
-              tiempos, hitos y recursos necesarios.
-            </p>
-          </div>
-          {/* Card 2 */}
-          <div style={STYLES.glassCard}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>🧠</div>
-            <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>
-              Coach creativo
-            </h3>
-            <p style={{ lineHeight: 1.6, color: COLORS.textGray }}>
-              Brainstorming infinito. WADI mejora tus ideas, sugiere enfoques
-              alternativos y desbloquea tu creatividad.
-            </p>
-          </div>
-          {/* Card 3 */}
-          <div style={STYLES.glassCard}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>📊</div>
-            <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>
-              Panel de proyectos
-            </h3>
-            <p style={{ lineHeight: 1.6, color: COLORS.textGray }}>
-              Centralizá tus aventuras. Guardá cada conversación relevante en un
-              proyecto organizado para no perder nada.
-            </p>
-          </div>
+      {/* SECTIONS: HELP */}
+      <section
+        style={{ padding: "5rem 2rem", maxWidth: "1200px", margin: "0 auto" }}
+      >
+        <h2
+          style={{
+            fontSize: "2.5rem",
+            fontWeight: 700,
+            textAlign: "center",
+            marginBottom: "3rem",
+            background: "var(--grad-main)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            width: "fit-content",
+            marginInline: "auto",
+          }}
+        >
+          Cómo te ayuda WADI
+        </h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "2rem",
+          }}
+        >
+          {[
+            {
+              icon: "📅",
+              title: "Planificador",
+              text: "Convierte objetivos vagos en hojas de ruta paso a paso. Definí tiempos, hitos y recursos necesarios.",
+            },
+            {
+              icon: "🧠",
+              title: "Coach Creativo",
+              text: "Brainstorming infinito. WADI mejora tus ideas, sugiere enfoques alternativos y desbloquea tu creatividad.",
+            },
+            {
+              icon: "📊",
+              title: "Proyectos",
+              text: "Centralizá tus aventuras. Guardá cada conversación relevante en un proyecto organizado.",
+            },
+          ].map((item, i) => (
+            <div
+              key={i}
+              style={{
+                background: "var(--color-surface)",
+                border: "1px solid var(--color-border)",
+                borderRadius: "24px",
+                padding: "2rem",
+                boxShadow: "var(--shadow-sm)",
+                transition: "transform 0.2s",
+                cursor: "default",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "translateY(-5px)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "translateY(0)")
+              }
+            >
+              <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>
+                {item.icon}
+              </div>
+              <h3
+                style={{
+                  margin: "0 0 0.5rem",
+                  fontSize: "1.25rem",
+                  fontWeight: 700,
+                }}
+              >
+                {item.title}
+              </h3>
+              <p
+                style={{
+                  lineHeight: 1.6,
+                  color: "var(--color-text-soft)",
+                  margin: 0,
+                }}
+              >
+                {item.text}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 3.3 EL CEREBRO DE WADI */}
-      <section style={{ ...STYLES.section, background: "#fff" }}>
+      {/* BRAIN */}
+      <section
+        style={{
+          padding: "5rem 2rem",
+          background: "var(--color-surface-soft)",
+        }}
+      >
         <div
           style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
             display: "grid",
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
             gap: "4rem",
@@ -393,14 +363,14 @@ export default function LandingPage() {
           }}
         >
           <div>
-            <h2 style={{ ...STYLES.sectionTitle, textAlign: "left" }}>
+            <h2 style={{ fontSize: "2.2rem", marginBottom: "1.5rem" }}>
               El cerebro de WADI
             </h2>
             <p
               style={{
                 fontSize: "1.1rem",
                 lineHeight: 1.8,
-                color: "#444",
+                color: "var(--color-text-soft)",
                 marginBottom: "1.5rem",
               }}
             >
@@ -419,34 +389,61 @@ export default function LandingPage() {
             >
               {[
                 "🎭 Modos: General, Experto Técnico, Negocios, Tutor.",
-                "💾 Memoria de contexto y preferencias.",
-                "🌐 Multi-idioma y multi-stack.",
+                "💾 Memoria de contexto y preferencias de usuario.",
+                "🌐 Multi-idioma y soporte multi-stack.",
               ].map((item, i) => (
                 <li
                   key={i}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.5rem",
+                    gap: "0.75rem",
                     fontSize: "1rem",
                     fontWeight: 500,
                   }}
                 >
-                  <span style={{ color: COLORS.accentPink }}>✓</span> {item}
+                  <div
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      background: "var(--color-secondary)",
+                    }}
+                  ></div>
+                  {item}
                 </li>
               ))}
             </ul>
           </div>
-          <div style={STYLES.chipContainer}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "1rem",
+              justifyContent: "center",
+            }}
+          >
             {[
               "Aprendizaje personalizado",
               "Gestión de proyectos",
-              "Análisis & visualizaciones",
+              "Análisis de datos",
               "Marketing & Growth",
-              "Tech & Dev",
-              "Productivity",
+              "Tech & Code",
+              "Productividad",
             ].map((chip) => (
-              <div key={chip} style={STYLES.chip}>
+              <div
+                key={chip}
+                style={{
+                  background: "var(--color-surface)",
+                  border: "1px solid var(--color-border)",
+                  padding: "0.6rem 1.2rem",
+                  borderRadius: "50px",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  color: "var(--color-text-soft)",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+              >
                 {chip}
               </div>
             ))}
@@ -454,214 +451,116 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3.4 CASOS DE USO */}
-      <section style={STYLES.section}>
-        <h2 style={STYLES.sectionTitle}>Casos de uso</h2>
-        <div style={STYLES.cardGrid}>
-          {[
-            {
-              title: "Emprendedor",
-              steps: ["Idea", "Validación", "Plan de Negocio"],
-            },
-            { title: "Freelancer", steps: ["Propuesta", "Gestión", "Entrega"] },
-            {
-              title: "Creativo",
-              steps: ["Inspiración", "Boceto", "Refinamiento"],
-            },
-            {
-              title: "Estudiante",
-              steps: ["Tema", "Plan de estudio", "Repaso"],
-            },
-          ].map((useCase) => (
-            <div key={useCase.title} style={STYLES.useCaseCard}>
-              <div style={STYLES.mp3Header}>PLAYER - WADI v1</div>
-              <h4
-                style={{
-                  margin: "0 0 1rem",
-                  fontSize: "1.2rem",
-                  color: COLORS.accentPink,
-                }}
-              >
-                {useCase.title}
-              </h4>
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                {useCase.steps.map((step, i) => (
-                  <span
-                    key={step}
-                    style={{
-                      fontSize: "0.75rem",
-                      background: "#eee",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      color: "#555",
-                    }}
-                  >
-                    {i + 1}. {step}
-                  </span>
-                ))}
-              </div>
-              <div
-                style={{
-                  marginTop: "1rem",
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "10px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    background: "#ddd",
-                  }}
-                ></div>
-                <div
-                  style={{
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    background: "#ddd",
-                  }}
-                ></div>
-                <div
-                  style={{
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    background: "#ddd",
-                  }}
-                ></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3.5 CONOCÉ LA INTERFAZ */}
-      <section id="mockUI" style={STYLES.mockUISection}>
-        <h2 style={STYLES.sectionTitle}>Conocé la interfaz</h2>
+      {/* MOCK UI */}
+      <section
+        id="mockUI"
+        style={{ padding: "5rem 2rem", background: "var(--color-bg)" }}
+      >
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "2rem",
-            alignItems: "center",
-          }}
+          style={{ maxWidth: "1000px", margin: "0 auto", textAlign: "center" }}
         >
-          {/* Mock Window 1 */}
+          <h2 style={{ fontSize: "2rem", marginBottom: "3rem" }}>
+            Interfaz diseñada para el foco
+          </h2>
+
           <div
             style={{
-              ...STYLES.windowFrame,
-              maxWidth: "800px",
-              height: "400px",
-              background: "white",
-              display: "flex",
-              border: "1px solid #ccc",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
+              background: "var(--color-surface)",
+              borderRadius: "12px",
+              boxShadow: "0 20px 60px -10px rgba(0,0,0,0.1)",
+              border: "1px solid var(--color-border)",
+              aspectRatio: isMobile ? "auto" : "16/9",
+              height: isMobile ? "300px" : "auto",
+              position: "relative",
+              overflow: "hidden",
             }}
           >
+            {/* Abstract UI representation */}
             <div
               style={{
-                width: "20%",
-                background: "#f9f9f9",
-                borderRight: "1px solid #eee",
-                padding: "1rem",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: "250px",
+                borderRight: "1px solid var(--color-border)",
+                background: "var(--color-surface-soft)",
+                display: isMobile ? "none" : "block",
               }}
-            >
-              <div
-                style={{
-                  width: "100%",
-                  height: "10px",
-                  background: "#e0e0e0",
-                  borderRadius: "4px",
-                  marginBottom: "1rem",
-                }}
-              ></div>
-              <div
-                style={{
-                  width: "80%",
-                  height: "10px",
-                  background: "#e0e0e0",
-                  borderRadius: "4px",
-                  marginBottom: "0.5rem",
-                }}
-              ></div>
-              <div
-                style={{
-                  width: "60%",
-                  height: "10px",
-                  background: "#e0e0e0",
-                  borderRadius: "4px",
-                }}
-              ></div>
-            </div>
+            ></div>
             <div
               style={{
-                flex: 1,
-                padding: "2rem",
-                display: "flex",
-                flexDirection: "column",
+                position: "absolute",
+                top: "20px",
+                left: "270px",
+                right: "20px",
+                height: "40px",
+                background: "var(--color-surface-soft)",
+                borderRadius: "8px",
               }}
-            >
-              <div
-                style={{
-                  alignSelf: "flex-end",
-                  width: "40%",
-                  height: "40px",
-                  background: COLORS.accentLime,
-                  borderRadius: "12px 12px 0 12px",
-                  marginBottom: "1rem",
-                }}
-              ></div>
-              <div
-                style={{
-                  alignSelf: "flex-start",
-                  width: "50%",
-                  height: "80px",
-                  background: "#f0f0f0",
-                  borderRadius: "0 12px 12px 12px",
-                }}
-              ></div>
-              <div
-                style={{
-                  marginTop: "auto",
-                  width: "100%",
-                  height: "50px",
-                  border: "1px solid #ddd",
-                  borderRadius: "25px",
-                }}
-              ></div>
-            </div>
+            ></div>
+            <div
+              style={{
+                position: "absolute",
+                bottom: "30px",
+                left: isMobile ? "20px" : "270px",
+                right: "30px",
+                height: "60px",
+                border: "2px solid var(--color-border)",
+                borderRadius: "30px",
+              }}
+            ></div>
           </div>
-
-          <p style={{ textAlign: "center", color: COLORS.textGray }}>
-            Interfaz limpia, minimalista y enfocada en tu flujo de trabajo.
+          <p style={{ marginTop: "2rem", color: "var(--color-text-soft)" }}>
+            Simple. Potente. Sin distracciones.
           </p>
         </div>
       </section>
 
-      {/* 3.6 CTA FINAL */}
-      <section style={STYLES.ctaSection}>
-        <h2 style={STYLES.ctaTitle}>¿Listo para ordenar tu caos?</h2>
+      {/* CTA */}
+      <section
+        style={{
+          background: "var(--grad-main)",
+          padding: "6rem 2rem",
+          textAlign: "center",
+          color: "#fff",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "2.5rem",
+            fontWeight: 800,
+            marginBottom: "1rem",
+            color: "#fff",
+          }}
+        >
+          ¿Listo para ordenar tu caos?
+        </h2>
         <p
           style={{
             fontSize: "1.2rem",
-            marginBottom: "2rem",
+            marginBottom: "2.5rem",
             maxWidth: "600px",
-            margin: "0 auto 2rem",
+            marginInline: "auto",
+            opacity: 0.9,
           }}
         >
           Unite a WADI y comenzá a construir tus proyectos hoy mismo.
         </p>
         <button
+          onClick={handleNavigateProjects}
           style={{
-            ...STYLES.btnPrimary,
-            background: "#000",
-            color: "#fff",
-            boxShadow: "0 0 20px rgba(0,0,0,0.4)",
+            background: "#fff",
+            color: "#000",
+            border: "none",
+            padding: "1rem 3rem",
+            borderRadius: "999px",
+            fontSize: "1.1rem",
+            fontWeight: 700,
+            cursor: "pointer",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+            transition: "transform 0.2s",
           }}
-          onClick={handleNavigateApp}
           onMouseEnter={(e) =>
             (e.currentTarget.style.transform = "scale(1.05)")
           }
@@ -671,14 +570,21 @@ export default function LandingPage() {
         </button>
       </section>
 
-      {/* 3.7 FOOTER */}
-      <footer style={STYLES.footer}>
+      {/* FOOTER */}
+      <footer
+        style={{
+          background: "#020617",
+          color: "#94A3B8",
+          padding: "4rem 2rem",
+          textAlign: "center",
+          fontSize: "0.9rem",
+        }}
+      >
         <div
           style={{
             fontWeight: 800,
             fontSize: "1.5rem",
-            letterSpacing: "2px",
-            color: "white",
+            color: "#fff",
             marginBottom: "1rem",
           }}
         >
@@ -692,11 +598,11 @@ export default function LandingPage() {
             marginBottom: "2rem",
           }}
         >
-          <span style={{ cursor: "pointer" }}>Contacto</span>
-          <span style={{ cursor: "pointer" }}>Términos</span>
-          <span style={{ cursor: "pointer" }}>Privacidad</span>
+          <span>Contacto</span>
+          <span>Términos</span>
+          <span>Privacidad</span>
         </div>
-        <div>WADI · Agentic Workspace · Del caos al plan. © 2024</div>
+        <div>© 2025 WADI · Agentic Workspace.</div>
       </footer>
     </div>
   );

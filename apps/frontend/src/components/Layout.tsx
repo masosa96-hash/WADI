@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "var(--bg-app)",
+          backgroundColor: "var(--color-bg)",
           overflow: "hidden",
           position: "relative",
         }}

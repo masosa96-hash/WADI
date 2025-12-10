@@ -48,7 +48,7 @@ export function TutorSetupModal({ isOpen, onClose }: TutorSetupModalProps) {
               display: "block",
               marginBottom: "0.5rem",
               fontSize: "0.9rem",
-              color: "var(--text-secondary)",
+              color: "var(--color-text-soft)",
             }}
           >
             Tu nivel actual
@@ -64,9 +64,9 @@ export function TutorSetupModal({ isOpen, onClose }: TutorSetupModalProps) {
               width: "100%",
               padding: "0.75rem",
               borderRadius: "0.5rem",
-              border: "1px solid var(--border-subtle)",
-              backgroundColor: "var(--bg-app)",
-              color: "var(--text-primary)",
+              border: "1px solid var(--color-border)",
+              backgroundColor: "var(--color-surface)",
+              color: "var(--color-text-main)",
             }}
           >
             <option value="principiante">Principiante</option>
@@ -93,7 +93,15 @@ export function TutorSetupModal({ isOpen, onClose }: TutorSetupModalProps) {
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit" disabled={!topic.trim()}>
+          <Button
+            type="submit"
+            disabled={!topic.trim()}
+            style={{
+              background: "var(--color-primary)",
+              color: "#fff",
+              border: "none",
+            }}
+          >
             Empezar
           </Button>
         </div>

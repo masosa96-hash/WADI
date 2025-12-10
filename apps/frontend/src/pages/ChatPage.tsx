@@ -33,6 +33,13 @@ export default function ChatPage() {
 
     const text = input;
     setInput("");
+
+    // Reset textarea height
+    const textarea = document.querySelector(
+      'textarea[name="chat-input"]'
+    ) as HTMLTextAreaElement;
+    if (textarea) textarea.style.height = "auto";
+
     await sendMessage(text);
   };
 
@@ -57,16 +64,16 @@ export default function ChatPage() {
           maxWidth: "1000px",
           margin: "0 auto",
           position: "relative",
-          backgroundColor: "var(--bg-app)", // Using new Y2K base
+          backgroundColor: "var(--color-bg)",
         }}
       >
-        {/* Header Y2K Style */}
+        {/* Header Calm Y2K Style */}
         <header
           style={{
             padding: "1.5rem",
-            borderBottom: "1px solid var(--border-subtle)",
-            background: "rgba(255,255,255,0.5)",
-            backdropFilter: "blur(10px)",
+            borderBottom: "1px solid var(--color-border)",
+            background: "rgba(255,255,255,0.7)", // Higher opacity for calm feel
+            backdropFilter: "blur(16px)",
             position: "sticky",
             top: 0,
             zIndex: 10,
@@ -83,16 +90,23 @@ export default function ChatPage() {
             <div>
               <h2
                 style={{
-                  fontSize: "1.5rem",
+                  fontSize: "var(--text-xl)",
                   fontWeight: 700,
                   background: "var(--grad-main)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
+                  margin: 0,
                 }}
               >
                 {tutorMode.active ? "🎓 Modo Tutor" : "WADI Chat"}
               </h2>
-              <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+              <p
+                style={{
+                  fontSize: "var(--text-sm)",
+                  color: "var(--color-text-soft)",
+                  margin: 0,
+                }}
+              >
                 {tutorMode.active
                   ? `${tutorMode.topic} (${tutorMode.level})`
                   : "Tu copiloto de ideas a planes."}
@@ -103,7 +117,7 @@ export default function ChatPage() {
               size="sm"
               onClick={resetChat}
               title="Borrar chat"
-              style={{ color: "var(--text-tertiary)" }}
+              style={{ color: "var(--color-text-soft)" }}
             >
               🗑️ Limpiar
             </Button>
@@ -123,10 +137,10 @@ export default function ChatPage() {
               style={{
                 display: "flex",
                 gap: "0.25rem",
-                backgroundColor: "var(--bg-element)",
+                backgroundColor: "var(--color-surface-soft)",
                 padding: "0.25rem",
                 borderRadius: "var(--radius-full)",
-                border: "1px solid var(--border-subtle)",
+                border: "1px solid var(--color-border)",
               }}
             >
               {(
@@ -143,21 +157,21 @@ export default function ChatPage() {
                     key={m.id}
                     onClick={() => setPreferences({ activeTab: m.id })}
                     style={{
-                      fontSize: "0.85rem",
-                      padding: "6px 16px",
+                      fontSize: "var(--text-xs)",
+                      padding: "6px 14px",
                       borderRadius: "var(--radius-full)",
                       border: "none",
                       cursor: "pointer",
                       background: isActive
-                        ? "var(--text-primary)"
+                        ? "var(--color-primary)"
                         : "transparent",
                       color: isActive
-                        ? "var(--bg-panel)"
-                        : "var(--text-secondary)",
+                        ? "#FFF" // active white
+                        : "var(--color-text-soft)",
                       fontWeight: isActive ? 600 : 500,
                       transition: "all 0.2s ease",
                       boxShadow: isActive
-                        ? "0 2px 5px rgba(0,0,0,0.1)"
+                        ? "0 2px 5px rgba(139, 92, 246, 0.2)"
                         : "none",
                     }}
                   >
@@ -180,16 +194,17 @@ export default function ChatPage() {
                   })
                 }
                 style={{
-                  fontSize: "0.85rem",
+                  fontSize: "var(--text-xs)",
                   padding: "6px 12px 6px 30px", // space for icon
                   borderRadius: "var(--radius-lg)",
-                  border: "1px solid var(--border-subtle)",
-                  backgroundColor: "var(--bg-panel)",
-                  color: "var(--text-primary)",
+                  border: "1px solid var(--color-border)",
+                  backgroundColor: "var(--color-surface)",
+                  color: "var(--color-text-main)",
                   cursor: "pointer",
                   outline: "none",
-                  appearance: "none", // Reset for custom arrow if needed, mostly for style
+                  appearance: "none",
                   minWidth: "140px",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
                 <option value="short">Corto (Resumen)</option>
@@ -217,8 +232,8 @@ export default function ChatPage() {
           <div
             style={{
               padding: "0.75rem 1.5rem",
-              background: "linear-gradient(90deg, #f0f0f0 0%, #ffffff 100%)",
-              borderBottom: "1px solid var(--border-subtle)",
+              background: "var(--color-surface-soft)",
+              borderBottom: "1px solid var(--color-border)",
               display: "flex",
               alignItems: "center",
               gap: "1rem",
@@ -229,10 +244,10 @@ export default function ChatPage() {
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  fontSize: "0.8rem",
+                  fontSize: "var(--text-xs)",
                   marginBottom: "0.25rem",
                   fontWeight: 600,
-                  color: "var(--text-secondary)",
+                  color: "var(--color-text-soft)",
                 }}
               >
                 <span>
@@ -249,9 +264,9 @@ export default function ChatPage() {
               </div>
               <div
                 style={{
-                  height: "8px",
-                  borderRadius: "4px",
-                  backgroundColor: "#e0e0e0",
+                  height: "6px",
+                  borderRadius: "3px",
+                  backgroundColor: "rgba(0,0,0,0.05)",
                   overflow: "hidden",
                 }}
               >
@@ -259,7 +274,7 @@ export default function ChatPage() {
                   style={{
                     height: "100%",
                     width: `${tutorMode.totalSteps > 0 ? (tutorMode.currentStep / tutorMode.totalSteps) * 100 : 5}%`,
-                    background: "var(--grad-secondary)",
+                    background: "var(--grad-main)",
                     transition: "width 0.4s ease",
                   }}
                 />
@@ -298,7 +313,7 @@ export default function ChatPage() {
               <div style={{ textAlign: "center" }}>
                 <h3
                   style={{
-                    fontSize: "2rem",
+                    fontSize: "var(--text-2xl)",
                     fontWeight: 800,
                     marginBottom: "0.5rem",
                     background: "var(--grad-main)",
@@ -323,25 +338,26 @@ export default function ChatPage() {
                   }}
                 >
                   {[
-                    "Explícame un concepto técnico como si tuviera 12 años.",
-                    "Ayúdame a bajar una idea de negocio a un plan.",
-                    "Ayúdame a debuggear un error de código.",
-                    "Armemos un plan de estudio sobre Python.",
+                    "Explícame un concepto técnico.",
+                    "Ayúdame a planear mi negocio.",
+                    "Debuggea este error de código.",
+                    "Crea un plan de aprendizaje.",
                   ].map((s) => (
                     <Card
                       key={s}
                       hoverable
                       onClick={() => handleSuggestionClick(s)}
                       style={{
-                        padding: "1.5rem",
-                        fontSize: "1rem",
+                        padding: "1.25rem",
+                        fontSize: "var(--text-sm)",
                         cursor: "pointer",
-                        border: "1px solid var(--border-subtle)",
-                        background: "rgba(255,255,255,0.6)",
-                        backdropFilter: "blur(5px)",
+                        border: "1px solid var(--color-border)",
+                        background: "rgba(255,255,255,0.8)",
+                        backdropFilter: "blur(4px)",
                         borderRadius: "16px",
-                        boxShadow: "0 4px 10px rgba(0,0,0,0.03)",
-                        transition: "transform 0.2s, box-shadow 0.2s",
+                        boxShadow: "var(--shadow-sm)",
+                        transition: "all 0.2s",
+                        color: "var(--color-text-main)",
                       }}
                     >
                       <span style={{ marginRight: "0.5rem" }}>👉</span> {s}
@@ -365,23 +381,21 @@ export default function ChatPage() {
               >
                 <div
                   style={{
-                    maxWidth: "75%",
-                    padding: "1.25rem 1.5rem",
+                    maxWidth: "80%",
+                    padding: "1rem 1.25rem",
                     borderRadius: "1.25rem",
                     borderTopRightRadius: isUser ? "0.25rem" : "1.25rem",
                     borderTopLeftRadius: isUser ? "1.25rem" : "0.25rem",
                     background: isUser
-                      ? "var(--msg-user-bg)"
-                      : "var(--bg-panel)",
-                    color: isUser
-                      ? "var(--msg-user-text)"
-                      : "var(--text-primary)",
+                      ? "var(--color-primary)" // Violet
+                      : "var(--color-surface)", // White
+                    color: isUser ? "#FFF" : "var(--color-text-main)",
                     boxShadow: isUser
-                      ? "0 5px 15px rgba(121, 40, 202, 0.2)"
+                      ? "0 4px 12px rgba(139, 92, 246, 0.25)"
                       : "var(--shadow-sm)",
                     lineHeight: "1.6",
-                    fontSize: "1.05rem",
-                    border: isUser ? "none" : "1px solid var(--border-subtle)",
+                    fontSize: "var(--text-base)",
+                    border: isUser ? "none" : "1px solid var(--color-border)",
                   }}
                 >
                   <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
@@ -395,10 +409,10 @@ export default function ChatPage() {
               <div
                 style={{
                   padding: "0.75rem 1.5rem",
-                  background: "var(--bg-panel)",
+                  background: "var(--color-surface-soft)",
                   borderRadius: "2rem",
-                  fontSize: "0.9rem",
-                  color: "var(--text-secondary)",
+                  fontSize: "var(--text-sm)",
+                  color: "var(--color-text-soft)",
                   display: "flex",
                   alignItems: "center",
                   gap: "0.5rem",
@@ -409,7 +423,7 @@ export default function ChatPage() {
                   style={{
                     width: "8px",
                     height: "8px",
-                    background: "var(--accent-primary)",
+                    background: "var(--color-primary)",
                     borderRadius: "50%",
                     animation: "pulse 1s infinite",
                   }}
@@ -428,7 +442,7 @@ export default function ChatPage() {
             padding: "1.5rem",
             background: "rgba(255,255,255,0.8)",
             backdropFilter: "blur(20px)",
-            borderTop: "1px solid var(--border-subtle)",
+            borderTop: "1px solid var(--color-border)",
           }}
         >
           <form
@@ -444,13 +458,14 @@ export default function ChatPage() {
           >
             <div style={{ flex: 1, position: "relative" }}>
               <textarea
+                name="chat-input"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={
                   tutorMode.active
                     ? "Escribe tu respuesta o duda..."
-                    : "Escribe tu mensaje..."
+                    : "Empezá a escribir..."
                 }
                 disabled={isLoading}
                 rows={1}
@@ -463,23 +478,26 @@ export default function ChatPage() {
                   width: "100%",
                   padding: "1rem 1.25rem",
                   borderRadius: "1.5rem",
-                  border: "2px solid var(--border-subtle)",
-                  backgroundColor: "#fff",
-                  color: "var(--text-primary)",
+                  border: "2px solid var(--color-border)",
+                  backgroundColor: "var(--color-surface)",
+                  color: "var(--color-text-main)",
                   resize: "none",
                   minHeight: "56px",
                   maxHeight: "200px",
-                  fontSize: "1rem",
+                  fontSize: "var(--text-base)",
                   outline: "none",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                  transition: "border-color 0.2s",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
+                  transition: "border-color 0.2s, box-shadow 0.2s",
                 }}
-                onFocus={(e) =>
-                  (e.target.style.borderColor = "var(--border-focus)")
-                }
-                onBlur={(e) =>
-                  (e.target.style.borderColor = "var(--border-subtle)")
-                }
+                onFocus={(e) => {
+                  e.target.style.borderColor = "var(--color-primary)";
+                  e.target.style.boxShadow =
+                    "0 0 0 3px rgba(139, 92, 246, 0.1)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "var(--color-border)";
+                  e.target.style.boxShadow = "none";
+                }}
               />
             </div>
             <Button
@@ -489,20 +507,23 @@ export default function ChatPage() {
                 height: "56px",
                 width: "56px",
                 borderRadius: "50%",
-                background: "var(--grad-secondary)", // Lime/Cyan gradient
-                color: "#000",
+                background: "var(--color-primary)",
+                color: "#FFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+                boxShadow: "0 4px 15px rgba(139, 92, 246, 0.3)",
                 border: "2px solid #fff",
                 fontSize: "1.2rem",
-                transition: "transform 0.1s",
+                transition: "transform 0.1s, opacity 0.2s",
+                opacity: isLoading || !input.trim() ? 0.5 : 1,
+                cursor: isLoading || !input.trim() ? "not-allowed" : "pointer",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "scale(1.05)")
-              }
+              onMouseEnter={(e) => {
+                if (!isLoading && input.trim())
+                  e.currentTarget.style.transform = "scale(1.05)";
+              }}
               onMouseLeave={(e) =>
                 (e.currentTarget.style.transform = "scale(1)")
               }
@@ -514,7 +535,7 @@ export default function ChatPage() {
             style={{
               textAlign: "center",
               marginTop: "0.75rem",
-              fontSize: "0.8rem",
+              fontSize: "var(--text-xs)",
               color: "var(--text-tertiary)",
             }}
           >
