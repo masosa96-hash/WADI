@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { useAuthStore } from "./authStore";
+import { supabase } from "../config/supabase";
+import { fetchWithRetry } from "../utils/api";
 
 interface Project {
   id: string;
@@ -25,11 +26,28 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
   fetchProjects: async () => {
     set({ loading: true });
     try {
-      const user = useAuthStore.getState().user;
-      const query = user ? `?user_id=${user.id}` : "";
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("No authenticated session (Please login)");
 
-      const res = await fetch(`${API_URL}/api/projects${query}`);
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      const res = await fetchWithRetry(`${API_URL}/api/projects`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        let msg = `Error: ${res.status}`;
+        try {
+          const err = await res.json();
+          msg = err.error?.message || err.message || msg;
+        } catch {
+          /* ignore */
+        }
+        throw new Error(msg);
+      }
 
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
@@ -37,24 +55,33 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
       }
 
       const data = await res.json();
+      // Handle unified response shape if GET returns wrapped data?
+      // My backend routes.js returns `res.json(data)` (array), NOT `{ ok: true, data: [] }`.
+      // Only errors are wrapped. So straight array for data.
       set({ projects: data, loading: false });
     } catch (e) {
       console.error("Failed to fetch projects", e);
       set({ loading: false });
+      // Might want to expose error in store? But interface doesn't have it.
     }
   },
 
   createProject: async (name, description) => {
     try {
-      const user = useAuthStore.getState().user;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
 
-      const res = await fetch(`${API_URL}/api/projects`, {
+      const res = await fetchWithRetry(`${API_URL}/api/projects`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           name,
           description,
-          user_id: user?.id,
         }),
       });
 
@@ -62,7 +89,7 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
         let msg = `Error: ${res.status}`;
         try {
           const err = await res.json();
-          if (err.message) msg = err.message;
+          msg = err.error?.message || err.message || msg;
         } catch {
           /* ignore */
         }
@@ -78,7 +105,7 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
       set((state) => ({ projects: [data, ...state.projects] }));
     } catch (e) {
       console.error("Failed to create project", e);
-      throw e; // Re-throw so UI can handle it
+      throw e;
     }
   },
 }));

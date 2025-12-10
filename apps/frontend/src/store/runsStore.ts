@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { supabase } from "../config/supabase";
+import { fetchWithRetry } from "../utils/api";
 
 interface Run {
   id: string;
@@ -25,8 +27,29 @@ export const useRunsStore = create<RunsState>((set) => ({
     set({ loading: true });
 
     try {
-      const res = await fetch(`${API_URL}/api/projects/${projectId}/runs`);
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetchWithRetry(
+        `${API_URL}/api/projects/${projectId}/runs`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      if (!res.ok) {
+        let msg = `Error: ${res.status}`;
+        try {
+          const err = await res.json();
+          msg = err.error?.message || err.message || msg;
+        } catch {
+          /* ignore */
+        }
+        throw new Error(msg);
+      }
+
       const data = await res.json();
       set({ runs: data, loading: false });
     } catch (e) {
@@ -37,12 +60,34 @@ export const useRunsStore = create<RunsState>((set) => ({
 
   createRun: async (projectId, input) => {
     try {
-      const res = await fetch(`${API_URL}/api/projects/${projectId}/runs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input }),
-      });
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetchWithRetry(
+        `${API_URL}/api/projects/${projectId}/runs`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+          body: JSON.stringify({ input }),
+        }
+      );
+
+      if (!res.ok) {
+        let msg = `Error: ${res.status}`;
+        try {
+          const err = await res.json();
+          msg = err.error?.message || err.message || msg;
+        } catch {
+          /* ignore */
+        }
+        throw new Error(msg);
+      }
+
       const data = await res.json();
       set((state) => ({ runs: [data, ...state.runs] }));
     } catch (e) {

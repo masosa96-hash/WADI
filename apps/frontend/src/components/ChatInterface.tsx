@@ -138,7 +138,7 @@ export function ChatInterface({
                 filter: "drop-shadow(0 0 10px rgba(139, 92, 246, 0.3))",
               }}
             >
-              👋
+              🚀
             </div>
             <h3
               style={{
@@ -146,10 +146,10 @@ export function ChatInterface({
                 color: "var(--color-text-main)",
               }}
             >
-              Bienvenido a WADI
+              Iniciá tu primera conversación
             </h3>
             <p style={{ color: "var(--color-text-soft)" }}>
-              Comenzá una conversación para empezar a crear.
+              Escribí tu pregunta, idea o problema abajo para empezar.
             </p>
           </div>
         )}
@@ -184,7 +184,7 @@ export function ChatInterface({
                 animation: "pulse 1s infinite",
               }}
             />
-            <span>Generando respuesta...</span>
+            <span>Ordenando tus ideas...</span>
           </div>
         )}
 

@@ -315,15 +315,36 @@ export default function Projects() {
               <div
                 style={{
                   textAlign: "center",
-                  padding: "3rem",
+                  padding: "4rem 2rem",
                   background: "var(--color-surface-soft)",
                   borderRadius: "1rem",
-                  border: "1px dashed var(--color-border)",
+                  border: "2px dashed var(--color-border)",
+                  display: "flex", // Flex
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "1rem",
                 }}
               >
-                <p style={{ color: "var(--color-text-soft)" }}>
-                  No hay proyectos recientes. ¡Crea el primero arriba!
+                <div style={{ fontSize: "2rem" }}>🌱</div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: "var(--text-lg)",
+                    color: "var(--color-text-main)",
+                  }}
+                >
+                  Tu espacio está limpio
+                </h3>
+                <p style={{ color: "var(--color-text-soft)", margin: 0 }}>
+                  Aún no tienes proyectos. ¡Es hora de empezar algo nuevo!
                 </p>
+                <Button
+                  onClick={openCreateModal}
+                  variant="primary"
+                  style={{ marginTop: "1rem" }}
+                >
+                  🚀 Creá tu primer proyecto
+                </Button>
               </div>
             )}
           </div>

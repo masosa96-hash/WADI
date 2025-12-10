@@ -8,6 +8,10 @@ import routes from "./routes.js";
 import kivoRoutes from "./routes/kivo.js";
 import monitoringRoutes from "./routes/monitoring.js";
 
+import { requestLogger } from "./middleware/requestLogger.js";
+import { rateLimiter } from "./middleware/rateLimiter.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -19,6 +23,8 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
+app.use("/api", rateLimiter); // Only rate limit API
 
 // --------------------------------------------------
 // REDIRECT LEGACY KIVO
@@ -59,6 +65,9 @@ app.get(/.*/, (req, res) => {
     }
   });
 });
+
+// Error Handler
+app.use(errorHandler);
 
 // START SERVER
 const PORT = process.env.PORT || 3000;

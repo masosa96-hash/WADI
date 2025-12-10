@@ -4,7 +4,7 @@ import { useChatStore } from "../store/chatStore";
 import { Button } from "../components/common/Button";
 import { Card } from "../components/common/Card";
 
-const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un sueño?"];
+const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un objetivo?"];
 
 export default function ChatPage() {
   const {
@@ -17,7 +17,17 @@ export default function ChatPage() {
     preferences,
     setPreferences,
   } = useChatStore();
-  const [input, setInput] = useState("");
+  // Initialize input state lazily from localStorage to avoid useEffect setState warnings
+  const [input, setInput] = useState(() => {
+    try {
+      if (typeof window !== "undefined") {
+        return localStorage.getItem("wadi_chat_draft") || "";
+      }
+    } catch {
+      /* ignore */
+    }
+    return "";
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Placeholder logic
@@ -34,6 +44,14 @@ export default function ChatPage() {
     ? "Escribe tu respuesta o duda..."
     : PLACEHOLDERS[placeholderIndex];
 
+  useEffect(() => {
+    // Save draft with debounce
+    const timer = setTimeout(() => {
+      localStorage.setItem("wadi_chat_draft", input);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [input]);
+
   // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -49,6 +67,7 @@ export default function ChatPage() {
 
     const text = input;
     setInput("");
+    localStorage.removeItem("wadi_chat_draft"); // Clear draft
 
     // Reset textarea height
     const textarea = document.querySelector(
@@ -84,7 +103,7 @@ export default function ChatPage() {
           style={{
             padding: "1.5rem",
             borderBottom: "1px solid var(--color-border)",
-            background: "rgba(255,255,255,0.7)", // Higher opacity for calm feel
+            background: "rgba(255,255,255,0.7)",
             backdropFilter: "blur(16px)",
             position: "sticky",
             top: 0,
@@ -317,7 +336,7 @@ export default function ChatPage() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: "100%", // changed from height to minHeight for safety
+                minHeight: "100%",
                 gap: "2rem",
                 marginTop: "-2rem",
               }}
@@ -325,7 +344,7 @@ export default function ChatPage() {
               <div style={{ textAlign: "center" }}>
                 <h3
                   style={{
-                    fontSize: "var(--text-3xl)", // Slightly larger
+                    fontSize: "var(--text-3xl)",
                     fontWeight: 800,
                     marginBottom: "0.5rem",
                     background: "var(--grad-main)",
@@ -348,17 +367,6 @@ export default function ChatPage() {
                     >
                       Elegí una categoría o escribí directamente abajo.
                     </p>
-                    <p
-                      style={{
-                        fontSize: "var(--text-xs)",
-                        color: "var(--color-text-soft)",
-                        opacity: 0.8,
-                        marginTop: "0.5rem",
-                      }}
-                    >
-                      Ej: Explicame algo difícil · Ayudame a ordenar mi día ·
-                      Tengo un bug raro
-                    </p>
                   </>
                 )}
               </div>
@@ -370,45 +378,39 @@ export default function ChatPage() {
                     gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
                     gap: "1rem",
                     width: "100%",
-                    maxWidth: "900px", // Increased width for 2 columns
+                    maxWidth: "900px",
                   }}
                 >
                   {[
                     {
                       title: "Quiero entender algo mejor",
-                      desc: "Explicaciones simples, resúmenes y planes para aprender algo.",
-                      prompt:
-                        "Quiero aprender algo y necesito que me armes un plan paso a paso. Te cuento: ",
+                      desc: "Explicaciones simples, resúmenes y planes para aprender.",
+                      prompt: "Quiero entender algo mejor: ",
                     },
                     {
                       title: "Tengo un problema con código",
-                      desc: "Ayuda con código, errores, arquitectura o buenas prácticas.",
-                      prompt:
-                        "Tengo un problema con código / un error y necesito ayuda para debuggear. Te cuento: ",
+                      desc: "Ayuda con código, errores, arquitectura o debugging.",
+                      prompt: "Tengo un problema con código: ",
                     },
                     {
                       title: "Estoy pensando en un negocio",
-                      desc: "Ideas de negocio, validación, precios, ventas y marketing.",
-                      prompt:
-                        "Quiero trabajar una idea de negocio o mejorar ingresos. Te cuento mi contexto: ",
+                      desc: "Validación de ideas, pricing, ventas y estrategia.",
+                      prompt: "Estoy pensando en un negocio: ",
                     },
                     {
                       title: "Quiero crear algo nuevo",
-                      desc: "Textos, ideas de posts, guiones, branding y contenido creativo.",
-                      prompt:
-                        "Necesito ideas y ayuda creativa para contenido. Esto es lo que quiero hacer: ",
+                      desc: "Creatividad, contenido, guiones y branding.",
+                      prompt: "Quiero crear algo nuevo: ",
                     },
                     {
                       title: "Necesito ordenar mis ideas",
-                      desc: "Ordenar tareas, proyectos, hábitos y sistemas para tu día a día.",
-                      prompt:
-                        "Estoy desordenado y necesito ayuda para ordenar mis proyectos y tareas. Te cuento: ",
+                      desc: "Productividad, tareas y organización personal.",
+                      prompt: "Necesito ordenar mis ideas: ",
                     },
                     {
                       title: "Algo no me funciona",
-                      desc: "Problemas con PC, consola, internet u otros dispositivos.",
-                      prompt:
-                        "Tengo un problema técnico con PC / consola / internet. Lo que está pasando es: ",
+                      desc: "Soporte técnico y troubleshooting de dispositivos.",
+                      prompt: "Algo no me funciona: ",
                     },
                   ].map((item) => (
                     <Card
@@ -421,7 +423,6 @@ export default function ChatPage() {
                         ) as HTMLTextAreaElement;
                         if (textarea) {
                           textarea.focus();
-                          // Adjust height for the new text
                           setTimeout(() => {
                             textarea.style.height = "auto";
                             textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
@@ -479,8 +480,8 @@ export default function ChatPage() {
                     borderTopRightRadius: isUser ? "0.25rem" : "1.25rem",
                     borderTopLeftRadius: isUser ? "1.25rem" : "0.25rem",
                     background: isUser
-                      ? "var(--color-primary)" // Violet
-                      : "var(--color-surface)", // White
+                      ? "var(--color-primary)"
+                      : "var(--color-surface)",
                     color: isUser ? "#FFF" : "var(--color-text-main)",
                     boxShadow: isUser
                       ? "0 4px 12px rgba(139, 92, 246, 0.25)"
@@ -520,7 +521,7 @@ export default function ChatPage() {
                     animation: "pulse 1s infinite",
                   }}
                 ></div>
-                WADI está pensando...
+                Ordenando tus ideas...
               </div>
             </div>
           )}
@@ -637,12 +638,7 @@ export default function ChatPage() {
                 <span>
                   WADI puede fallar. Usalo como copiloto, no como única verdad.
                 </span>
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    opacity: 0.8,
-                  }}
-                >
+                <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>
                   Tip: Enter para enviar · Shift+Enter para nueva línea.
                 </span>
               </>

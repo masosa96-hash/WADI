@@ -1,124 +1,196 @@
 import { Router } from "express";
 import { openai, AI_MODEL } from "./openai.js";
 import { WADI_SYSTEM_PROMPT, generateSystemPrompt } from "./wadi-brain.js";
+import { supabase } from "./supabase.js";
+import { AppError, AuthError, ModelError } from "./core/errors.js";
 
 const router = Router();
 
-router.post("/chat", async (req, res) => {
-  try {
+// Helper: Verify Auth Token via Supabase
+const getAuthenticatedUser = async (req) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return null;
+  const token = authHeader.replace("Bearer ", "");
+
+  // Verify token with Supabase (JWT verification)
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
+  if (error || !user) return null;
+  return user;
+};
+
+// Helper: Async Wrapper for error handling
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+// ------------------------------------------------------------------
+// PUBLIC / SEMI-PUBLIC ROUTES (Chat can be anonymous for guest?)
+// Current requirements imply "Iniciá tu primera conversación" so maybe?
+// Critical block didn't specify strict auth for chat, but "RLS" for data.
+// We'll keep chat open or check logic. Current Frontend uses guest login.
+// Guest login produces a token! So we can treat it as Authenticated.
+// ------------------------------------------------------------------
+
+router.post(
+  "/chat",
+  asyncHandler(async (req, res) => {
     const { message, mode, topic, explainLevel, tutorMode } = req.body;
 
-    // Default values if missing
     const safeMode = mode || "normal";
     const safeTopic = topic || "general";
     const safeLevel = explainLevel || "normal";
 
     const systemPrompt = generateSystemPrompt(safeMode, safeTopic, safeLevel);
 
-    // Future: Use tutorMode currentStep logic here if we were implementing "Smart Tutor" backend state.
-    // For now, prompt instruction handles "Guia paso a paso".
+    try {
+      const completion = await openai.chat.completions.create({
+        model: AI_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message },
+        ],
+      });
 
-    const completion = await openai.chat.completions.create({
-      model: AI_MODEL,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: message },
-      ],
-    });
+      let tutorMeta = null;
+      if (safeMode === "tutor" && tutorMode) {
+        tutorMeta = {
+          currentStep: (tutorMode.currentStep || 0) + 0,
+          totalSteps: tutorMode.totalSteps || 5,
+        };
+      }
 
-    // Mock Tutor Meta for now (could be real in future)
-    let tutorMeta = null;
-    if (safeMode === "tutor" && tutorMode) {
-      // Simple increment logic mock
-      tutorMeta = {
-        currentStep: (tutorMode.currentStep || 0) + 0, // No increment logic yet, just echo
-        totalSteps: tutorMode.totalSteps || 5,
-      };
+      res.json({ reply: completion.choices[0].message.content, tutorMeta });
+    } catch (e) {
+      throw new ModelError(e.message);
     }
+  })
+);
 
-    res.json({ reply: completion.choices[0].message.content, tutorMeta });
-  } catch (e) {
-    res.status(500).json({ error: String(e) });
-  }
-});
+// ------------------------------------------------------------------
+// PROTECTED ROUTES (Projects & Runs)
+// ------------------------------------------------------------------
 
-// Projects Routes
-import { supabase } from "./supabase.js";
+router.get(
+  "/projects",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required (Bearer token)");
 
-router.get("/projects", async (req, res) => {
-  const { user_id } = req.query;
+    // Secure: Force user_id match
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-  let query = supabase
-    .from("projects")
-    .select("*")
-    .order("created_at", { ascending: false });
+    if (error) throw new AppError("DB_ERROR", error.message);
+    res.json(data);
+  })
+);
 
-  if (user_id) {
-    query = query.eq("user_id", user_id);
-  }
+router.post(
+  "/projects",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
 
-  const { data, error } = await query;
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
-});
-
-router.post("/projects", async (req, res) => {
-  const { name, description, user_id } = req.body;
-  const { data, error } = await supabase
-    .from("projects")
-    .insert([{ name, description, user_id }])
-    .select()
-    .single();
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
-});
-
-router.get("/projects/:id/runs", async (req, res) => {
-  const { id } = req.params;
-  const { data, error } = await supabase
-    .from("runs")
-    .select("*")
-    .eq("project_id", id)
-    .order("created_at", { ascending: false });
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
-});
-
-router.post("/projects/:id/runs", async (req, res) => {
-  const { id } = req.params;
-  const { input } = req.body;
-
-  // 1. Create run entry
-  const { data: run, error: runError } = await supabase
-    .from("runs")
-    .insert([{ project_id: id, input }])
-    .select()
-    .single();
-  if (runError) return res.status(500).json({ error: runError.message });
-
-  // 2. Generate AI response
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: input }],
-    });
-    const output = completion.choices[0].message.content;
-
-    // 3. Update run with output
-    const { data: updatedRun, error: updateError } = await supabase
-      .from("runs")
-      .update({ output })
-      .eq("id", run.id)
+    // Secure: Use user.id from token
+    const { name, description } = req.body;
+    const { data, error } = await supabase
+      .from("projects")
+      .insert([{ name, description, user_id: user.id }])
       .select()
       .single();
 
-    if (updateError)
-      return res.status(500).json({ error: updateError.message });
+    if (error) throw new AppError("DB_ERROR", error.message);
+    res.json(data);
+  })
+);
 
-    res.json(updatedRun);
-  } catch (e) {
-    res.status(500).json({ error: String(e) });
-  }
-});
+router.get(
+  "/projects/:id/runs",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+
+    // Secure: Verify project ownership first
+    const { data: project } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (!project)
+      throw new AuthError("Access denied or project not found", 403);
+
+    const { data, error } = await supabase
+      .from("runs")
+      .select("*")
+      .eq("project_id", id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new AppError("DB_ERROR", error.message);
+    res.json(data);
+  })
+);
+
+router.post(
+  "/projects/:id/runs",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+    const { input } = req.body;
+
+    // Secure: Verify project ownership
+    const { data: project } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (!project)
+      throw new AuthError("Access denied or project not found", 403);
+
+    // 1. Create run (with user_id if column exists, safe to add usually)
+    const { data: run, error: runError } = await supabase
+      .from("runs")
+      .insert([{ project_id: id, input, user_id: user.id }])
+      .select()
+      .single();
+
+    if (runError) throw new AppError("DB_ERROR", runError.message);
+
+    // 2. Generate AI
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: input }],
+      });
+      const output = completion.choices[0].message.content;
+
+      // 3. Update run
+      const { data: updatedRun, error: updateError } = await supabase
+        .from("runs")
+        .update({ output })
+        .eq("id", run.id)
+        .select()
+        .single();
+
+      if (updateError) throw new AppError("DB_ERROR", updateError.message);
+
+      res.json(updatedRun);
+    } catch (e) {
+      throw new ModelError(String(e));
+    }
+  })
+);
 
 export default router;
