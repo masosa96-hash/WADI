@@ -18,6 +18,7 @@ interface ChatState {
   mode: ChatMode;
   topic: string;
   explainLevel: "short" | "normal" | "detailed";
+  sessionId?: string; // Memory session ID
 
   // Actions
   sendMessage: (text: string) => Promise<void>;
@@ -38,6 +39,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   mode: "normal",
   topic: "general",
   explainLevel: "normal",
+  sessionId: undefined,
 
   resetChat: () =>
     set({
@@ -47,6 +49,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       mode: "normal",
       topic: "general",
       explainLevel: "normal",
+      sessionId: undefined,
     }),
 
   setPreset: (preset) =>
@@ -111,13 +114,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => ({ messages: [...state.messages, userMsg] }));
 
     try {
-      const { mode, topic, explainLevel } = get();
+      const { mode, topic, explainLevel, sessionId } = get();
 
       const payload = {
         message: text,
         mode,
         topic,
         explainLevel,
+        sessionId,
       };
 
       const res = await fetch(`${API_URL}/api/chat`, {
@@ -131,6 +135,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
       const data = await res.json();
+
+      // Update sessionId if returned (session established)
+      if (data.sessionId) {
+        set({ sessionId: data.sessionId });
+      }
 
       // 2. Add AI response
       const aiMsg: Message = {

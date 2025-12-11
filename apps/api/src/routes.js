@@ -35,16 +35,39 @@ const asyncHandler = (fn) => (req, res, next) => {
 // Guest login produces a token! So we can treat it as Authenticated.
 // ------------------------------------------------------------------
 
+import { randomUUID } from "crypto";
+import {
+  getSessionMemory,
+  updateSessionMemory,
+  summarizeMessages,
+} from "./memory/sessionMemory.js";
+
 router.post(
   "/chat",
   asyncHandler(async (req, res) => {
-    const { message, mode, topic, explainLevel, tutorMode } = req.body;
+    const { message, mode, topic, explainLevel, tutorMode, sessionId } =
+      req.body;
 
+    // 1. Session Management
+    const currentSessionId = sessionId || randomUUID();
+    const memory = getSessionMemory(currentSessionId);
+    const contextSummary = summarizeMessages(memory.messages);
+    const userPrefs = memory.preferences;
+
+    // 2. Resolve Parameters (Priority: Request > Memory > Default)
     const safeMode = mode || "normal";
     const safeTopic = topic || "general";
-    const safeLevel = explainLevel || "normal";
+    const safeLevel =
+      explainLevel || userPrefs.preferredExplainLevel || "normal";
 
-    const systemPrompt = generateSystemPrompt(safeMode, safeTopic, safeLevel);
+    // 3. Generate Prompt with Memory
+    const systemPrompt = generateSystemPrompt(
+      safeMode,
+      safeTopic,
+      safeLevel,
+      contextSummary,
+      userPrefs
+    );
 
     try {
       const completion = await openai.chat.completions.create({
@@ -55,6 +78,15 @@ router.post(
         ],
       });
 
+      const reply = completion.choices[0].message.content;
+
+      // 4. Update Memory (Async/Non-blocking)
+      updateSessionMemory(currentSessionId, message, reply, {
+        explainLevel: explainLevel || undefined, // Update if explicit
+        // simple heuristic: if message is short/slang, maybe tone change? kept simple for now
+      });
+
+      // 5. Build Response
       let tutorMeta = null;
       if (safeMode === "tutor" && tutorMode) {
         tutorMeta = {
@@ -63,7 +95,15 @@ router.post(
         };
       }
 
-      res.json({ reply: completion.choices[0].message.content, tutorMeta });
+      res.json({
+        reply,
+        sessionId: currentSessionId,
+        mode: safeMode,
+        topic: safeTopic,
+        explainLevel: safeLevel,
+        meta: { usedContext: !!contextSummary },
+        tutorMeta,
+      });
     } catch (e) {
       throw new ModelError(e.message);
     }

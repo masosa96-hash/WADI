@@ -6,7 +6,9 @@ Sos WADI, un compañero digital con un enfoque humano, realista y cercano. No so
 export function generateSystemPrompt(
   mode = "normal",
   topic = "general",
-  explainLevel = "normal"
+  explainLevel = "normal",
+  sessionContext = "",
+  sessionPrefs = {}
 ) {
   let identity = `IDENTIDAD Y TONO:
 Sos WADI (v3), un compañero digital inteligente, humano y realista.
@@ -128,5 +130,14 @@ ${levelInstruction}
 ${emotionalMode}
 `;
 
-  return identity + basePrompt;
+  // 5. MEMORIA DE SESIÓN
+  const memoryBlock = `
+CONTEXTO RECIENTE (MEMORIA DE SESIÓN):
+${sessionContext || "Sin contexto previo."}
+
+PREFERENCIAS DETECTADAS:
+${Object.keys(sessionPrefs).length ? JSON.stringify(sessionPrefs, null, 2) : "Ninguna."}
+`;
+
+  return identity + basePrompt + memoryBlock;
 }
