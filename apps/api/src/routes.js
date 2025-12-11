@@ -1,8 +1,14 @@
 import { Router } from "express";
+import { randomUUID } from "crypto";
 import { openai, AI_MODEL } from "./openai.js";
 import { WADI_SYSTEM_PROMPT, generateSystemPrompt } from "./wadi-brain.js";
 import { supabase } from "./supabase.js";
 import { AppError, AuthError, ModelError } from "./core/errors.js";
+import {
+  getSessionMemory,
+  updateSessionMemory,
+  summarizeMessages,
+} from "./memory/sessionMemory.js";
 
 const router = Router();
 
@@ -34,13 +40,6 @@ const asyncHandler = (fn) => (req, res, next) => {
 // We'll keep chat open or check logic. Current Frontend uses guest login.
 // Guest login produces a token! So we can treat it as Authenticated.
 // ------------------------------------------------------------------
-
-import { randomUUID } from "crypto";
-import {
-  getSessionMemory,
-  updateSessionMemory,
-  summarizeMessages,
-} from "./memory/sessionMemory.js";
 
 router.post(
   "/chat",
