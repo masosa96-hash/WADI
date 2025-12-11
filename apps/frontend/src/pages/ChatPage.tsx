@@ -12,12 +12,14 @@ export default function ChatPage() {
     isLoading,
     sendMessage,
     resetChat,
-    tutorMode,
-    stopTutorMode,
-    preferences,
-    setPreferences,
+    mode,
+    // topic,
+    explainLevel,
+    setPreset,
+    setExplainLevel,
   } = useChatStore();
-  // Initialize input state lazily from localStorage to avoid useEffect setState warnings
+
+  // Initialize input state lazily from localStorage
   const [input, setInput] = useState(() => {
     try {
       if (typeof window !== "undefined") {
@@ -40,19 +42,15 @@ export default function ChatPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const currentPlaceholder = tutorMode.active
-    ? "Escribe tu respuesta o duda..."
-    : PLACEHOLDERS[placeholderIndex];
+  const currentPlaceholder = PLACEHOLDERS[placeholderIndex];
 
   useEffect(() => {
-    // Save draft with debounce
     const timer = setTimeout(() => {
       localStorage.setItem("wadi_chat_draft", input);
     }, 300);
     return () => clearTimeout(timer);
   }, [input]);
 
-  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -67,9 +65,8 @@ export default function ChatPage() {
 
     const text = input;
     setInput("");
-    localStorage.removeItem("wadi_chat_draft"); // Clear draft
+    localStorage.removeItem("wadi_chat_draft");
 
-    // Reset textarea height
     const textarea = document.querySelector(
       'textarea[name="chat-input"]'
     ) as HTMLTextAreaElement;
@@ -129,7 +126,7 @@ export default function ChatPage() {
                   margin: 0,
                 }}
               >
-                {tutorMode.active ? "🎓 Modo Tutor" : "WADI Chat"}
+                {mode === "tutor" ? "🎓 Modo Tutor" : "WADI Chat"}
               </h2>
               <p
                 style={{
@@ -138,8 +135,8 @@ export default function ChatPage() {
                   margin: 0,
                 }}
               >
-                {tutorMode.active
-                  ? `${tutorMode.topic} (${tutorMode.level})`
+                {mode === "tutor"
+                  ? "Aprendizaje paso a paso"
                   : "Tu copiloto de ideas a planes."}
               </p>
             </div>
@@ -163,7 +160,7 @@ export default function ChatPage() {
               flexWrap: "wrap",
             }}
           >
-            {/* Mode/Topic Selector Tabs */}
+            {/* Mode Selector Tabs */}
             <div
               style={{
                 display: "flex",
@@ -176,17 +173,17 @@ export default function ChatPage() {
             >
               {(
                 [
-                  { id: "general", label: "General" },
-                  { id: "tech", label: "Tech / Dev" },
-                  { id: "biz", label: "Negocios" },
-                  { id: "tutor", label: "Tutor Mode" },
+                  { id: "reflexivo", label: "General", modeMatch: "normal" },
+                  { id: "tech", label: "Tech / Dev", modeMatch: "tech" },
+                  { id: "biz", label: "Negocios", modeMatch: "biz" },
+                  { id: "learning", label: "Tutor", modeMatch: "tutor" },
                 ] as const
               ).map((m) => {
-                const isActive = preferences.activeTab === m.id;
+                const isActive = mode === m.modeMatch;
                 return (
                   <button
                     key={m.id}
-                    onClick={() => setPreferences({ activeTab: m.id })}
+                    onClick={() => setPreset(m.id)}
                     style={{
                       fontSize: "var(--text-xs)",
                       padding: "6px 14px",
@@ -196,9 +193,7 @@ export default function ChatPage() {
                       background: isActive
                         ? "var(--color-primary)"
                         : "transparent",
-                      color: isActive
-                        ? "#FFF" // active white
-                        : "var(--color-text-soft)",
+                      color: isActive ? "#FFF" : "var(--color-text-soft)",
                       fontWeight: isActive ? 600 : 500,
                       transition: "all 0.2s ease",
                       boxShadow: isActive
@@ -215,14 +210,11 @@ export default function ChatPage() {
             {/* Explain Level Dropdown */}
             <div style={{ position: "relative" }}>
               <select
-                value={preferences.explainLevel}
+                value={explainLevel}
                 onChange={(e) =>
-                  setPreferences({
-                    explainLevel: e.target.value as
-                      | "short"
-                      | "normal"
-                      | "detailed",
-                  })
+                  setExplainLevel(
+                    e.target.value as "short" | "normal" | "detailed"
+                  )
                 }
                 style={{
                   fontSize: "var(--text-xs)",
@@ -257,65 +249,6 @@ export default function ChatPage() {
             </div>
           </div>
         </header>
-
-        {/* Tutor Progress Banner */}
-        {tutorMode.active && (
-          <div
-            style={{
-              padding: "0.75rem 1.5rem",
-              background: "var(--color-surface-soft)",
-              borderBottom: "1px solid var(--color-border)",
-              display: "flex",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "var(--text-xs)",
-                  marginBottom: "0.25rem",
-                  fontWeight: 600,
-                  color: "var(--color-text-soft)",
-                }}
-              >
-                <span>
-                  Paso {tutorMode.currentStep} de {tutorMode.totalSteps || "?"}
-                </span>
-                <span>
-                  {tutorMode.totalSteps > 0
-                    ? Math.round(
-                        (tutorMode.currentStep / tutorMode.totalSteps) * 100
-                      )
-                    : 0}
-                  %
-                </span>
-              </div>
-              <div
-                style={{
-                  height: "6px",
-                  borderRadius: "3px",
-                  backgroundColor: "rgba(0,0,0,0.05)",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${tutorMode.totalSteps > 0 ? (tutorMode.currentStep / tutorMode.totalSteps) * 100 : 5}%`,
-                    background: "var(--grad-main)",
-                    transition: "width 0.4s ease",
-                  }}
-                />
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={stopTutorMode}>
-              Salir
-            </Button>
-          </div>
-        )}
 
         {/* Messages */}
         <div
@@ -352,112 +285,112 @@ export default function ChatPage() {
                     WebkitTextFillColor: "transparent",
                   }}
                 >
-                  {tutorMode.active
-                    ? "Modo Tutor Activado"
-                    : "¿Con qué querés que te ayude hoy?"}
+                  ¿Con qué querés que te ayude hoy?
                 </h3>
-                {!tutorMode.active && (
-                  <>
-                    <p
-                      style={{
-                        fontSize: "var(--text-base)",
-                        color: "var(--color-text-soft)",
-                        margin: 0,
-                      }}
-                    >
-                      Elegí una categoría o escribí directamente abajo.
-                    </p>
-                  </>
-                )}
-              </div>
 
-              {!tutorMode.active && (
-                <div
+                <p
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-                    gap: "1rem",
-                    width: "100%",
-                    maxWidth: "900px",
+                    fontSize: "var(--text-base)",
+                    color: "var(--color-text-soft)",
+                    margin: 0,
                   }}
                 >
-                  {[
-                    {
-                      title: "Quiero entender algo mejor",
-                      desc: "Explicaciones simples, resúmenes y planes para aprender.",
-                      prompt: "Quiero entender algo mejor: ",
-                    },
-                    {
-                      title: "Tengo un problema con código",
-                      desc: "Ayuda con código, errores, arquitectura o debugging.",
-                      prompt: "Tengo un problema con código: ",
-                    },
-                    {
-                      title: "Estoy pensando en un negocio",
-                      desc: "Validación de ideas, pricing, ventas y estrategia.",
-                      prompt: "Estoy pensando en un negocio: ",
-                    },
-                    {
-                      title: "Quiero crear algo nuevo",
-                      desc: "Creatividad, contenido, guiones y branding.",
-                      prompt: "Quiero crear algo nuevo: ",
-                    },
-                    {
-                      title: "Necesito ordenar mis ideas",
-                      desc: "Productividad, tareas y organización personal.",
-                      prompt: "Necesito ordenar mis ideas: ",
-                    },
-                    {
-                      title: "Algo no me funciona",
-                      desc: "Soporte técnico y troubleshooting de dispositivos.",
-                      prompt: "Algo no me funciona: ",
-                    },
-                  ].map((item) => (
-                    <Card
-                      key={item.title}
-                      hoverable
-                      onClick={() => {
-                        setInput(item.prompt);
-                        const textarea = document.querySelector(
-                          'textarea[name="chat-input"]'
-                        ) as HTMLTextAreaElement;
-                        if (textarea) {
-                          textarea.focus();
-                          setTimeout(() => {
-                            textarea.style.height = "auto";
-                            textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-                          }, 0);
-                        }
-                      }}
+                  Elegí una categoría o escribí directamente abajo.
+                </p>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gap: "1rem",
+                  width: "100%",
+                  maxWidth: "900px",
+                }}
+              >
+                {[
+                  {
+                    title: "Quiero entender algo mejor",
+                    desc: "Explicaciones simples, resúmenes y planes para aprender.",
+                    prompt: "Quiero entender algo mejor: ",
+                    preset: "learning",
+                  },
+                  {
+                    title: "Tengo un problema con código",
+                    desc: "Ayuda con código, errores, arquitectura o debugging.",
+                    prompt: "Tengo un problema con código: ",
+                    preset: "tech",
+                  },
+                  {
+                    title: "Estoy pensando en un negocio",
+                    desc: "Validación de ideas, pricing, ventas y estrategia.",
+                    prompt: "Estoy pensando en un negocio: ",
+                    preset: "biz",
+                  },
+                  {
+                    title: "Quiero crear algo nuevo",
+                    desc: "Creatividad, contenido, guiones y branding.",
+                    prompt: "Quiero crear algo nuevo: ",
+                    preset: "reflexivo",
+                  },
+                  {
+                    title: "Necesito ordenar mis ideas",
+                    desc: "Productividad, tareas y organización personal.",
+                    prompt: "Necesito ordenar mis ideas: ",
+                    preset: "productivity",
+                  },
+                  {
+                    title: "Algo no me funciona",
+                    desc: "Soporte técnico y troubleshooting de dispositivos.",
+                    prompt: "Algo no me funciona: ",
+                    preset: "reflexivo",
+                  },
+                ].map((item) => (
+                  <Card
+                    key={item.title}
+                    hoverable
+                    onClick={() => {
+                      setPreset(item.preset as any);
+                      setInput(item.prompt);
+                      const textarea = document.querySelector(
+                        'textarea[name="chat-input"]'
+                      ) as HTMLTextAreaElement;
+                      if (textarea) {
+                        textarea.focus();
+                        setTimeout(() => {
+                          textarea.style.height = "auto";
+                          textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+                        }, 0);
+                      }
+                    }}
+                    style={{
+                      padding: "1.25rem",
+                      cursor: "pointer",
+                      border: "1px solid var(--color-border)",
+                      background: "rgba(255,255,255,0.8)",
+                      backdropFilter: "blur(4px)",
+                      borderRadius: "16px",
+                      boxShadow: "var(--shadow-sm)",
+                      transition: "all 0.2s",
+                      color: "var(--color-text-main)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <strong style={{ fontSize: "1rem" }}>{item.title}</strong>
+                    <span
                       style={{
-                        padding: "1.25rem",
-                        cursor: "pointer",
-                        border: "1px solid var(--color-border)",
-                        background: "rgba(255,255,255,0.8)",
-                        backdropFilter: "blur(4px)",
-                        borderRadius: "16px",
-                        boxShadow: "var(--shadow-sm)",
-                        transition: "all 0.2s",
-                        color: "var(--color-text-main)",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.5rem",
+                        fontSize: "0.85rem",
+                        color: "var(--color-text-soft)",
+                        lineHeight: 1.4,
                       }}
                     >
-                      <strong style={{ fontSize: "1rem" }}>{item.title}</strong>
-                      <span
-                        style={{
-                          fontSize: "0.85rem",
-                          color: "var(--color-text-soft)",
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {item.desc}
-                      </span>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                      {item.desc}
+                    </span>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
 
@@ -631,18 +564,12 @@ export default function ChatPage() {
               gap: "0.25rem",
             }}
           >
-            {tutorMode.active ? (
-              <span>💡 Tip: Escribí 'listo' o 'siguiente' para avanzar.</span>
-            ) : (
-              <>
-                <span>
-                  WADI puede fallar. Usalo como copiloto, no como única verdad.
-                </span>
-                <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>
-                  Tip: Enter para enviar · Shift+Enter para nueva línea.
-                </span>
-              </>
-            )}
+            <span>
+              WADI puede fallar. Usalo como copiloto, no como única verdad.
+            </span>
+            <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>
+              Tip: Enter para enviar · Shift+Enter para nueva línea.
+            </span>
           </div>
         </div>
       </div>

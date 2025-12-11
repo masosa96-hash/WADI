@@ -7,119 +7,93 @@ interface Message {
   createdAt: number;
 }
 
-interface ChatPreferences {
-  activeTab: "general" | "tech" | "biz" | "tutor";
-  explainLevel: "short" | "normal" | "detailed";
-  language: "auto" | "es" | "en";
-}
-
-interface TutorModeState {
-  active: boolean;
-  topic: string | null;
-  level: "principiante" | "intermedio" | "avanzado" | null;
-  targetTime: string | null;
-  currentStep: number;
-  totalSteps: number;
-}
+export type ChatMode = "normal" | "tech" | "biz" | "tutor";
 
 interface ChatState {
+  // State
   messages: Message[];
   isLoading: boolean;
   error: string | null;
-  preferences: ChatPreferences;
-  tutorMode: TutorModeState;
 
+  mode: ChatMode;
+  topic: string;
+  explainLevel: "short" | "normal" | "detailed";
+
+  // Actions
   sendMessage: (text: string) => Promise<void>;
   resetChat: () => void;
-  setPreferences: (prefs: Partial<ChatPreferences>) => void;
-
-  startTutorConversation: (params: {
-    topic: string;
-    level: "principiante" | "intermedio" | "avanzado";
-    targetTime: string;
-  }) => Promise<void>;
-  updateTutorProgress: (current: number, total: number) => void;
-  stopTutorMode: () => void;
+  setPreset: (
+    preset: "tech" | "biz" | "learning" | "productivity" | "reflexivo"
+  ) => void;
+  setExplainLevel: (level: "short" | "normal" | "detailed") => void;
 }
 
 const rawUrl = import.meta.env.VITE_API_URL || "https://wadi-wxg7.onrender.com";
 const API_URL = rawUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
 
-const INITIAL_TUTOR_STATE: TutorModeState = {
-  active: false,
-  topic: null,
-  level: null,
-  targetTime: null,
-  currentStep: 0,
-  totalSteps: 0,
-};
-
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   isLoading: false,
   error: null,
-  preferences: {
-    activeTab: "general",
-    explainLevel: "normal",
-    language: "auto",
-  },
-  tutorMode: { ...INITIAL_TUTOR_STATE },
+  mode: "normal",
+  topic: "general",
+  explainLevel: "normal",
 
   resetChat: () =>
     set({
       messages: [],
       error: null,
       isLoading: false,
-      tutorMode: { ...INITIAL_TUTOR_STATE },
-      preferences: {
-        activeTab: "general",
-        explainLevel: "normal",
-        language: "auto",
-      },
+      mode: "normal",
+      topic: "general",
+      explainLevel: "normal",
     }),
 
-  setPreferences: (prefs) =>
-    set((state) => ({ preferences: { ...state.preferences, ...prefs } })),
+  setPreset: (preset) =>
+    set((state) => {
+      switch (preset) {
+        case "tech":
+          return {
+            ...state,
+            mode: "tech",
+            topic: "general",
+            explainLevel: "normal",
+          };
+        case "biz":
+          return {
+            ...state,
+            mode: "biz",
+            topic: "negocios",
+            explainLevel: "normal",
+          };
+        case "learning":
+          return {
+            ...state,
+            mode: "tutor",
+            topic: "aprendizaje",
+            explainLevel: "detailed",
+          };
+        case "productivity":
+          return {
+            ...state,
+            mode: "normal",
+            topic: "productividad",
+            explainLevel: "short",
+          };
+        case "reflexivo":
+          return {
+            ...state,
+            mode: "normal",
+            topic: "general",
+            explainLevel: "normal",
+          };
+        default:
+          return state;
+      }
+    }),
 
-  stopTutorMode: () =>
-    set((state) => ({
-      tutorMode: { ...INITIAL_TUTOR_STATE },
-      preferences: { ...state.preferences, activeTab: "general" },
-    })),
-
-  updateTutorProgress: (current, total) =>
-    set((state) => ({
-      tutorMode: {
-        ...state.tutorMode,
-        currentStep: current,
-        totalSteps: total,
-      },
-    })),
-
-  startTutorConversation: async ({ topic, level, targetTime }) => {
-    // 1. Set Local State
-    set((state) => ({
-      tutorMode: {
-        active: true,
-        topic,
-        level,
-        targetTime,
-        currentStep: 1,
-        totalSteps: 1, // Will update when backend replies
-      },
-      preferences: { ...state.preferences, activeTab: "tutor" },
-    }));
-
-    // 2. Send System Prompt via sendMessage
-    const prompt = `[SYSTEM: ACTIVATING TUTOR MODE]
-Quiero aprender sobre: "${topic}".
-Mi nivel es: ${level}.
-Tiempo objetivo: ${targetTime}.
-Por favor armá un plan de estudio paso a paso, y guiame empezando por el paso 1.
-Adaptá tu estilo a un tutor interactivo.`;
-
-    await get().sendMessage(prompt);
-  },
+  setExplainLevel: (level: "short" | "normal" | "detailed") =>
+    set({ explainLevel: level }),
 
   sendMessage: async (text: string) => {
     if (!text.trim()) return;
@@ -137,19 +111,13 @@ Adaptá tu estilo a un tutor interactivo.`;
     set((state) => ({ messages: [...state.messages, userMsg] }));
 
     try {
-      const { preferences, tutorMode } = get();
-
-      // Mapping for backend
-      // If tutorMode is active (via modal) OR tab is tutor, we are in tutor mode.
-      const isTutor = preferences.activeTab === "tutor" || tutorMode.active;
-      const modeMap = isTutor ? "tutor" : "normal";
+      const { mode, topic, explainLevel } = get();
 
       const payload = {
         message: text,
-        mode: modeMap,
-        topic: preferences.activeTab,
-        explainLevel: preferences.explainLevel,
-        tutorMode,
+        mode,
+        topic,
+        explainLevel,
       };
 
       const res = await fetch(`${API_URL}/api/chat`, {
@@ -163,18 +131,6 @@ Adaptá tu estilo a un tutor interactivo.`;
       }
 
       const data = await res.json();
-
-      // Check for tutor metadata updates
-      if (tutorMode.active && data.tutorMeta) {
-        set((state) => ({
-          tutorMode: {
-            ...state.tutorMode,
-            currentStep:
-              data.tutorMeta.currentStep || state.tutorMode.currentStep,
-            totalSteps: data.tutorMeta.totalSteps || state.tutorMode.totalSteps,
-          },
-        }));
-      }
 
       // 2. Add AI response
       const aiMsg: Message = {

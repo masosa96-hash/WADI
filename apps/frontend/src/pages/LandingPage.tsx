@@ -1,9 +1,21 @@
 import { useNavigate, Link } from "react-router-dom";
+import { useChatStore } from "../store/chatStore";
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { setPreset, resetChat } = useChatStore();
 
-  const handleStart = () => navigate("/chat");
+  const handleStart = () => {
+    resetChat();
+    navigate("/chat");
+  };
+
+  const handleCardClick = (
+    preset: "tech" | "biz" | "learning" | "productivity" | "reflexivo"
+  ) => {
+    setPreset(preset);
+    navigate("/chat");
+  };
 
   return (
     <div
@@ -68,7 +80,7 @@ export default function LandingPage() {
           <button
             onClick={handleStart}
             style={{
-              background: "var(--color-text-main)", // Dark btn
+              background: "var(--color-text-main)",
               color: "#FFFFFF",
               border: "none",
               padding: "1rem 3rem",
@@ -95,7 +107,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 2. CÓMO TE AYUDA WADI (Feature Cards - Non-clickable) */}
+      {/* 2. CÓMO TE AYUDA WADI (Feature Cards - Clickable) */}
       <section
         style={{ padding: "4rem 2rem", maxWidth: "1200px", margin: "0 auto" }}
       >
@@ -123,35 +135,42 @@ export default function LandingPage() {
               emoji: "🎯",
               title: "Aprendizaje personalizado",
               desc: "WADI adapta las explicaciones a tu nivel, recuerda tu contexto y te propone ejercicios a tu ritmo.",
+              preset: "learning",
             },
             {
               emoji: "🚀",
               title: "Gestión de proyectos",
               desc: "Convierte ideas sueltas en proyectos con objetivos, hitos y próximos pasos claros.",
+              preset: "productivity",
             },
             {
               emoji: "📊",
               title: "Análisis de datos",
               desc: "Te ayuda a interpretar tablas, métricas y resultados para decidir con más seguridad.",
+              preset: "biz",
             },
             {
               emoji: "⚡",
               title: "Marketing & Growth",
               desc: "Genera campañas, mensajes y experimentos de crecimiento a partir de tu contexto real.",
+              preset: "biz",
             },
             {
               emoji: "💻",
               title: "Tech & Code",
               desc: "Te acompaña a debuggear, aprender lenguajes y diseñar soluciones paso a paso.",
+              preset: "tech",
             },
             {
               emoji: "⏳",
               title: "Productividad",
               desc: "Organiza tu día, prioriza tareas y te recuerda lo importante sin abrumarte.",
+              preset: "productivity",
             },
           ].map((item, i) => (
-            <article
+            <button
               key={i}
+              onClick={() => handleCardClick(item.preset as any)}
               style={{
                 background: "var(--color-surface)",
                 borderRadius: "24px",
@@ -161,7 +180,17 @@ export default function LandingPage() {
                 display: "flex",
                 flexDirection: "column",
                 gap: "1rem",
-                cursor: "default", // Non-clickable
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "transform 0.2s, box-shadow 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-4px)";
+                e.currentTarget.style.boxShadow = "var(--shadow-md)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "var(--shadow-sm)";
               }}
             >
               <div style={{ fontSize: "2rem" }}>{item.emoji}</div>
@@ -185,7 +214,7 @@ export default function LandingPage() {
               >
                 {item.desc}
               </p>
-            </article>
+            </button>
           ))}
         </div>
       </section>
@@ -375,6 +404,7 @@ export default function LandingPage() {
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#fff",
+                  cursor: "pointer",
                 }}
               >
                 ↑
