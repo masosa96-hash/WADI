@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthStore } from "../store/authStore";
 import { useChatStore } from "../store/chatStore";
@@ -7,16 +7,14 @@ import { Modal } from "./common/Modal";
 import { Input } from "./common/Input";
 import { Button } from "./common/Button";
 
-import { TutorSetupModal } from "./tutor/TutorSetupModal";
-
 export function Sidebar() {
+  const navigate = useNavigate();
   const location = useLocation();
   const { user, convertGuestToUser, signOut } = useAuthStore();
-  const { resetChat } = useChatStore();
+  const { resetChat, setPreset } = useChatStore();
   const isAnonymous = user?.is_anonymous;
 
   const [showRegister, setShowRegister] = useState(false);
-  const [showTutorModal, setShowTutorModal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,6 +37,11 @@ export function Sidebar() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTutorClick = () => {
+    setPreset("learning");
+    navigate("/chat");
   };
 
   return (
@@ -207,7 +210,7 @@ export function Sidebar() {
             color: "var(--color-text-soft)",
             fontWeight: 400,
           }}
-          onClick={() => setShowTutorModal(true)}
+          onClick={handleTutorClick}
         >
           <span>📚</span> Modo Tutor
         </Button>
@@ -397,11 +400,6 @@ export function Sidebar() {
           </div>
         </form>
       </Modal>
-
-      <TutorSetupModal
-        isOpen={showTutorModal}
-        onClose={() => setShowTutorModal(false)}
-      />
     </aside>
   );
 }
