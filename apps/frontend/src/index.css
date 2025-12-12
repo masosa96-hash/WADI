@@ -94,9 +94,11 @@
   box-sizing: border-box;
 }
 
-body {
+body,
+html {
   margin: 0;
   padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll */
   font-family: var(--font-sans);
   background-color: var(--color-bg);
   color: var(--color-text-main);
@@ -180,5 +182,64 @@ button:focus {
   }
   50% {
     opacity: 1;
+  }
+}
+
+/* --- MOBILE OPTIMIZATIONS --- */
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .mobile-only {
+    display: flex !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Grid Adjustments */
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Sidebar Drawer */
+  .sidebar-drawer {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100 !important;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .sidebar-drawer.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 90;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Chat Elements */
+  .chat-bubble {
+    max-width: 90% !important;
+  }
+
+  .scroll-x-mobile {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px; /* Space for scrollbar if any */
+  }
+
+  /* Compact Account/Guest Box */
+  .compact-mobile {
+    padding: 0.5rem !important;
   }
 }

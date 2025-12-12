@@ -42,7 +42,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: "800px", zIndex: 2 }}>
           <h1
             style={{
-              fontSize: "clamp(3.5rem, 8vw, 6rem)",
+              fontSize: "clamp(2.5rem, 10vw, 6rem)", // Smaller min for mobile
               fontWeight: 800,
               lineHeight: 1,
               letterSpacing: "-0.03em",
@@ -126,7 +126,7 @@ export default function LandingPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
             gap: "2rem",
           }}
         >

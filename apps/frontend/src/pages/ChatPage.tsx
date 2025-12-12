@@ -162,6 +162,7 @@ export default function ChatPage() {
           >
             {/* Mode Selector Tabs */}
             <div
+              className="scroll-x-mobile"
               style={{
                 display: "flex",
                 gap: "0.25rem",
@@ -169,6 +170,7 @@ export default function ChatPage() {
                 padding: "0.25rem",
                 borderRadius: "var(--radius-full)",
                 border: "1px solid var(--color-border)",
+                maxWidth: "100%", // Ensure it doesn't overflow parent
               }}
             >
               {(
@@ -302,7 +304,7 @@ export default function ChatPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
                   gap: "1rem",
                   width: "100%",
                   maxWidth: "900px",
@@ -406,6 +408,7 @@ export default function ChatPage() {
                 }}
               >
                 <div
+                  className="chat-bubble"
                   style={{
                     maxWidth: "80%",
                     padding: "1rem 1.25rem",

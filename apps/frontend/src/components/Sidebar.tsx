@@ -7,7 +7,13 @@ import { Modal } from "./common/Modal";
 import { Input } from "./common/Input";
 import { Button } from "./common/Button";
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+  className?: string; // To allow applying drawer class
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, convertGuestToUser, signOut } = useAuthStore();
@@ -46,6 +52,7 @@ export function Sidebar() {
 
   return (
     <aside
+      className={`sidebar-drawer ${isOpen ? "open" : ""}`}
       style={{
         width: "280px",
         height: "100vh",
@@ -54,34 +61,57 @@ export function Sidebar() {
         display: "flex",
         flexDirection: "column",
         padding: "1.5rem",
-        transition: "background-color 0.2s, border-color 0.2s",
+        transition:
+          "width 0.3s, transform 0.3s, background-color 0.2s, border-color 0.2s",
       }}
     >
-      {/* Brand */}
-      <div style={{ marginBottom: "2rem" }}>
-        <h2
+      {/* Brand & Close Button */}
+      <div
+        style={{
+          marginBottom: "2rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "start",
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              fontSize: "1.8rem",
+              fontWeight: 900,
+              letterSpacing: "-0.5px",
+              background: "var(--grad-main)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              margin: 0,
+            }}
+          >
+            WADI
+          </h2>
+          <small
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--color-text-soft)",
+              letterSpacing: "1px",
+              textTransform: "uppercase",
+            }}
+          >
+            Agentic Workspace
+          </small>
+        </div>
+
+        {/* Mobile Close Button */}
+        <button
+          className="mobile-only"
+          onClick={onClose}
           style={{
-            fontSize: "1.8rem",
-            fontWeight: 900,
-            letterSpacing: "-0.5px",
-            background: "var(--grad-main)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            margin: 0,
-          }}
-        >
-          WADI
-        </h2>
-        <small
-          style={{
-            fontSize: "0.8rem",
+            fontSize: "1.5rem",
             color: "var(--color-text-soft)",
-            letterSpacing: "1px",
-            textTransform: "uppercase",
+            padding: "0.25rem",
           }}
         >
-          Agentic Workspace
-        </small>
+          ✕
+        </button>
       </div>
 
       {/* New Chat & Search */}
@@ -229,6 +259,7 @@ export function Sidebar() {
       >
         {isAnonymous ? (
           <div
+            className="compact-mobile"
             style={{
               backgroundColor: "var(--color-surface-soft)",
               padding: "1rem",
