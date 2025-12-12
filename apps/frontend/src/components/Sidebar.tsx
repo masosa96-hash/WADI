@@ -185,8 +185,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               ? "1px solid var(--color-border-active)"
               : "1px solid transparent",
           }}
+          aria-label="Ir al inicio"
+          title="Ir al inicio"
         >
-          <span>🏠</span> Home
+          <span role="img" aria-label="Casa">
+            🏠
+          </span>{" "}
+          Home
         </Link>
 
         {navItems.map((item) => (
@@ -212,8 +217,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 ? "1px solid var(--color-border-active)"
                 : "1px solid transparent",
             }}
+            aria-label={`Ir a ${item.label}`}
+            title={`Ir a ${item.label}`}
           >
-            <span>🚀</span> {item.label}
+            <span role="img" aria-label="Cohete">
+              🚀
+            </span>{" "}
+            {item.label}
           </Link>
         ))}
 
@@ -241,8 +251,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             fontWeight: 400,
           }}
           onClick={handleTutorClick}
+          aria-label="Activar Modo Tutor"
+          title="Activar Modo Tutor"
         >
-          <span>📚</span> Modo Tutor
+          <span role="img" aria-label="Libro">
+            📚
+          </span>{" "}
+          Modo Tutor
         </Button>
       </nav>
 

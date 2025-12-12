@@ -160,17 +160,14 @@ export default function ChatPage() {
               flexWrap: "wrap",
             }}
           >
-            {/* Mode Selector Tabs */}
+            {/* Mode Selector Tabs (Scrollable & Tappable) */}
             <div
               className="scroll-x-mobile"
               style={{
                 display: "flex",
-                gap: "0.25rem",
-                backgroundColor: "var(--color-surface-soft)",
-                padding: "0.25rem",
-                borderRadius: "var(--radius-full)",
-                border: "1px solid var(--color-border)",
-                maxWidth: "100%", // Ensure it doesn't overflow parent
+                gap: "0.5rem",
+                padding: "0.25rem 0", // Space for scrollbar if needed
+                maxWidth: "100%",
               }}
             >
               {(
@@ -186,20 +183,24 @@ export default function ChatPage() {
                   <button
                     key={m.id}
                     onClick={() => setPreset(m.id)}
+                    className="tappable"
                     style={{
-                      fontSize: "var(--text-xs)",
-                      padding: "6px 14px",
+                      fontSize: "var(--text-sm)",
+                      padding: "0 16px",
+                      height: "40px", // Visual height, tappable ensures 44px
                       borderRadius: "var(--radius-full)",
-                      border: "none",
-                      cursor: "pointer",
+                      border: isActive
+                        ? "1px solid var(--color-primary)"
+                        : "1px solid var(--color-border)",
                       background: isActive
                         ? "var(--color-primary)"
-                        : "transparent",
+                        : "var(--color-surface)",
                       color: isActive ? "#FFF" : "var(--color-text-soft)",
                       fontWeight: isActive ? 600 : 500,
+                      whiteSpace: "nowrap",
                       transition: "all 0.2s ease",
                       boxShadow: isActive
-                        ? "0 2px 5px rgba(139, 92, 246, 0.2)"
+                        ? "0 2px 8px rgba(124, 58, 237, 0.25)"
                         : "none",
                     }}
                   >

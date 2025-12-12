@@ -140,8 +140,46 @@ button:focus {
 .justify-center {
   justify-content: center;
 }
+
+/* Mobile Touch Targets */
+.tappable {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+/* Horizontal Scroll for Mobile Tabs */
+.scroll-x-mobile {
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
+  scrollbar-width: none; /* Firefox */
+}
+.scroll-x-mobile::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Touch Feedback */
+button:active,
+.card:active {
+  background-color: var(--color-surface-soft);
+  transform: scale(0.98);
+}
+
 .text-xs {
   font-size: var(--text-xs);
+}
+
+@media (max-width: 900px) {
+  .compact-mobile p {
+    display: none;
+  }
+  .compact-mobile {
+    padding: 0.5rem !important;
+  }
 }
 .text-sm {
   font-size: var(--text-sm);
