@@ -9,6 +9,11 @@ import {
   updateSessionMemory,
   summarizeMessages,
 } from "./memory/sessionMemory.js";
+import {
+  validateChatInput,
+  validateProjectInput,
+  validateRunInput,
+} from "./middleware/validation.js";
 
 const router = Router();
 
@@ -43,6 +48,7 @@ const asyncHandler = (fn) => (req, res, next) => {
 
 router.post(
   "/chat",
+  validateChatInput,
   asyncHandler(async (req, res) => {
     const { message, mode, topic, explainLevel, tutorMode, sessionId } =
       req.body;
@@ -133,6 +139,7 @@ router.get(
 
 router.post(
   "/projects",
+  validateProjectInput,
   asyncHandler(async (req, res) => {
     const user = await getAuthenticatedUser(req);
     if (!user) throw new AuthError("Authentication required");
@@ -181,6 +188,7 @@ router.get(
 
 router.post(
   "/projects/:id/runs",
+  validateRunInput,
   asyncHandler(async (req, res) => {
     const user = await getAuthenticatedUser(req);
     if (!user) throw new AuthError("Authentication required");

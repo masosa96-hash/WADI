@@ -7,13 +7,13 @@
   --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
 
   /* -- Typography Scale -- */
-  --text-xs: 0.75rem; /* 12px */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
+  --text-xs: 0.8125rem; /* 13px - slightly larger than 12px for readability */
+  --text-sm: 0.9375rem; /* 15px */
+  --text-base: 1rem; /* 16px - Minimum legible size */
   --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.25rem; /* 20px */
-  --text-2xl: 1.5rem; /* 24px */
-  --text-3xl: 1.875rem; /* 30px */
+  --text-xl: 1.375rem; /* 22px */
+  --text-2xl: 1.75rem; /* 28px */
+  --text-3xl: 2.25rem; /* 36px */
 
   /* -- Spacing -- */
   --space-1: 0.25rem;
@@ -39,6 +39,7 @@
   --shadow-lg:
     0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.08);
+  --shadow-y2k: 4px 4px 0px rgba(0, 0, 0, 0.1);
 
   /* -- Calm Y2K Colors (Light Only) -- */
   --color-bg: #f4f5fb;
@@ -104,6 +105,15 @@ html {
   color: var(--color-text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  height: 100%;
+}
+
+/* Logic for 100dvh on mobile */
+@supports (height: 100dvh) {
+  body,
+  html {
+    height: 100dvh;
+  }
 }
 
 button {
@@ -157,6 +167,7 @@ button:focus {
   white-space: nowrap;
   -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
   scrollbar-width: none; /* Firefox */
+  gap: 0.5rem;
 }
 .scroll-x-mobile::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
@@ -164,9 +175,12 @@ button:focus {
 
 /* Touch Feedback */
 button:active,
-.card:active {
+.card:active,
+.tappable:active,
+.clickable-card:active {
   background-color: var(--color-surface-soft);
   transform: scale(0.98);
+  transition: transform 0.1s;
 }
 
 .text-xs {
@@ -227,6 +241,9 @@ button:active,
 .mobile-only {
   display: none !important;
 }
+.desktop-only {
+  display: flex !important;
+}
 
 @media (max-width: 900px) {
   .mobile-only {
@@ -236,9 +253,11 @@ button:active,
     display: none !important;
   }
 
-  /* Grid Adjustments */
+  /* Force single column layout */
   .grid-responsive {
     grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   /* Sidebar Drawer */
@@ -270,14 +289,15 @@ button:active,
   }
 
   .scroll-x-mobile {
-    overflow-x: auto;
     width: 100%;
-    -webkit-overflow-scrolling: touch;
     padding-bottom: 4px; /* Space for scrollbar if any */
   }
 
-  /* Compact Account/Guest Box */
-  .compact-mobile {
-    padding: 0.5rem !important;
+  /* Ensure inputs/buttons are large enough */
+  input,
+  button,
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevent iOS zoom */
   }
 }

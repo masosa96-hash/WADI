@@ -228,6 +228,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         ))}
 
         <div
+          className="desktop-only"
           style={{
             fontSize: "0.7rem",
             textTransform: "uppercase",

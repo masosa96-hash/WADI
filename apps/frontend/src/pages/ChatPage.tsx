@@ -187,7 +187,8 @@ export default function ChatPage() {
                     style={{
                       fontSize: "var(--text-sm)",
                       padding: "0 16px",
-                      height: "40px", // Visual height, tappable ensures 44px
+                      height: "44px", // Tappable minimum
+                      minWidth: "44px",
                       borderRadius: "var(--radius-full)",
                       border: isActive
                         ? "1px solid var(--color-primary)"
@@ -379,7 +380,12 @@ export default function ChatPage() {
                       display: "flex",
                       flexDirection: "column",
                       gap: "0.5rem",
+                      // Ensure it behaves like a button
+                      touchAction: "manipulation",
                     }}
+                    role="button"
+                    tabIndex={0}
+                    className="card tappable"
                   >
                     <strong style={{ fontSize: "1rem" }}>{item.title}</strong>
                     <span
@@ -469,17 +475,18 @@ export default function ChatPage() {
         {/* Input Area */}
         <div
           style={{
-            padding: "1.5rem",
+            padding: "1rem",
             background: "rgba(255,255,255,0.8)",
             backdropFilter: "blur(20px)",
             borderTop: "1px solid var(--color-border)",
+            marginBottom: "env(keyboard-inset-height, 0px)", // Handle software keyboard
           }}
         >
           <form
             onSubmit={handleSubmit}
             style={{
               display: "flex",
-              gap: "1rem",
+              gap: "0.5rem", // Closer on mobile
               maxWidth: "900px",
               margin: "0 auto",
               position: "relative",
@@ -508,9 +515,9 @@ export default function ChatPage() {
                   backgroundColor: "var(--color-surface)",
                   color: "var(--color-text-main)",
                   resize: "none",
-                  minHeight: "56px",
+                  minHeight: "50px", // Slightly more compact
                   maxHeight: "200px",
-                  fontSize: "var(--text-base)",
+                  fontSize: "16px", // Prevent zoom
                   outline: "none",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
                   transition: "border-color 0.2s, box-shadow 0.2s",
@@ -529,9 +536,10 @@ export default function ChatPage() {
             <Button
               type="submit"
               disabled={isLoading || !input.trim()}
+              aria-label="Enviar mensaje"
               style={{
-                height: "56px",
-                width: "56px",
+                height: "50px",
+                width: "50px",
                 borderRadius: "50%",
                 background: "var(--color-primary)",
                 color: "#FFF",
@@ -560,20 +568,15 @@ export default function ChatPage() {
           <div
             style={{
               textAlign: "center",
-              marginTop: "0.75rem",
-              fontSize: "0.8rem",
+              marginTop: "0.5rem",
+              fontSize: "0.75rem",
               color: "var(--color-text-soft)",
               display: "flex",
               flexDirection: "column",
               gap: "0.25rem",
             }}
           >
-            <span>
-              WADI puede fallar. Usalo como copiloto, no como única verdad.
-            </span>
-            <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>
-              Tip: Enter para enviar · Shift+Enter para nueva línea.
-            </span>
+            <span>WADI puede fallar. Usalo como copiloto.</span>
           </div>
         </div>
       </div>
