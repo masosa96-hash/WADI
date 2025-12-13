@@ -1,8 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-
 import { useAuthStore } from "../store/authStore";
 import { useChatStore } from "../store/chatStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "./common/Modal";
 import { Input } from "./common/Input";
 import { Button } from "./common/Button";
@@ -10,20 +9,32 @@ import { Button } from "./common/Button";
 interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
-  className?: string; // To allow applying drawer class
+  className?: string;
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, convertGuestToUser, signOut } = useAuthStore();
-  const { resetChat, setPreset } = useChatStore();
+  const {
+    resetChat,
+    setPreset,
+    conversations,
+    fetchConversations,
+    loadConversation,
+  } = useChatStore();
   const isAnonymous = user?.is_anonymous;
 
   const [showRegister, setShowRegister] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchConversations();
+    }
+  }, [user]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -35,9 +46,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     setLoading(true);
     try {
       const { error } = await convertGuestToUser(email, password);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (error) throw error;
       setShowRegister(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -47,7 +58,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleTutorClick = () => {
     setPreset("learning");
+    resetChat();
     navigate("/chat");
+    if (onClose) onClose();
   };
 
   return (
@@ -56,7 +69,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       style={{
         width: "280px",
         height: "100vh",
-        background: "var(--color-surface)", // New token
+        background: "var(--color-surface)",
         borderRight: "1px solid var(--color-border)",
         display: "flex",
         flexDirection: "column",
@@ -114,24 +127,27 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </button>
       </div>
 
-      {/* New Chat & Search */}
+      {/* New Chat */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           gap: "1rem",
-          marginBottom: "2rem",
+          marginBottom: "1.5rem",
         }}
       >
         <Link
           to="/chat"
-          onClick={resetChat}
+          onClick={() => {
+            resetChat();
+            onClose?.();
+          }}
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: "0.5rem",
-            background: "var(--color-primary)", // Soft Violet
+            background: "var(--color-primary)",
             color: "#FFFFFF",
             padding: "0.8rem",
             borderRadius: "var(--radius-lg)",
@@ -139,15 +155,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             textDecoration: "none",
             boxShadow: "var(--shadow-y2k)",
             transition: "transform 0.2s, background-color 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.backgroundColor =
-              "var(--color-primary-hover)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.backgroundColor = "var(--color-primary)";
           }}
         >
           <span style={{ fontSize: "1.2rem" }}>+</span> Nueva Conversación
@@ -185,8 +192,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               ? "1px solid var(--color-border-active)"
               : "1px solid transparent",
           }}
-          aria-label="Ir al inicio"
-          title="Ir al inicio"
         >
           <span role="img" aria-label="Casa">
             🏠
@@ -217,8 +222,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 ? "1px solid var(--color-border-active)"
                 : "1px solid transparent",
             }}
-            aria-label={`Ir a ${item.label}`}
-            title={`Ir a ${item.label}`}
           >
             <span role="img" aria-label="Cohete">
               🚀
@@ -226,6 +229,54 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             {item.label}
           </Link>
         ))}
+
+        {/* History Section */}
+        {conversations && conversations.length > 0 && (
+          <>
+            <div
+              style={{
+                fontSize: "0.7rem",
+                textTransform: "uppercase",
+                color: "var(--color-text-soft)",
+                marginBottom: "0.5rem",
+                marginTop: "1.5rem",
+                letterSpacing: "1px",
+                paddingLeft: "1rem",
+                fontWeight: 600,
+              }}
+            >
+              Historial
+            </div>
+            {conversations.map((c) => (
+              <div
+                key={c.id}
+                onClick={() => {
+                  loadConversation(c.id);
+                  navigate(`/chat/${c.id}`);
+                  onClose?.();
+                }}
+                className="tappable"
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "var(--radius-md)",
+                  cursor: "pointer",
+                  backgroundColor: location.pathname.includes(c.id)
+                    ? "var(--color-surface-soft)"
+                    : "transparent",
+                  color: "var(--color-text-soft)",
+                  fontSize: "0.9rem",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  transition: "background 0.2s",
+                  fontWeight: location.pathname.includes(c.id) ? 600 : 400,
+                }}
+              >
+                💬 {c.title || "Sin título"}
+              </div>
+            ))}
+          </>
+        )}
 
         <div
           className="desktop-only"
@@ -252,8 +303,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             fontWeight: 400,
           }}
           onClick={handleTutorClick}
-          aria-label="Activar Modo Tutor"
-          title="Activar Modo Tutor"
         >
           <span role="img" aria-label="Libro">
             📚
@@ -389,6 +438,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         onClose={() => setShowRegister(false)}
         title="Crear tu cuenta"
       >
+        {/* Same modal content */}
         <p
           style={{
             fontSize: "0.9rem",

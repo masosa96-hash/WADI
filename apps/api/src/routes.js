@@ -1,14 +1,8 @@
 import { Router } from "express";
-import { randomUUID } from "crypto";
 import { openai, AI_MODEL } from "./openai.js";
-import { WADI_SYSTEM_PROMPT, generateSystemPrompt } from "./wadi-brain.js";
+import { generateSystemPrompt } from "./wadi-brain.js";
 import { supabase } from "./supabase.js";
 import { AppError, AuthError, ModelError } from "./core/errors.js";
-import {
-  getSessionMemory,
-  updateSessionMemory,
-  summarizeMessages,
-} from "./memory/sessionMemory.js";
 import {
   validateChatInput,
   validateProjectInput,
@@ -23,7 +17,6 @@ const getAuthenticatedUser = async (req) => {
   if (!authHeader) return null;
   const token = authHeader.replace("Bearer ", "");
 
-  // Verify token with Supabase (JWT verification)
   const {
     data: { user },
     error,
@@ -33,45 +26,101 @@ const getAuthenticatedUser = async (req) => {
   return user;
 };
 
-// Helper: Async Wrapper for error handling
+// Helper: Async Wrapper
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
+// Helper: Format messages for AI context
+const formatContext = (messages) => {
+  if (!messages || messages.length === 0) return "";
+  // Take last 10 messages
+  const recent = messages.slice(-10);
+  return recent
+    .map(
+      (m) =>
+        `${m.role === "user" ? "Usuario" : "WADI"}: ${m.content.substring(0, 500)}`
+    )
+    .join("\n");
+};
+
 // ------------------------------------------------------------------
-// PUBLIC / SEMI-PUBLIC ROUTES (Chat can be anonymous for guest?)
-// Current requirements imply "Iniciá tu primera conversación" so maybe?
-// Critical block didn't specify strict auth for chat, but "RLS" for data.
-// We'll keep chat open or check logic. Current Frontend uses guest login.
-// Guest login produces a token! So we can treat it as Authenticated.
+// CONVERSATIONS & CHAT PERSISTENCE
 // ------------------------------------------------------------------
 
+// 1. Create Conversation
 router.post(
-  "/chat",
+  "/conversations",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+
+    const { mode, explainLevel, topic } = req.body;
+
+    const title = `Chat ${new Date().toLocaleDateString()}`; // Temporary title
+
+    const { data, error } = await supabase
+      .from("conversations")
+      .insert([
+        {
+          user_id: user.id,
+          title, // Can be updated later with first message content
+          mode: mode || "normal",
+          explain_level: explainLevel || "normal",
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw new AppError("DB_ERROR", error.message);
+    res.json(data);
+  })
+);
+
+// 2. Send Message (Persistent)
+router.post(
+  "/conversations/:id/messages",
   validateChatInput,
   asyncHandler(async (req, res) => {
-    const { message, mode, topic, explainLevel, tutorMode, sessionId } =
-      req.body;
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+    const { message, mode, explainLevel, topic } = req.body;
 
-    // 1. Session Management
-    const currentSessionId = sessionId || randomUUID();
-    const memory = getSessionMemory(currentSessionId);
-    const contextSummary = summarizeMessages(memory.messages);
-    const userPrefs = memory.preferences;
+    // A. Verify Ownership & Get Conversation
+    const { data: conversation, error: convError } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
 
-    // 2. Resolve Parameters (Priority: Request > Memory > Default)
-    const safeMode = mode || "normal";
+    if (convError || !conversation) {
+      throw new AuthError("Conversation not found or access denied", 404);
+    }
+
+    // B. Fetch History for Context
+    const { data: history } = await supabase
+      .from("messages")
+      .select("role, content")
+      .eq("conversation_id", id)
+      .order("created_at", { ascending: true });
+
+    const contextSummary = formatContext(history || []);
+
+    // C. Generate AI Response
+    const safeMode = mode || conversation.mode || "normal";
     const safeTopic = topic || "general";
-    const safeLevel =
-      explainLevel || userPrefs.preferredExplainLevel || "normal";
+    const safeLevel = explainLevel || conversation.explain_level || "normal";
 
-    // 3. Generate Prompt with Memory
+    // We don't have separate prefs table yet, can pass empty object or extract from conversation if needed
+    // For now, prompt generation relies on passed params
     const systemPrompt = generateSystemPrompt(
       safeMode,
       safeTopic,
       safeLevel,
       contextSummary,
-      userPrefs
+      {}
     );
 
     try {
@@ -85,47 +134,139 @@ router.post(
 
       const reply = completion.choices[0].message.content;
 
-      // 4. Update Memory (Async/Non-blocking)
-      updateSessionMemory(currentSessionId, message, reply, {
-        explainLevel: explainLevel || undefined, // Update if explicit
-        // simple heuristic: if message is short/slang, maybe tone change? kept simple for now
+      // D. Save Messages to DB
+      // 1. User Message
+      await supabase.from("messages").insert({
+        conversation_id: id,
+        user_id: user.id,
+        role: "user",
+        content: message,
       });
 
-      // 5. Build Response
-      let tutorMeta = null;
-      if (safeMode === "tutor" && tutorMode) {
-        tutorMeta = {
-          currentStep: (tutorMode.currentStep || 0) + 0,
-          totalSteps: tutorMode.totalSteps || 5,
-        };
+      // 2. Assistant Message
+      await supabase.from("messages").insert({
+        conversation_id: id,
+        user_id: user.id,
+        role: "assistant",
+        content: reply,
+      });
+
+      // E. Update Conversation (Timestamp & potentially Title)
+      const updates = { updated_at: new Date().toISOString() };
+
+      // If it's the first message, update title
+      if (!history || history.length === 0) {
+        updates.title =
+          message.substring(0, 30) + (message.length > 30 ? "..." : "");
       }
 
-      res.json({
-        reply,
-        sessionId: currentSessionId,
-        mode: safeMode,
-        topic: safeTopic,
-        explainLevel: safeLevel,
-        meta: { usedContext: !!contextSummary },
-        tutorMeta,
-      });
+      // Also update settings if they changed in this request?
+      // User might change mode mid-chat. Let's update them.
+      if (mode) updates.mode = mode;
+      if (explainLevel) updates.explain_level = explainLevel;
+
+      await supabase.from("conversations").update(updates).eq("id", id);
+
+      res.json({ reply });
     } catch (e) {
       throw new ModelError(e.message);
     }
   })
 );
 
+// 3. List Conversations
+router.get(
+  "/conversations",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false });
+
+    if (error) throw new AppError("DB_ERROR", error.message);
+    res.json(data);
+  })
+);
+
+// 4. Get Conversation Detail
+router.get(
+  "/conversations/:id",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+
+    // Verify ownership
+    const { data: conversation, error: convError } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (convError || !conversation) {
+      throw new AuthError("Conversation not found", 404);
+    }
+
+    // Get messages
+    const { data: messages, error: msgError } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", id)
+      .order("created_at", { ascending: true });
+
+    if (msgError) throw new AppError("DB_ERROR", msgError.message);
+
+    res.json({ ...conversation, messages });
+  })
+);
+
+// 5. Delete Conversation
+router.delete(
+  "/conversations/:id",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) throw new AppError("DB_ERROR", error.message);
+    res.json({ success: true });
+  })
+);
+
 // ------------------------------------------------------------------
-// PROTECTED ROUTES (Projects & Runs)
+// LEGACY / GUEST CHAT (Deprecated / Fallback)
+// ------------------------------------------------------------------
+// If we strictly follow instructions, we rely on Authenticated Chat.
+// Keeping a stub that errors or directs to login might be safer than broken memory.
+router.post("/chat", (req, res, next) => {
+  next(
+    new AuthError(
+      "Please use /conversations endpoints. Guest chat is moving to persistent sessions."
+    )
+  );
+});
+
+// ------------------------------------------------------------------
+// PROJECTS ROUTES
 // ------------------------------------------------------------------
 
 router.get(
   "/projects",
   asyncHandler(async (req, res) => {
     const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required (Bearer token)");
+    if (!user) throw new AuthError("Authentication required");
 
-    // Secure: Force user_id match
     const { data, error } = await supabase
       .from("projects")
       .select("*")
@@ -144,7 +285,6 @@ router.post(
     const user = await getAuthenticatedUser(req);
     if (!user) throw new AuthError("Authentication required");
 
-    // Secure: Use user.id from token
     const { name, description } = req.body;
     const { data, error } = await supabase
       .from("projects")
@@ -164,7 +304,6 @@ router.delete(
     if (!user) throw new AuthError("Authentication required");
     const { id } = req.params;
 
-    // Secure: Delete only if user owns it
     const { error } = await supabase
       .from("projects")
       .delete()
@@ -183,7 +322,6 @@ router.get(
     if (!user) throw new AuthError("Authentication required");
     const { id } = req.params;
 
-    // Secure: Verify project ownership first
     const { data: project } = await supabase
       .from("projects")
       .select("id")
@@ -214,7 +352,6 @@ router.post(
     const { id } = req.params;
     const { input } = req.body;
 
-    // Secure: Verify project ownership
     const { data: project } = await supabase
       .from("projects")
       .select("id")
@@ -225,7 +362,6 @@ router.post(
     if (!project)
       throw new AuthError("Access denied or project not found", 403);
 
-    // 1. Create run (with user_id if column exists, safe to add usually)
     const { data: run, error: runError } = await supabase
       .from("runs")
       .insert([{ project_id: id, input, user_id: user.id }])
@@ -234,7 +370,6 @@ router.post(
 
     if (runError) throw new AppError("DB_ERROR", runError.message);
 
-    // 2. Generate AI
     try {
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -242,7 +377,6 @@ router.post(
       });
       const output = completion.choices[0].message.content;
 
-      // 3. Update run
       const { data: updatedRun, error: updateError } = await supabase
         .from("runs")
         .update({ output })

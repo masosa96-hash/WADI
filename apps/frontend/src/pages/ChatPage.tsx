@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore } from "../store/chatStore";
 import { Button } from "../components/common/Button";
@@ -7,17 +8,34 @@ import { Card } from "../components/common/Card";
 const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un objetivo?"];
 
 export default function ChatPage() {
+  const { conversationId } = useParams();
+  const navigate = useNavigate();
   const {
     messages,
     isLoading,
     sendMessage,
     resetChat,
+    startNewConversation,
+    loadConversation,
+    conversationId: storeConversationId,
     mode,
     // topic,
     explainLevel,
     setPreset,
     setExplainLevel,
   } = useChatStore();
+
+  // Load conversation on mount/param change
+  useEffect(() => {
+    if (conversationId) {
+      if (conversationId !== storeConversationId) {
+        loadConversation(conversationId);
+      }
+    } else {
+      // If at /chat (no ID), reset
+      if (storeConversationId) resetChat();
+    }
+  }, [conversationId]);
 
   // Initialize input state lazily from localStorage
   const [input, setInput] = useState(() => {
@@ -72,7 +90,18 @@ export default function ChatPage() {
     ) as HTMLTextAreaElement;
     if (textarea) textarea.style.height = "auto";
 
-    await sendMessage(text);
+    if (!conversationId) {
+      // Create new conversation
+      const newId = await startNewConversation();
+      if (newId) {
+        // Navigate first, but we need to ensure we send the message
+        navigate(`/chat/${newId}`);
+        // Store is already updated with new ID by startNewConversation
+        await sendMessage(text);
+      }
+    } else {
+      await sendMessage(text);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
