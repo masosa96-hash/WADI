@@ -20,7 +20,10 @@ dotenv.config({ path: "../../.env" });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import helmet from "helmet";
+
 const app = express();
+app.use(helmet());
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",

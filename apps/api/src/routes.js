@@ -157,6 +157,25 @@ router.post(
   })
 );
 
+router.delete(
+  "/projects/:id",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+
+    // Secure: Delete only if user owns it
+    const { error } = await supabase
+      .from("projects")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) throw new AppError("DB_ERROR", error.message);
+    res.json({ success: true, message: "Project deleted" });
+  })
+);
+
 router.get(
   "/projects/:id/runs",
   asyncHandler(async (req, res) => {
