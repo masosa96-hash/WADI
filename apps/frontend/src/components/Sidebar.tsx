@@ -34,7 +34,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (user) {
       fetchConversations();
     }
-  }, [user]);
+  }, [user, fetchConversations]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -46,11 +46,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     setLoading(true);
     try {
       const { error } = await convertGuestToUser(email, password);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (error) throw error;
       setShowRegister(false);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert("An error occurred");
+      }
     } finally {
       setLoading(false);
     }

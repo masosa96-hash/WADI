@@ -170,7 +170,16 @@ export default function LandingPage() {
           ].map((item, i) => (
             <button
               key={i}
-              onClick={() => handleCardClick(item.preset as any)}
+              onClick={() =>
+                handleCardClick(
+                  item.preset as
+                    | "tech"
+                    | "biz"
+                    | "learning"
+                    | "productivity"
+                    | "reflexivo"
+                )
+              }
               style={{
                 background: "var(--color-surface)",
                 borderRadius: "24px",

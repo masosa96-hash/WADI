@@ -153,8 +153,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       get().fetchConversations();
 
       return data.id;
-    } catch (err: any) {
-      set({ isLoading: false, error: err.message });
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      set({ isLoading: false, error: errorMessage });
       return null;
     }
   },
@@ -182,9 +184,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
         explainLevel: data.explain_level,
         isLoading: false,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      set({ isLoading: false, error: err.message });
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      set({ isLoading: false, error: errorMessage });
     }
   },
 
@@ -253,9 +257,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       // Refresh list to update title/timestamp
       get().fetchConversations();
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Rollback? Or just show error
-      set({ isLoading: false, error: err.message });
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      set({ isLoading: false, error: errorMessage });
       // Remove optimistic message? Maybe not, allow retry.
     }
   },

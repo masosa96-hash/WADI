@@ -35,7 +35,7 @@ export default function ChatPage() {
       // If at /chat (no ID), reset
       if (storeConversationId) resetChat();
     }
-  }, [conversationId]);
+  }, [conversationId, loadConversation, resetChat, storeConversationId]);
 
   // Initialize input state lazily from localStorage
   const [input, setInput] = useState(() => {
@@ -383,7 +383,14 @@ export default function ChatPage() {
                     key={item.title}
                     hoverable
                     onClick={() => {
-                      setPreset(item.preset as any);
+                      setPreset(
+                        item.preset as
+                          | "tech"
+                          | "biz"
+                          | "learning"
+                          | "productivity"
+                          | "reflexivo"
+                      );
                       setInput(item.prompt);
                       const textarea = document.querySelector(
                         'textarea[name="chat-input"]'
