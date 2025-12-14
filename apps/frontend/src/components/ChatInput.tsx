@@ -115,6 +115,7 @@ export function ChatInput({
             e.target.style.borderColor = "var(--color-border)";
             e.target.style.boxShadow = "none";
           }}
+          enterKeyHint="send"
         />
       </div>
       <Button
