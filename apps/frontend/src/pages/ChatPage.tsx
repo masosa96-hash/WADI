@@ -424,7 +424,7 @@ export default function ChatPage() {
                       localStorage.setItem("wadi_chat_draft", item.prompt);
 
                       const textarea = document.getElementById(
-                        "chat-input-main"
+                        "chat-input"
                       ) as HTMLTextAreaElement;
 
                       if (textarea) {

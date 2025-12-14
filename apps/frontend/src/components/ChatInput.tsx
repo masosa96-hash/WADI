@@ -108,8 +108,8 @@ export function ChatInput({
     >
       <div style={{ flex: 1, position: "relative" }}>
         <textarea
-          id="chat-input-main"
-          name="chat-input-main"
+          id="chat-input"
+          name="chat-input"
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -117,6 +117,7 @@ export function ChatInput({
           onInput={handleInput}
           placeholder={placeholder}
           disabled={isLoading}
+          autoComplete="off"
           rows={1}
           style={{
             width: "100%",
