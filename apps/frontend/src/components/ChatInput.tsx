@@ -38,7 +38,9 @@ export function ChatInput({
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const text = input;
+    const text = input.trim();
+    if (!text) return;
+
     setInput("");
     localStorage.removeItem("wadi_chat_draft");
 
