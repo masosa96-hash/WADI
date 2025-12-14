@@ -7,6 +7,23 @@ interface ChatInputProps {
   placeholder?: string;
 }
 
+/**
+ * @component ChatInput
+ * @status STABLE / FROZEN
+ * @description
+ * Handles chat input with strict event control to prevent page reloads
+ * and ensure single-submission logic.
+ *
+ * CRITICAL IMPLEMENTATION DETAILS:
+ * 1. Form submission and Enter key events use both e.preventDefault() AND e.stopPropagation().
+ *    This is mandatory to prevent the browser from reloading the page or bubbling events
+ *    to parent handlers that might trigger unwanted side effects.
+ * 2. Logic is decoupled into 'handleSend' to reuse between click and key events.
+ * 3. Input is explicitly trimmed before sending to prevent empty messages.
+ *
+ * DO NOT MODIFY THIS COMPONENT unless strictly necessary for a critical bug fix.
+ * User experience relies on this specific stability.
+ */
 export function ChatInput({
   onSendMessage,
   isLoading,
