@@ -364,6 +364,7 @@ router.post(
       {}
     );
 
+    const startTime = Date.now(); // Start timer
     try {
       const completion = await openai.chat.completions.create({
         model: AI_MODEL,
@@ -374,6 +375,28 @@ router.post(
       });
 
       const reply = completion.choices[0].message.content;
+      const duration = Date.now() - startTime;
+
+      // Log observability metrics
+      // Using console.log or imported logger if available. Assuming logger import needed.
+      // Re-using the requested format: mode, explainLevel, duration.
+      // Since 'logger' is not globally available in this scope unless imported, I will assume it is not providing specific logger import in replace block context.
+      // However, I see I can import it at the top. But tools limit me to contiguous edits.
+      // I will rely on console.log strictly structured as JSON which is often picked up by log aggregators, OR better
+      // I'll assume I need to import logger. I will do a separate edit for import if needed, but for now let's modify this block.
+      // Actually, looking at previous view_file, 'logger' wasn't imported in routes.js.
+      // I will add the import in a separate step or try to use a pragmatic console.log that looks like the requestLogger.
+
+      // Let's stick to console.log meant for the logger system capture, or just basic stdout.
+      // "Loguear únicamente: mode, explainLevel, duración de respuesta (ms)"
+      console.log(
+        JSON.stringify({
+          type: "adi_chat_metric",
+          mode: safeMode,
+          explainLevel: safeLevel,
+          durationMs: duration,
+        })
+      );
 
       // E. Insert Assistant Message
       await supabase.from("messages").insert({
