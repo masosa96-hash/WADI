@@ -1,9 +1,10 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore } from "../store/chatStore";
 import { Button } from "../components/common/Button";
 import { Card } from "../components/common/Card";
+import { ChatInput } from "../components/ChatInput";
 
 const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un objetivo?"];
 
@@ -46,18 +47,10 @@ export default function ChatPage() {
     loadConversations,
   ]);
 
-  // Initialize input state lazily from localStorage
-  const [input, setInput] = useState(() => {
-    try {
-      if (typeof window !== "undefined") {
-        return localStorage.getItem("wadi_chat_draft") || "";
-      }
-    } catch {
-      /* ignore */
-    }
-    return "";
-  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const prevMessagesLength = useRef(0);
 
   // Placeholder logic
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -71,60 +64,53 @@ export default function ChatPage() {
 
   const currentPlaceholder = PLACEHOLDERS[placeholderIndex];
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      localStorage.setItem("wadi_chat_draft", input);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [input]);
+  // Scroll Handling
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } =
+      scrollContainerRef.current;
+    // If user is near bottom (within 100px), enable auto-scroll
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setShouldAutoScroll(isNearBottom);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  useLayoutEffect(() => {
+    // Only scroll if message count increased AND (it's my message OR I was near bottom)
+    const newCount = messages.length;
+    const oldCount = prevMessagesLength.current;
+
+    if (newCount > oldCount) {
+      const lastMsg = messages[newCount - 1];
+      const isMyMessage = lastMsg.role === "user";
+
+      if (isMyMessage || shouldAutoScroll) {
+        scrollToBottom();
+      }
+    }
+    prevMessagesLength.current = newCount;
+  }, [messages, shouldAutoScroll]);
+
+  // Special case: When loading starts (user sent message), ensure scroll
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
+    if (isLoading) {
+      setShouldAutoScroll(true);
+      scrollToBottom();
+    }
+  }, [isLoading]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    const text = input;
-    setInput("");
-    localStorage.removeItem("wadi_chat_draft");
-
-    const textarea = document.querySelector(
-      'textarea[name="chat-input"]'
-    ) as HTMLTextAreaElement;
-    if (textarea) textarea.style.height = "auto";
-
+  const handleSendMessage = async (text: string) => {
     if (!conversationId) {
-      // New conversation flow
-      // Just ensure store state is clean? 'startNewConversation' already cleans it.
-      // But if user was in a stale state, maybe?
-      // Actually sendMessage now handles creation if ID is null.
-      // We assume user is at /chat which means ID should be null.
-      // If store has an ID but URL doesn't, we should have reset it in useEffect.
       await sendMessage(text);
-      // After sending, store updates with new ID. We should navigate?
-      // But we can't get ID easily from here unless we check store after await.
-      // Better: let the store update `conversationId`, and we can use a useEffect to sync URL?
-      // Or just trust the user stays on /chat until they click something?
-      // Ideally, URL should update to /chat/:id so reload works.
       const s = useChatStore.getState();
       if (s.conversationId) {
         navigate(`/chat/${s.conversationId}`, { replace: true });
       }
     } else {
       await sendMessage(text);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      void handleSubmit(e as unknown as React.FormEvent);
     }
   };
 
@@ -326,6 +312,8 @@ export default function ChatPage() {
 
         {/* Messages */}
         <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           style={{
             flex: 1,
             overflowY: "auto",
@@ -432,16 +420,28 @@ export default function ChatPage() {
                           | "productivity"
                           | "reflexivo"
                       );
-                      setInput(item.prompt);
-                      const textarea = document.querySelector(
-                        'textarea[name="chat-input"]'
+
+                      localStorage.setItem("wadi_chat_draft", item.prompt);
+
+                      const textarea = document.getElementById(
+                        "chat-input-main"
                       ) as HTMLTextAreaElement;
+
                       if (textarea) {
+                        // Trigger React change event programmatically
+                        const nativeInputValueSetter =
+                          Object.getOwnPropertyDescriptor(
+                            window.HTMLTextAreaElement.prototype,
+                            "value"
+                          )?.set;
+                        if (nativeInputValueSetter) {
+                          nativeInputValueSetter.call(textarea, item.prompt);
+                          textarea.dispatchEvent(
+                            new Event("input", { bubbles: true })
+                          );
+                        }
                         textarea.focus();
-                        setTimeout(() => {
-                          textarea.style.height = "auto";
-                          textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-                        }, 0);
+                        textarea.style.height = "auto";
                       }
                     }}
                     style={{
@@ -559,89 +559,11 @@ export default function ChatPage() {
             marginBottom: "env(keyboard-inset-height, 0px)", // Handle software keyboard
           }}
         >
-          <form
-            onSubmit={handleSubmit}
-            style={{
-              display: "flex",
-              gap: "0.5rem", // Closer on mobile
-              maxWidth: "900px",
-              margin: "0 auto",
-              position: "relative",
-              alignItems: "flex-end",
-            }}
-          >
-            <div style={{ flex: 1, position: "relative" }}>
-              <textarea
-                name="chat-input"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={currentPlaceholder}
-                disabled={isLoading}
-                rows={1}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = "auto";
-                  target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-                }}
-                style={{
-                  width: "100%",
-                  padding: "1rem 1.25rem",
-                  borderRadius: "1.5rem",
-                  border: "2px solid var(--color-border)",
-                  backgroundColor: "var(--color-surface)",
-                  color: "var(--color-text-main)",
-                  resize: "none",
-                  minHeight: "50px", // Slightly more compact
-                  maxHeight: "200px",
-                  fontSize: "16px", // Prevent zoom
-                  outline: "none",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
-                  transition: "border-color 0.2s, box-shadow 0.2s",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "var(--color-primary)";
-                  e.target.style.boxShadow =
-                    "0 0 0 3px rgba(139, 92, 246, 0.1)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "var(--color-border)";
-                  e.target.style.boxShadow = "none";
-                }}
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              aria-label="Enviar mensaje"
-              style={{
-                height: "50px",
-                width: "50px",
-                borderRadius: "50%",
-                background: "var(--color-primary)",
-                color: "#FFF",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                boxShadow: "0 4px 15px rgba(139, 92, 246, 0.3)",
-                border: "2px solid #fff",
-                fontSize: "1.2rem",
-                transition: "transform 0.1s, opacity 0.2s",
-                opacity: isLoading || !input.trim() ? 0.5 : 1,
-                cursor: isLoading || !input.trim() ? "not-allowed" : "pointer",
-              }}
-              onMouseEnter={(e) => {
-                if (!isLoading && input.trim())
-                  e.currentTarget.style.transform = "scale(1.05)";
-              }}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.transform = "scale(1)")
-              }
-            >
-              ➤
-            </Button>
-          </form>
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            placeholder={currentPlaceholder}
+          />
           <div
             style={{
               textAlign: "center",
