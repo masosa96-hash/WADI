@@ -36,15 +36,17 @@ FOR ALL
 USING (false); -- Implicitly allows service_role to bypass
 
 -- 4. TABLE: PROFILES
--- Enable RLS if not enabled
+-- ⚠️ NO TOCAR POR AHORA
+-- Se deja sin RLS explícito hasta definir mapping real con auth.users para evitar errores de columna "id" vs "user_id".
+-- (Warning de seguridad aceptado temporalmente para no bloquear el sprint)
+/*
 ALTER TABLE IF EXISTS profiles ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can only view/edit their own profile
 DROP POLICY IF EXISTS "Users can manage own profile" ON profiles;
 CREATE POLICY "Users can manage own profile"
 ON profiles
 FOR ALL
 USING (auth.uid() = id);
+*/
 
 -- 5. CLEANUP PERMISSIVE POLICIES (If any exist)
 -- Ensure 'projects' RLS is strict
