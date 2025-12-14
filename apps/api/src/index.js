@@ -27,31 +27,42 @@ const app = express();
 // --------------------------------------------------
 // SECURITY: CSP (Content Security Policy)
 // --------------------------------------------------
+// --------------------------------------------------
+// SECURITY: CSP (Content Security Policy)
+// --------------------------------------------------
 app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://js.hcaptcha.com"], // React scripts + hCaptcha
-      connectSrc: [
-        "'self'",
-        "https://*.supabase.co", // Supabase Auth/DB
-        "https://*.supabase.in",
-        "https://*.hcaptcha.com", // hCaptcha validation
-        "https://hcaptcha.com",
-      ],
-      frameSrc: [
-        "'self'",
-        "https://*.hcaptcha.com",
-        "https://newassets.hcaptcha.com",
-      ], // hCaptcha iframe
-      styleSrc: ["'self'", "'unsafe-inline'", "https://hcaptcha.com"], // hCaptcha styles
-      imgSrc: [
-        "'self'",
-        "data:",
-        "https://*.supabase.co",
-        "https://*.supabase.in",
-      ],
-      upgradeInsecureRequests: [],
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://js.hcaptcha.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://hcaptcha.com"],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "blob:",
+          "https://*.supabase.co",
+          "https://*.supabase.in",
+        ],
+        fontSrc: ["'self'", "data:"],
+        connectSrc: [
+          "'self'",
+          "https://smkbiguvgiscojwxgbae.supabase.co", // Explicit Supabase Project
+          "https://*.supabase.co", // Wildcard fallback
+          "https://*.supabase.in",
+          "https://api.openai.com",
+          "https://api.groq.com",
+          "https://*.hcaptcha.com",
+          "https://hcaptcha.com",
+        ],
+        frameSrc: [
+          "'self'",
+          "https://*.hcaptcha.com",
+          "https://newassets.hcaptcha.com",
+        ],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
     },
   })
 );
