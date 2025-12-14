@@ -94,14 +94,6 @@ export default function ChatPage() {
     prevMessagesLength.current = newCount;
   }, [messages, shouldAutoScroll]);
 
-  // Special case: When loading starts (user sent message), ensure scroll
-  useEffect(() => {
-    if (isLoading) {
-      setShouldAutoScroll(true);
-      scrollToBottom();
-    }
-  }, [isLoading]);
-
   const handleSendMessage = async (text: string) => {
     if (!conversationId) {
       await sendMessage(text);
