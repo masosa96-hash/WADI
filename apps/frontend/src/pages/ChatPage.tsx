@@ -103,6 +103,11 @@ export default function ChatPage() {
       }
     } else {
       await sendMessage(text);
+      // Check if we need to navigate (new conversation started)
+      const state = useChatStore.getState();
+      if (state.conversationId && state.conversationId !== conversationId) {
+        navigate(`/chat/${state.conversationId}`, { replace: true });
+      }
     }
   };
 
