@@ -34,8 +34,8 @@ export function ChatInput({
     return () => clearTimeout(timer);
   }, [input]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Logic extracted to avoid event casting
+  const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
     const text = input;
@@ -55,10 +55,17 @@ export function ChatInput({
     }, 0);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const onFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSend();
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      void handleSubmit(e as unknown as React.FormEvent);
+      e.stopPropagation();
+      handleSend();
     }
   };
 
@@ -70,7 +77,7 @@ export function ChatInput({
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={onFormSubmit}
       style={{
         display: "flex",
         gap: "0.5rem",
@@ -87,7 +94,7 @@ export function ChatInput({
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={onKeyDown}
           onInput={handleInput}
           placeholder={placeholder}
           disabled={isLoading}
