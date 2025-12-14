@@ -95,19 +95,14 @@ export default function ChatPage() {
   }, [messages, shouldAutoScroll]);
 
   const handleSendMessage = async (text: string) => {
-    if (!conversationId) {
-      await sendMessage(text);
-      const s = useChatStore.getState();
-      if (s.conversationId) {
-        navigate(`/chat/${s.conversationId}`, { replace: true });
-      }
-    } else {
-      await sendMessage(text);
-      // Check if we need to navigate (new conversation started)
-      const state = useChatStore.getState();
-      if (state.conversationId && state.conversationId !== conversationId) {
-        navigate(`/chat/${state.conversationId}`, { replace: true });
-      }
+    // If we are already in a chat, we stay there.
+    // If we are sending a message from generic /chat, we want to capture the NEW ID and navigate.
+
+    // We cast the return type because we know we updated the store action
+    const newId = (await sendMessage(text)) as unknown as string | null;
+
+    if (!conversationId && newId) {
+      navigate(`/chat/${newId}`, { replace: true });
     }
   };
 

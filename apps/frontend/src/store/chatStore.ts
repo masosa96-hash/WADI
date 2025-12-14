@@ -238,19 +238,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       set((state) => ({
         messages: [...state.messages, aiMsg],
-        conversationId: data.conversationId, // Update ID if it was new
-        conversationTitle:
-          state.conversationTitle ||
-          (state.messages.length === 0 ? text.substring(0, 30) : undefined),
         isLoading: false,
+        conversationId: data.conversationId, // Ensure state matches
       }));
 
       // Refresh list
-      get().fetchConversations();
+      get().loadConversations();
+      return data.conversationId; // Return ID explicitly for navigation
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
       set({ isLoading: false, error: errorMessage });
+      return null;
     }
   },
 
