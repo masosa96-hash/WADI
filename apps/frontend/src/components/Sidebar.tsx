@@ -111,9 +111,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               letterSpacing: "1px",
               textTransform: "uppercase",
             }}
-          >
-            Agentic Workspace
-          </small>
+          ></small>
         </div>
 
         {/* Mobile Close Button */}
@@ -160,7 +158,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             transition: "transform 0.2s, background-color 0.2s",
           }}
         >
-          <span style={{ fontSize: "1.2rem" }}>+</span> Nueva Conversación
+          <span style={{ fontSize: "1.2rem" }}>+</span> Nuevo
         </Link>
       </div>
 

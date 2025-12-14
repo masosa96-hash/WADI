@@ -172,7 +172,7 @@ export default function ChatPage() {
                   margin: 0,
                 }}
               >
-                {mode === "tutor" ? "🎓 Modo Tutor" : "WADI Chat"}
+                {mode === "tutor" ? "Modo Profe" : "WADI"}
               </h2>
               <p
                 style={{
@@ -181,9 +181,7 @@ export default function ChatPage() {
                   margin: 0,
                 }}
               >
-                {mode === "tutor"
-                  ? "Aprendizaje paso a paso"
-                  : "Tu copiloto de ideas a planes."}
+                {mode === "tutor" ? "Paso a paso." : "Del caos al plan."}
               </p>
             </div>
             <div style={{ display: "flex", gap: "0.5rem" }}>

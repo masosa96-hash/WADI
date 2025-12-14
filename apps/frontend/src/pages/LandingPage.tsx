@@ -74,7 +74,7 @@ export default function LandingPage() {
               fontWeight: 500,
             }}
           >
-            Hablar es empezar a conversar
+            Ordená lo que tenés en la cabeza. Sin vueltas.
           </p>
 
           <button
@@ -102,12 +102,12 @@ export default function LandingPage() {
               e.currentTarget.style.background = "var(--color-text-main)";
             }}
           >
-            Conversemos
+            Empezar
           </button>
         </div>
       </section>
 
-      {/* 2. CÓMO TE AYUDA WADI (Feature Cards - Clickable) */}
+      {/* 2. OPCIONES DE ENTRADA (MÁS VERBOS, MENOS PRODUCTO) */}
       <section
         style={{ padding: "4rem 2rem", maxWidth: "1200px", margin: "0 auto" }}
       >
@@ -120,7 +120,7 @@ export default function LandingPage() {
             color: "var(--color-text-main)",
           }}
         >
-          Cómo te ayuda WADI
+          ¿Por dónde arrancamos?
         </h2>
 
         <div
@@ -133,38 +133,38 @@ export default function LandingPage() {
           {[
             {
               emoji: "🎯",
-              title: "Aprendizaje personalizado",
-              desc: "WADI adapta las explicaciones a tu nivel, recuerda tu contexto y te propone ejercicios a tu ritmo.",
+              title: "Aprender algo nuevo",
+              desc: "Explicaciones a tu medida. Decime qué no entendés y lo desarmamos.",
               preset: "learning",
             },
             {
               emoji: "🚀",
-              title: "Gestión de proyectos",
-              desc: "Convierte ideas sueltas en proyectos con objetivos, hitos y próximos pasos claros.",
+              title: "Aterrizar un proyecto",
+              desc: "De 'tengo una idea' a 'estos son los pasos'. Estructura y realidad.",
               preset: "productivity",
             },
             {
               emoji: "📊",
-              title: "Análisis de datos",
-              desc: "Te ayuda a interpretar tablas, métricas y resultados para decidir con más seguridad.",
+              title: "Analizar datos",
+              desc: "Tirá los números y vemos qué significan de verdad.",
               preset: "biz",
             },
             {
               emoji: "⚡",
-              title: "Marketing & Growth",
-              desc: "Genera campañas, mensajes y experimentos de crecimiento a partir de tu contexto real.",
+              title: "Crecer y Vender",
+              desc: "Estrategias que no sean humo. Mensajes claros y acción.",
               preset: "biz",
             },
             {
               emoji: "💻",
-              title: "Tech & Code",
-              desc: "Te acompaña a debuggear, aprender lenguajes y diseñar soluciones paso a paso.",
+              title: "Programar / Debuggear",
+              desc: "Código limpio. Si no anda, lo arreglamos. Sin llorar.",
               preset: "tech",
             },
             {
               emoji: "⏳",
-              title: "Productividad",
-              desc: "Organiza tu día, prioriza tareas y te recuerda lo importante sin abrumarte.",
+              title: "Organizar el día",
+              desc: "Priorizar lo que importa y descartar el ruido. Foco.",
               preset: "productivity",
             },
           ].map((item, i) => (
