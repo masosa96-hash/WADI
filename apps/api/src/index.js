@@ -23,7 +23,38 @@ const __dirname = path.dirname(__filename);
 import helmet from "helmet";
 
 const app = express();
-app.use(helmet());
+
+// --------------------------------------------------
+// SECURITY: CSP (Content Security Policy)
+// --------------------------------------------------
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://js.hcaptcha.com"], // React scripts + hCaptcha
+      connectSrc: [
+        "'self'",
+        "https://*.supabase.co", // Supabase Auth/DB
+        "https://*.supabase.in",
+        "https://*.hcaptcha.com", // hCaptcha validation
+        "https://hcaptcha.com",
+      ],
+      frameSrc: [
+        "'self'",
+        "https://*.hcaptcha.com",
+        "https://newassets.hcaptcha.com",
+      ], // hCaptcha iframe
+      styleSrc: ["'self'", "'unsafe-inline'", "https://hcaptcha.com"], // hCaptcha styles
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https://*.supabase.co",
+        "https://*.supabase.in",
+      ],
+      upgradeInsecureRequests: [],
+    },
+  })
+);
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
