@@ -119,10 +119,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           className="mobile-only"
           onClick={onClose}
           style={{
-            fontSize: "1.5rem",
+            fontSize: "2rem",
             color: "var(--color-text-soft)",
-            padding: "0.25rem",
+            padding: "0.5rem 1rem",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
+          aria-label="Cerrar menú"
         >
           ✕
         </button>
@@ -175,7 +182,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <Link
           to="/"
           style={{
-            padding: "0.75rem 1rem",
+            padding: "1rem",
             borderRadius: "var(--radius-md)",
             backgroundColor: isActive("/")
               ? "var(--color-surface-soft)"
@@ -186,7 +193,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             transition: "all 0.2s",
             display: "flex",
             alignItems: "center",
-            gap: "0.75rem",
+            gap: "1rem",
             textDecoration: "none",
             fontWeight: isActive("/") ? 600 : 400,
             border: isActive("/")
@@ -258,7 +265,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 }}
                 className="tappable"
                 style={{
-                  padding: "0.75rem 1rem",
+                  padding: "1rem", // Increased touch target
                   borderRadius: "var(--radius-md)",
                   cursor: "pointer",
                   backgroundColor: location.pathname.includes(c.id)
