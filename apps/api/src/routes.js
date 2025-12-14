@@ -225,6 +225,37 @@ router.get(
   })
 );
 
+router.get(
+  "/conversations/:id/messages",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+
+    // Verify ownership
+    const { data: conversation, error: convError } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (convError || !conversation) {
+      throw new AuthError("Conversation not found", 404);
+    }
+
+    const { data: messages, error: msgError } = await supabase
+      .from("messages")
+      .select("id, role, content, created_at")
+      .eq("conversation_id", id)
+      .order("created_at", { ascending: true });
+
+    if (msgError) throw new AppError("DB_ERROR", msgError.message);
+
+    res.json(messages);
+  })
+);
+
 // 5. Delete Conversation
 router.delete(
   "/conversations/:id",
@@ -249,13 +280,133 @@ router.delete(
 // ------------------------------------------------------------------
 // If we strictly follow instructions, we rely on Authenticated Chat.
 // Keeping a stub that errors or directs to login might be safer than broken memory.
-router.post("/chat", (req, res, next) => {
-  next(
-    new AuthError(
-      "Please use /conversations endpoints. Guest chat is moving to persistent sessions."
-    )
-  );
-});
+// ------------------------------------------------------------------
+// UNIFIED SMART CHAT ENDPOINT
+// ------------------------------------------------------------------
+
+router.post(
+  "/chat",
+  validateChatInput,
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+
+    // Extract inputs. conversationId is optional.
+    const { message, conversationId, mode, explainLevel, topic } = req.body;
+    let currentConversationId = conversationId;
+
+    let conversation;
+
+    // A. Handle Conversation Resolution (New vs Existing)
+    if (!currentConversationId) {
+      // 1. Create new if no ID provided
+      const title =
+        message.substring(0, 60) + (message.length > 60 ? "..." : "");
+      const { data: newConv, error: createError } = await supabase
+        .from("conversations")
+        .insert([
+          {
+            user_id: user.id,
+            title,
+            mode: mode || "normal",
+            explain_level: explainLevel || "normal",
+          },
+        ])
+        .select()
+        .single();
+
+      if (createError) throw new AppError("DB_ERROR", createError.message);
+      conversation = newConv;
+      currentConversationId = newConv.id;
+    } else {
+      // 2. Verify existing
+      const { data: existing, error: findError } = await supabase
+        .from("conversations")
+        .select("*")
+        .eq("id", currentConversationId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (findError || !existing) {
+        throw new AuthError("Conversation not found or access denied", 404);
+      }
+      conversation = existing;
+    }
+
+    // B. Insert User Message
+    const { error: msgError } = await supabase.from("messages").insert({
+      conversation_id: currentConversationId,
+      user_id: user.id,
+      role: "user",
+      content: message,
+    });
+    if (msgError) throw new AppError("DB_ERROR", msgError.message);
+
+    // C. Build Context for AI
+    const { data: history } = await supabase
+      .from("messages")
+      .select("role, content")
+      .eq("conversation_id", currentConversationId)
+      .order("created_at", { ascending: true });
+
+    const contextSummary = formatContext(history || []);
+
+    // D. Generate AI Response
+    const safeMode = mode || conversation.mode || "normal";
+    const safeTopic = topic || "general";
+    const safeLevel = explainLevel || conversation.explain_level || "normal";
+
+    const systemPrompt = generateSystemPrompt(
+      safeMode,
+      safeTopic,
+      safeLevel,
+      contextSummary,
+      {}
+    );
+
+    try {
+      const completion = await openai.chat.completions.create({
+        model: AI_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message },
+        ],
+      });
+
+      const reply = completion.choices[0].message.content;
+
+      // E. Insert Assistant Message
+      await supabase.from("messages").insert({
+        conversation_id: currentConversationId,
+        user_id: user.id,
+        role: "assistant",
+        content: reply,
+      });
+
+      // F. Update Conversation (updated_at)
+      const updates = { updated_at: new Date().toISOString() };
+      // Update settings if provided explicitly
+      if (mode) updates.mode = mode;
+      if (explainLevel) updates.explain_level = explainLevel;
+
+      await supabase
+        .from("conversations")
+        .update(updates)
+        .eq("id", currentConversationId);
+
+      // G. Response
+      res.json({
+        conversationId: currentConversationId,
+        reply,
+        mode: safeMode,
+        topic: safeTopic,
+        explainLevel: safeLevel,
+      });
+    } catch (e) {
+      throw new ModelError(e.message);
+    }
+  })
+);
 
 // ------------------------------------------------------------------
 // PROJECTS ROUTES

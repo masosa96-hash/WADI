@@ -25,6 +25,7 @@ interface ChatState {
   messages: Message[];
   conversations: Conversation[];
   conversationId: string | null;
+  conversationTitle: string | null;
   isLoading: boolean;
   error: string | null;
 
@@ -40,7 +41,9 @@ interface ChatState {
   setExplainLevel: (level: "short" | "normal" | "detailed") => void;
 
   fetchConversations: () => Promise<void>;
-  startNewConversation: () => Promise<string | null>;
+  startNewConversation: (initialTitle?: string) => Promise<string | null>;
+  loadConversations: () => Promise<void>;
+  openConversation: (id: string) => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
   sendMessage: (text: string) => Promise<void>;
   deleteConversation: (id: string) => Promise<void>;
@@ -57,6 +60,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   conversations: [],
   conversationId: null,
+  conversationTitle: null,
   isLoading: false,
   error: null,
 
@@ -109,7 +113,25 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   setExplainLevel: (level) => set({ explainLevel: level }),
 
-  resetChat: () => set({ conversationId: null, messages: [], error: null }),
+  resetChat: () =>
+    set({
+      conversationId: null,
+      conversationTitle: null,
+      messages: [],
+      error: null,
+    }),
+
+  startNewConversation: async (initialTitle?: string) => {
+    // Just reset local state. Actual creation happens on first message.
+    set({
+      conversationId: null,
+      conversationTitle: initialTitle || null,
+      messages: [],
+      error: null,
+      isLoading: false,
+    });
+    return null;
+  },
 
   fetchConversations: async () => {
     try {
@@ -127,46 +149,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  startNewConversation: async () => {
-    try {
-      set({ isLoading: true, error: null });
-      const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
-
-      const { mode, topic, explainLevel } = get();
-
-      const res = await fetch(`${API_URL}/api/conversations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ mode, topic, explainLevel }),
-      });
-
-      if (!res.ok) throw new Error("Failed to create conversation");
-
-      const data = await res.json();
-      set({ conversationId: data.id, messages: [], isLoading: false });
-
-      // Refresh list
-      get().fetchConversations();
-
-      return data.id;
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An error occurred";
-      set({ isLoading: false, error: errorMessage });
-      return null;
-    }
+  loadConversations: async () => {
+    return get().fetchConversations();
   },
 
-  loadConversation: async (id: string) => {
+  openConversation: async (id: string) => {
     try {
       set({ isLoading: true, error: null, conversationId: id, messages: [] });
       const token = await getToken();
-      if (!token) return; // Should handle auth error
+      if (!token) return;
 
+      // 1. Get Details
       const res = await fetch(`${API_URL}/api/conversations/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -177,10 +170,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
       const data = await res.json();
-      // data contains { ..., messages: [...] }
       set({
         messages: data.messages || [],
-        mode: data.mode as ChatMode, // Sync settings from loaded chat?
+        conversationTitle: data.title,
+        mode: data.mode as ChatMode,
         explainLevel: data.explain_level,
         isLoading: false,
       });
@@ -192,57 +185,50 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
+  loadConversation: async (id: string) => {
+    // Alias to openConversation
+    return get().openConversation(id);
+  },
+
   sendMessage: async (text: string) => {
     if (!text.trim()) return;
 
-    const { conversationId } = get();
-    if (!conversationId) {
-      // If no ID, maybe start one?
-      // Logic says: "startNewConversation -> navigate".
-      // If we are here, we should have an ID or we are in a broken state.
-      // Assuming the UI handles creation before sending or we auto-create.
-      // Let's auto-create if needed? User said "El botón... debe llamar a startNewConversation".
-      // But if user types in main input without clicking chips?
-      // Let's handle generic flow: If no ID, create one first.
-      const newId = await get().startNewConversation();
-      if (!newId) return;
-      // The store is updated, but local var 'conversationId' is stale.
-      // Use newId.
-      // Actually, we need to return here and let the UI navigate?
-      // Let's implement auto-create inside sendMessage for robustness.
-      // But startNewConversation does a fetch.
-      // We'll proceed with newId.
-      return get().sendMessage(text); // Recursion with set ID
-    }
-
     set({ isLoading: true, error: null });
 
-    // 1. Optimistic
+    // 1. Optimistic User Message
     const tempId = crypto.randomUUID();
-    const userMsg: Message = { id: tempId, role: "user", content: text };
+    const userMsg: Message = {
+      id: tempId,
+      role: "user",
+      content: text,
+      created_at: new Date().toISOString(),
+    };
     set((state) => ({ messages: [...state.messages, userMsg] }));
 
     try {
       const token = await getToken();
-      const res = await fetch(
-        `${API_URL}/api/conversations/${conversationId}/messages`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            message: text,
-            // settings are updated in conversation, but we can pass them in case we want to override
-            // standard is to follow existing conv settings or send updates if changed
-          }),
-        }
-      );
+      const { conversationId, mode, topic, explainLevel } = get();
+
+      // 2. Call Unified /api/chat
+      const res = await fetch(`${API_URL}/api/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          message: text,
+          conversationId, // Optional (null for new chat)
+          mode,
+          topic,
+          explainLevel,
+        }),
+      });
 
       if (!res.ok) throw new Error("Failed to send message");
       const data = await res.json();
 
+      // 3. Update State
       const aiMsg: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
@@ -252,17 +238,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       set((state) => ({
         messages: [...state.messages, aiMsg],
+        conversationId: data.conversationId, // Update ID if it was new
+        conversationTitle:
+          state.conversationTitle ||
+          (state.messages.length === 0 ? text.substring(0, 30) : undefined),
         isLoading: false,
       }));
 
-      // Refresh list to update title/timestamp
+      // Refresh list
       get().fetchConversations();
     } catch (err: unknown) {
-      // Rollback? Or just show error
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
       set({ isLoading: false, error: errorMessage });
-      // Remove optimistic message? Maybe not, allow retry.
     }
   },
 
@@ -273,12 +261,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      set((state) => ({
-        conversations: state.conversations.filter((c) => c.id !== id),
-        conversationId:
-          state.conversationId === id ? null : state.conversationId,
-        messages: state.conversationId === id ? [] : state.messages,
-      }));
+
+      set((state) => {
+        const nextConversations = state.conversations.filter(
+          (c) => c.id !== id
+        );
+        // If current open conversation is deleted, reset
+        if (state.conversationId === id) {
+          return {
+            conversations: nextConversations,
+            conversationId: null,
+            conversationTitle: null,
+            messages: [],
+          };
+        }
+        return { conversations: nextConversations };
+      });
+      // Try to start new if empty? handled by UI
     } catch (err) {
       console.error(err);
     }

@@ -14,6 +14,8 @@ export default function ChatPage() {
     messages,
     isLoading,
     sendMessage,
+    deleteConversation,
+    loadConversations,
     resetChat,
     startNewConversation,
     loadConversation,
@@ -27,6 +29,7 @@ export default function ChatPage() {
 
   // Load conversation on mount/param change
   useEffect(() => {
+    loadConversations(); // Always refresh list
     if (conversationId) {
       if (conversationId !== storeConversationId) {
         loadConversation(conversationId);
@@ -35,7 +38,13 @@ export default function ChatPage() {
       // If at /chat (no ID), reset
       if (storeConversationId) resetChat();
     }
-  }, [conversationId, loadConversation, resetChat, storeConversationId]);
+  }, [
+    conversationId,
+    loadConversation,
+    resetChat,
+    storeConversationId,
+    loadConversations,
+  ]);
 
   // Initialize input state lazily from localStorage
   const [input, setInput] = useState(() => {
@@ -91,13 +100,21 @@ export default function ChatPage() {
     if (textarea) textarea.style.height = "auto";
 
     if (!conversationId) {
-      // Create new conversation
-      const newId = await startNewConversation();
-      if (newId) {
-        // Navigate first, but we need to ensure we send the message
-        navigate(`/chat/${newId}`);
-        // Store is already updated with new ID by startNewConversation
-        await sendMessage(text);
+      // New conversation flow
+      // Just ensure store state is clean? 'startNewConversation' already cleans it.
+      // But if user was in a stale state, maybe?
+      // Actually sendMessage now handles creation if ID is null.
+      // We assume user is at /chat which means ID should be null.
+      // If store has an ID but URL doesn't, we should have reset it in useEffect.
+      await sendMessage(text);
+      // After sending, store updates with new ID. We should navigate?
+      // But we can't get ID easily from here unless we check store after await.
+      // Better: let the store update `conversationId`, and we can use a useEffect to sync URL?
+      // Or just trust the user stays on /chat until they click something?
+      // Ideally, URL should update to /chat/:id so reload works.
+      const s = useChatStore.getState();
+      if (s.conversationId) {
+        navigate(`/chat/${s.conversationId}`, { replace: true });
       }
     } else {
       await sendMessage(text);
@@ -169,15 +186,41 @@ export default function ChatPage() {
                   : "Tu copiloto de ideas a planes."}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={resetChat}
-              title="Borrar chat"
-              style={{ color: "var(--color-text-soft)" }}
-            >
-              🗑️ Limpiar
-            </Button>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              {storeConversationId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    if (
+                      window.confirm(
+                        "¿Seguro que querés borrar esta conversación? No se puede deshacer."
+                      )
+                    ) {
+                      await deleteConversation(storeConversationId);
+                      alert("Conversación eliminada.");
+                      navigate("/chat");
+                    }
+                  }}
+                  title="Eliminar conversación"
+                  style={{ color: "var(--color-text-soft)" }}
+                >
+                  Running 🗑️
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  startNewConversation();
+                  navigate("/chat");
+                }}
+                title="Nueva conversación"
+                style={{ color: "var(--color-primary)" }}
+              >
+                ✨ Nuevo
+              </Button>
+            </div>
           </div>
 
           {/* Controls: Tabs & Dropdown */}
