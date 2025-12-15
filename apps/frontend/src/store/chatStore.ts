@@ -4,13 +4,16 @@ import { supabase } from "../config/supabase";
 const rawUrl = import.meta.env.VITE_API_URL;
 let apiUrl = rawUrl || "https://wadi-wxg7.onrender.com";
 
-// In production, do not allow localhost as it breaks CSP and Mixed Content
+// Runtime check: If we are NOT on localhost, we should NOT call localhost.
+// This prevents "Mixed Content" errors and CSP blocks when deployed.
 if (
-  import.meta.env.PROD &&
+  typeof window !== "undefined" &&
+  window.location.hostname !== "localhost" &&
+  window.location.hostname !== "127.0.0.1" &&
   (apiUrl.includes("localhost") || apiUrl.includes("127.0.0.1"))
 ) {
   console.warn(
-    "Detected localhost API URL in production. Switching to relative path."
+    "Detected localhost API URL in production/remote. Switching to relative path."
   );
   apiUrl = "";
 }
