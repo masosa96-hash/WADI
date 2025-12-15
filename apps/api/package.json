@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node src/index.js",
-    "build": "cd ../../ && pnpm --filter frontend build"
+    "build": "cd ../../ && pnpm install && pnpm --filter frontend build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.86.0",
