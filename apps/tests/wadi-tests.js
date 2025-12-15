@@ -60,6 +60,12 @@ Puedo acompañar el análisis, pero necesitás elegir un eje para empezar a cort
 ¿Cuál duele menos soltar hoy?`;
   }
 
+  // Test negativo para simpatía
+  if (userInput.includes("ayudar") || userInput.includes("Hola")) {
+    return `WADI no está para ayudar. Está para pensar.
+¿Qué querés resolver? Si es vago, no hay ayuda posible.`;
+  }
+
   return `ERROR: Input no reconocido por mock.`;
 }
 
@@ -99,6 +105,12 @@ function runTests() {
         "necesitás elegir un eje",
       ],
     },
+    {
+      name: "Test 6 – No responde con simpatía artificial",
+      input: "Hola, ¿me podés ayudar?",
+      mustInclude: ["Está para pensar", "Qué querés resolver"],
+      mustNotInclude: ["con gusto", "¡Hola!", "😊", "encantado"],
+    },
   ];
 
   let passed = 0;
@@ -107,12 +119,24 @@ function runTests() {
       const output = mockWadiResponse(test.input);
       console.log(`🔹 ${test.name}`);
 
-      for (const phrase of test.mustInclude) {
-        assert(
-          output.includes(phrase),
-          `❌ Falla: no encontró "${phrase}" en la respuesta:\n${output}`
-        );
+      if (test.mustInclude) {
+        for (const phrase of test.mustInclude) {
+          assert(
+            output.includes(phrase),
+            `❌ Falla: no encontró "${phrase}" en la respuesta:\n${output}`
+          );
+        }
       }
+
+      if (test.mustNotInclude) {
+        for (const phrase of test.mustNotInclude) {
+          assert(
+            !output.includes(phrase),
+            `❌ Falla: encontró validación prohibida "${phrase}" en la respuesta:\n${output}`
+          );
+        }
+      }
+
       console.log("✅ OK");
       passed++;
     } catch (e) {

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore } from "../store/chatStore";
 import { Button } from "../components/common/Button";
-import { Card } from "../components/common/Card";
+
 import { ChatInput } from "../components/ChatInput";
 
 const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un objetivo?"];
@@ -326,150 +326,32 @@ export default function ChatPage() {
                 minHeight: "100%",
                 gap: "2rem",
                 marginTop: "-2rem",
+                textAlign: "center",
+                padding: "5rem 1rem",
               }}
             >
-              <div style={{ textAlign: "center" }}>
-                <h3
-                  style={{
-                    fontSize: "var(--text-3xl)",
-                    fontWeight: 800,
-                    marginBottom: "0.5rem",
-                    background: "var(--grad-main)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  WADI no charla. Ordena.
-                </h3>
-
-                <p
-                  style={{
-                    fontSize: "var(--text-base)",
-                    color: "var(--color-text-soft)",
-                    margin: 0,
-                  }}
-                >
-                  Decime directamente qué querés resolver. Si no hay objetivo,
-                  no hay nada que pensar.
-                </p>
-              </div>
-
-              <div
+              <h1
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                  gap: "1rem",
-                  width: "100%",
-                  maxWidth: "900px",
+                  fontSize: "1.875rem", // text-3xl
+                  fontWeight: "bold",
+                  color: "var(--color-text-main)",
+                  margin: 0,
                 }}
               >
-                {[
-                  {
-                    title: "Quiero entender algo mejor",
-                    desc: "Explicaciones simples, resúmenes y planes para aprender.",
-                    prompt: "Quiero entender algo mejor: ",
-                    preset: "learning",
-                  },
-                  {
-                    title: "Tengo un problema con código",
-                    desc: "Ayuda con código, errores, arquitectura o debugging.",
-                    prompt: "Tengo un problema con código: ",
-                    preset: "tech",
-                  },
-                  {
-                    title: "Estoy pensando en un negocio",
-                    desc: "Validación de ideas, pricing, ventas y estrategia.",
-                    prompt: "Estoy pensando en un negocio: ",
-                    preset: "biz",
-                  },
-                  {
-                    title: "Quiero crear algo nuevo",
-                    desc: "Creatividad, contenido, guiones y branding.",
-                    prompt: "Quiero crear algo nuevo: ",
-                    preset: "reflexivo",
-                  },
-                  {
-                    title: "Necesito ordenar mis ideas",
-                    desc: "Productividad, tareas y organización personal.",
-                    prompt: "Necesito ordenar mis ideas: ",
-                    preset: "productivity",
-                  },
-                  {
-                    title: "Algo no me funciona",
-                    desc: "Soporte técnico y troubleshooting de dispositivos.",
-                    prompt: "Algo no me funciona: ",
-                    preset: "reflexivo",
-                  },
-                ].map((item) => (
-                  <Card
-                    key={item.title}
-                    hoverable
-                    onClick={() => {
-                      setPreset(
-                        item.preset as
-                          | "tech"
-                          | "biz"
-                          | "learning"
-                          | "productivity"
-                          | "reflexivo"
-                      );
-
-                      localStorage.setItem("wadi_chat_draft", item.prompt);
-
-                      const textarea = document.getElementById(
-                        "chat-input"
-                      ) as HTMLTextAreaElement;
-
-                      if (textarea) {
-                        // Trigger React change event programmatically
-                        const nativeInputValueSetter =
-                          Object.getOwnPropertyDescriptor(
-                            window.HTMLTextAreaElement.prototype,
-                            "value"
-                          )?.set;
-                        if (nativeInputValueSetter) {
-                          nativeInputValueSetter.call(textarea, item.prompt);
-                          textarea.dispatchEvent(
-                            new Event("input", { bubbles: true })
-                          );
-                        }
-                        textarea.focus();
-                        textarea.style.height = "auto";
-                      }
-                    }}
-                    style={{
-                      padding: "1.25rem",
-                      cursor: "pointer",
-                      border: "1px solid var(--color-border)",
-                      background: "rgba(255,255,255,0.8)",
-                      backdropFilter: "blur(4px)",
-                      borderRadius: "16px",
-                      boxShadow: "var(--shadow-sm)",
-                      transition: "all 0.2s",
-                      color: "var(--color-text-main)",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.5rem",
-                      // Ensure it behaves like a button
-                      touchAction: "manipulation",
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    className="card tappable"
-                  >
-                    <strong style={{ fontSize: "1rem" }}>{item.title}</strong>
-                    <span
-                      style={{
-                        fontSize: "0.85rem",
-                        color: "var(--color-text-soft)",
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {item.desc}
-                    </span>
-                  </Card>
-                ))}
-              </div>
+                WADI no charla. Ordena.
+              </h1>
+              <p
+                style={{
+                  marginTop: "1rem",
+                  color: "var(--color-text-soft)",
+                  maxWidth: "28rem",
+                  fontSize: "1rem",
+                  lineHeight: "1.5",
+                }}
+              >
+                Decime directamente qué querés resolver. Si no hay objetivo, no
+                hay nada que pensar.
+              </p>
             </div>
           )}
 
