@@ -124,7 +124,7 @@ export default function ChatPage() {
           style={{
             padding: "1.5rem",
             borderBottom: "1px solid var(--color-border)",
-            background: "rgba(255,255,255,0.7)",
+            background: "rgba(17, 24, 39, 0.8)",
             backdropFilter: "blur(16px)",
             position: "sticky",
             top: 0,
@@ -428,7 +428,7 @@ export default function ChatPage() {
         <div
           style={{
             padding: "1rem",
-            background: "rgba(255,255,255,0.8)",
+            background: "rgba(17, 24, 39, 0.8)",
             backdropFilter: "blur(20px)",
             borderTop: "1px solid var(--color-border)",
             marginBottom: "env(keyboard-inset-height, 0px)", // Handle software keyboard

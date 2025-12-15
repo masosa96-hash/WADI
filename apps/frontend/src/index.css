@@ -22,10 +22,16 @@
 
 /* Base Reset (Fallback if Tailwind doesn't load immediately or for specific overrides) */
 :root {
-  --color-bg: #f4f5fb;
-  --color-surface: #ffffff;
-  --color-text-main: #1f2937; /* wadi-surface-ish for light mode text base */
+  --color-bg: #111827;
+  --color-surface: #1f2937;
+  --color-surface-soft: #374151;
+  --color-text-main: #f9fafb;
+  --color-text-soft: #9ca3af;
+  --color-primary: #7c3aed;
+  --color-border: #374151;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --grad-main: linear-gradient(135deg, #f9fafb 0%, #9ca3af 100%);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 body,
