@@ -5,10 +5,21 @@ import { useChatStore } from "../store/chatStore";
 import { Button } from "../components/common/Button";
 
 import { ChatInput } from "../components/ChatInput";
+import { OnboardingModal } from "../components/OnboardingModal";
 
 const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un objetivo?"];
 
 export default function ChatPage() {
+  // Lazy initialization to avoid useEffect flicker
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem("wadi_onboarding_seen");
+  });
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem("wadi_onboarding_seen", "true");
+    setShowOnboarding(false);
+  };
+
   const { conversationId } = useParams();
   const navigate = useNavigate();
   const {
@@ -108,6 +119,10 @@ export default function ChatPage() {
 
   return (
     <Layout>
+      {showOnboarding && (
+        <OnboardingModal onComplete={handleOnboardingComplete} />
+      )}
+
       <div
         style={{
           display: "flex",
