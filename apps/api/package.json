@@ -5,8 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node src/index.js",
-    "build": "echo \"API Build: Success (no compile needed)\"",
-    "postinstall": "cd ../../ && pnpm run build"
+    "build": "echo \"API Build: Success (no compile needed)\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.86.0",
