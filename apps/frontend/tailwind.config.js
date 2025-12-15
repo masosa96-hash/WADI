@@ -1,5 +1,5 @@
-module.exports = {
-  content: ["./apps/**/*.{js,ts,jsx,tsx}"],
+export default {
+  content: ["./src/**/*.{js,ts,jsx,tsx}"],
   darkMode: "class",
   theme: {
     extend: {
