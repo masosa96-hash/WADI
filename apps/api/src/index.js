@@ -104,6 +104,25 @@ app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
 // STATIC FRONTEND (WADI MAIN UI)
 // --------------------------------------------------
 const frontendPath = path.join(__dirname, "../../frontend/dist");
+
+// STATIC ASSET SERVING WITH EXPLICIT CONTENT-TYPE
+// Force serving /assets directory as static files to avoid SPA fallback
+app.use(
+  "/assets",
+  express.static(path.join(frontendPath, "assets"), {
+    immutable: true,
+    maxAge: "1y",
+    setHeaders: (res, path) => {
+      if (path.endsWith(".css")) {
+        res.setHeader("Content-Type", "text/css");
+      } else if (path.endsWith(".js")) {
+        res.setHeader("Content-Type", "application/javascript");
+      }
+    },
+  })
+);
+
+// Serve the rest of the static files (favicon, etc.)
 app.use(express.static(frontendPath));
 
 // --------------------------------------------------
@@ -118,7 +137,11 @@ app.use("/system", monitoringRoutes);
 // --------------------------------------------------
 // Cualquier ruta no atrapada por API o estáticos -> index.html
 app.get(/.*/, (req, res) => {
-  if (req.path.startsWith("/api") || req.path.startsWith("/kivo")) {
+  if (
+    req.path.startsWith("/api") ||
+    req.path.startsWith("/kivo") ||
+    req.path.startsWith("/assets")
+  ) {
     return res.status(404).json({ error: "Not found" });
   }
   // Si existe el index.html lo enviamos, sino retornamos json básico info

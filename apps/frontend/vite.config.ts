@@ -6,6 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
   return {
+    base: "/",
     plugins: [react()],
     define: {
       "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
