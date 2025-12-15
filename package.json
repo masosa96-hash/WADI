@@ -4,7 +4,8 @@
   "scripts": {
     "lint": "eslint .",
     "format": "prettier --write .",
-    "build": "pnpm --filter frontend build"
+    "build": "pnpm --filter frontend build",
+    "test:wadi": "node apps/tests/wadi-tests.js"
   },
   "workspaces": [
     "apps/api",
