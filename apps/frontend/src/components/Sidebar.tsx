@@ -16,13 +16,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, convertGuestToUser, signOut } = useAuthStore();
-  const {
-    resetChat,
-    setPreset,
-    conversations,
-    fetchConversations,
-    loadConversation,
-  } = useChatStore();
+  const { resetChat, conversations, fetchConversations, loadConversation } =
+    useChatStore();
   const isAnonymous = user?.is_anonymous;
 
   const [showRegister, setShowRegister] = useState(false);
@@ -37,9 +32,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   }, [user, fetchConversations]);
 
   const isActive = (path: string) => location.pathname === path;
-
-  // Placeholder nav items
-  const navItems = [{ label: "Dashboard", path: "/projects" }];
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,13 +49,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleTutorClick = () => {
-    setPreset("learning");
-    resetChat();
-    navigate("/chat");
-    if (onClose) onClose();
   };
 
   return (
@@ -179,6 +164,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           overflowY: "auto",
         }}
       >
+        {/* Navigation items removed: Dashboard & Tools */}
         <Link
           to="/"
           style={{
@@ -207,38 +193,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           Home
         </Link>
 
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            style={{
-              padding: "0.75rem 1rem",
-              borderRadius: "var(--radius-md)",
-              backgroundColor: isActive(item.path)
-                ? "var(--color-surface-soft)"
-                : "transparent",
-              color: isActive(item.path)
-                ? "var(--color-text-main)"
-                : "var(--color-text-soft)",
-              transition: "all 0.2s",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              textDecoration: "none",
-              fontWeight: isActive(item.path) ? 600 : 400,
-              border: isActive(item.path)
-                ? "1px solid var(--color-border-active)"
-                : "1px solid transparent",
-            }}
-          >
-            <span role="img" aria-label="Cohete">
-              🚀
-            </span>{" "}
-            {item.label}
-          </Link>
-        ))}
-
-        {/* History Section */}
+        {/* History Section - Only shown if there are conversations */}
         {conversations && conversations.length > 0 && (
           <>
             <div
@@ -285,38 +240,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             ))}
           </>
         )}
-
-        <div
-          className="desktop-only"
-          style={{
-            fontSize: "0.7rem",
-            textTransform: "uppercase",
-            color: "var(--color-text-soft)",
-            marginBottom: "0.5rem",
-            marginTop: "1.5rem",
-            letterSpacing: "1px",
-            paddingLeft: "1rem",
-            fontWeight: 600,
-          }}
-        >
-          Herramientas
-        </div>
-
-        <Button
-          variant="ghost"
-          style={{
-            justifyContent: "flex-start",
-            gap: "0.75rem",
-            color: "var(--color-text-soft)",
-            fontWeight: 400,
-          }}
-          onClick={handleTutorClick}
-        >
-          <span role="img" aria-label="Libro">
-            📚
-          </span>{" "}
-          Modo Tutor
-        </Button>
       </nav>
 
       {/* Footer / Profile */}

@@ -32,11 +32,6 @@ export default function ChatPage() {
     startNewConversation,
     loadConversation,
     conversationId: storeConversationId,
-    mode,
-    // topic,
-    explainLevel,
-    setPreset,
-    setExplainLevel,
   } = useChatStore();
 
   // Load conversation on mount/param change
@@ -165,7 +160,7 @@ export default function ChatPage() {
                   margin: 0,
                 }}
               >
-                {mode === "tutor" ? "Modo Profe" : "WADI"}
+                WADI
               </h2>
               <p
                 style={{
@@ -174,7 +169,7 @@ export default function ChatPage() {
                   margin: 0,
                 }}
               >
-                {mode === "tutor" ? "Paso a paso." : "Del caos al plan."}
+                Del caos al plan.
               </p>
             </div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -214,107 +209,7 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* Controls: Tabs & Dropdown */}
-          <div
-            style={{
-              display: "flex",
-              gap: "1rem",
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            {/* Mode Selector Tabs (Scrollable & Tappable) */}
-            <div
-              className="scroll-x-mobile"
-              style={{
-                display: "flex",
-                gap: "0.5rem",
-                padding: "0.25rem 0", // Space for scrollbar if needed
-                maxWidth: "100%",
-              }}
-            >
-              {(
-                [
-                  { id: "reflexivo", label: "General", modeMatch: "normal" },
-                  { id: "tech", label: "Tech / Dev", modeMatch: "tech" },
-                  { id: "biz", label: "Negocios", modeMatch: "biz" },
-                  { id: "learning", label: "Tutor", modeMatch: "tutor" },
-                ] as const
-              ).map((m) => {
-                const isActive = mode === m.modeMatch;
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => setPreset(m.id)}
-                    className="tappable"
-                    style={{
-                      fontSize: "var(--text-sm)",
-                      padding: "0 16px",
-                      height: "44px", // Tappable minimum
-                      minWidth: "44px",
-                      borderRadius: "var(--radius-full)",
-                      border: isActive
-                        ? "1px solid var(--color-primary)"
-                        : "1px solid var(--color-border)",
-                      background: isActive
-                        ? "var(--color-primary)"
-                        : "var(--color-surface)",
-                      color: isActive ? "#FFF" : "var(--color-text-soft)",
-                      fontWeight: isActive ? 600 : 500,
-                      whiteSpace: "nowrap",
-                      transition: "all 0.2s ease",
-                      boxShadow: isActive
-                        ? "0 2px 8px rgba(124, 58, 237, 0.25)"
-                        : "none",
-                    }}
-                  >
-                    {m.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Explain Level Dropdown */}
-            <div style={{ position: "relative" }}>
-              <select
-                value={explainLevel}
-                onChange={(e) =>
-                  setExplainLevel(
-                    e.target.value as "short" | "normal" | "detailed"
-                  )
-                }
-                style={{
-                  fontSize: "var(--text-xs)",
-                  padding: "6px 12px 6px 30px", // space for icon
-                  borderRadius: "var(--radius-lg)",
-                  border: "1px solid var(--color-border)",
-                  backgroundColor: "var(--color-surface)",
-                  color: "var(--color-text-main)",
-                  cursor: "pointer",
-                  outline: "none",
-                  appearance: "none",
-                  minWidth: "140px",
-                  boxShadow: "var(--shadow-sm)",
-                }}
-              >
-                <option value="short">Corto (Resumen)</option>
-                <option value="normal">Explicado (Normal)</option>
-                <option value="detailed">Detallado (Paso a paso)</option>
-              </select>
-              <span
-                style={{
-                  position: "absolute",
-                  left: "10px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  fontSize: "0.8rem",
-                  pointerEvents: "none",
-                }}
-              >
-                🎚️
-              </span>
-            </div>
-          </div>
+          {/* Controls removed for cleaner UI */}
         </header>
 
         {/* Messages */}
