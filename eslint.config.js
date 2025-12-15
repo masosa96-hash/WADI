@@ -14,6 +14,7 @@ export default tseslint.config(
       "**/.firebase/**",
       "**/.turbo/**",
       "scripts/**",
+      "apps/tests/**",
       "eslint.config.js",
       "*.js",
     ],

@@ -5,7 +5,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "build": "pnpm --filter frontend build",
-    "test:wadi": "node apps/tests/wadi-tests.js"
+    "test:wadi": "node apps/tests/wadi-tests.js",
+    "prepare": "husky"
   },
   "workspaces": [
     "apps/api",
@@ -25,6 +26,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
     "prettier": "^3.7.4",
     "typescript-eslint": "^8.48.1"
   },
