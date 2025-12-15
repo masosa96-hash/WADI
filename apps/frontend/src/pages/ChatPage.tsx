@@ -339,7 +339,7 @@ export default function ChatPage() {
                     WebkitTextFillColor: "transparent",
                   }}
                 >
-                  ¿Con qué querés que te ayude hoy?
+                  WADI no charla. Ordena.
                 </h3>
 
                 <p
@@ -349,7 +349,8 @@ export default function ChatPage() {
                     margin: 0,
                   }}
                 >
-                  Elegí una categoría o escribí directamente abajo.
+                  Decime directamente qué querés resolver. Si no hay objetivo,
+                  no hay nada que pensar.
                 </p>
               </div>
 
