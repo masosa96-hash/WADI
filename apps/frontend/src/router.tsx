@@ -4,14 +4,15 @@ import Login from "./pages/Login";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import ChatPage from "./pages/ChatPage";
-import LandingPage from "./pages/LandingPage";
+
+import IntroWadi from "./pages/IntroWadi";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />,
+    element: <IntroWadi />,
   },
   {
     path: "/terminos",

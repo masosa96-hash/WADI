@@ -2,7 +2,7 @@
 
 const assert = require("assert");
 
-// 🧠 Simula la respuesta que devuelve tu brain (con WADI v. “Acción o Nada”)
+// 🧠 Simula la respuesta que devuelve tu brain (Con WADI v. "Tensión Estructurante")
 function mockWadiResponse(userInput) {
   if (userInput.includes("ideas") && userInput.includes("medio trabado")) {
     return `Esto es una bolsa de gatos. Hay intención, pero no hay dirección.
@@ -48,6 +48,18 @@ Dos criterios:
 ¿Querés escalar rápido o construir base sólida?`;
   }
 
+  // Nuevo test: Charla con estructura (miedo a elegir)
+  if (
+    userInput.includes("muchas ideas") &&
+    userInput.includes("miedo elegir")
+  ) {
+    return `El miedo es falta de datos o falta de coraje. Hay una tensión real acá.
+
+Puedo acompañar el análisis, pero necesitás elegir un eje para empezar a cortar.
+
+¿Cuál duele menos soltar hoy?`;
+  }
+
   return `ERROR: Input no reconocido por mock.`;
 }
 
@@ -78,23 +90,42 @@ function runTests() {
       input: "Debo priorizar onboarding o retención primero?",
       mustInclude: ["decisión concreta", "criterios", "rápido", "base sólida"],
     },
+    {
+      name: "Test 5 – Charla con estructura (miedo)",
+      input: "Tengo muchas ideas pero me da miedo elegir.",
+      mustInclude: [
+        "tensión real",
+        "Puedo acompañar",
+        "necesitás elegir un eje",
+      ],
+    },
   ];
 
+  let passed = 0;
   for (const test of tests) {
-    const output = mockWadiResponse(test.input);
-    console.log(`🔹 ${test.name}`);
+    try {
+      const output = mockWadiResponse(test.input);
+      console.log(`🔹 ${test.name}`);
 
-    for (const phrase of test.mustInclude) {
-      assert(
-        output.includes(phrase),
-        `❌ Falla: no encontró "${phrase}" en la respuesta:\n${output}`
-      );
+      for (const phrase of test.mustInclude) {
+        assert(
+          output.includes(phrase),
+          `❌ Falla: no encontró "${phrase}" en la respuesta:\n${output}`
+        );
+      }
+      console.log("✅ OK");
+      passed++;
+    } catch (e) {
+      console.error(e.message);
     }
-
-    console.log("✅ OK");
   }
 
-  console.log("\n🎉 Todos los tests pasaron. WADI sigue afilado.\n");
+  if (passed === tests.length) {
+    console.log("\n🎉 Todos los tests pasaron. WADI mantiene su eje.\n");
+  } else {
+    console.error("\n❌ Algunos tests fallaron. Revisar personalidad.\n");
+    process.exit(1);
+  }
 }
 
 runTests();
