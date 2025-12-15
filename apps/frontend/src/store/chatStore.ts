@@ -1,8 +1,21 @@
 import { create } from "zustand";
 import { supabase } from "../config/supabase";
 
-const rawUrl = import.meta.env.VITE_API_URL || "https://wadi-wxg7.onrender.com";
-const API_URL = rawUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+const rawUrl = import.meta.env.VITE_API_URL;
+let apiUrl = rawUrl || "https://wadi-wxg7.onrender.com";
+
+// In production, do not allow localhost as it breaks CSP and Mixed Content
+if (
+  import.meta.env.PROD &&
+  (apiUrl.includes("localhost") || apiUrl.includes("127.0.0.1"))
+) {
+  console.warn(
+    "Detected localhost API URL in production. Switching to relative path."
+  );
+  apiUrl = "";
+}
+
+const API_URL = apiUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
 
 export interface Message {
   id: string;
