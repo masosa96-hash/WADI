@@ -131,18 +131,8 @@ app.use("/api/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
 
 // 3. SPA fallback FINAL (solo después de assets)
-app.get("*", (req, res) => {
-  // If it's an API route or ASSET that wasn't caught (404), return JSON
-  if (
-    req.path.startsWith("/api") ||
-    req.path.startsWith("/kivo") ||
-    req.path.startsWith("/system") ||
-    req.path.startsWith("/assets")
-  ) {
-    return res.status(404).json({ error: "Not found" });
-  }
-
-  // SPA Fallback
+// Usamos Regex para compatibilidad con Express 5 y exclusión explícita
+app.get(/^(?!\/assets|\/api|\/kivo|\/system).*/, (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"), (err) => {
     if (err) {
       res.json({
