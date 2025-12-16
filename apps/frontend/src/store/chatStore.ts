@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { WadiMood } from "../components/WadiOnboarding";
 import { supabase } from "../config/supabase";
 
 const rawUrl = import.meta.env.VITE_API_URL;
@@ -45,6 +46,7 @@ interface ChatState {
   isLoading: boolean;
   error: string | null;
   hasStarted: boolean;
+  mood: WadiMood;
 
   // Settings for NEW conversation
   mode: ChatMode;
@@ -55,6 +57,7 @@ interface ChatState {
   setPreset: (
     preset: "tech" | "biz" | "learning" | "productivity" | "reflexivo"
   ) => void;
+  setMood: (mood: WadiMood) => void;
   setExplainLevel: (level: "short" | "normal" | "detailed") => void;
 
   fetchConversations: () => Promise<void>;
@@ -81,6 +84,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isLoading: false,
   error: null,
   hasStarted: false,
+  mood: "hostile",
 
   mode: "normal",
   topic: "general",
@@ -128,6 +132,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
           return state;
       }
     }),
+
+  setMood: (mood) => set({ mood }),
 
   setExplainLevel: (level) => set({ explainLevel: level }),
 
@@ -227,7 +233,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     try {
       const token = await getToken();
-      const { conversationId, mode, topic, explainLevel } = get();
+      const { conversationId, mode, topic, explainLevel, mood } = get();
 
       // 2. Call Unified /api/chat
       const res = await fetch(`${API_URL}/api/chat`, {
@@ -242,6 +248,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           mode,
           topic,
           explainLevel,
+          mood, // 💥 Sent to backend to influence system prompt
         }),
       });
 

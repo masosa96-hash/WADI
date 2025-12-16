@@ -30,6 +30,7 @@ export default function ChatPage() {
     resetChat,
     loadConversation,
     hasStarted,
+    mood,
     conversationId: storeConversationId,
   } = useChatStore();
 
@@ -231,7 +232,7 @@ export default function ChatPage() {
                 hay nada que pensar.
               </p>
               <div style={{ marginTop: "2rem" }}>
-                <WadiOnboarding mood="hostile" />
+                <WadiOnboarding mood={mood} />
               </div>
             </div>
           )}
