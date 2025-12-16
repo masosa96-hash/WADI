@@ -4,7 +4,7 @@ import { Layout } from "../components/Layout";
 import { useChatStore } from "../store/chatStore";
 
 import { ChatInput } from "../components/ChatInput";
-import WadiIntro from "../components/WadiIntro";
+import WadiOnboarding from "../components/WadiOnboarding";
 import { OnboardingModal } from "../components/OnboardingModal";
 
 const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un objetivo?"];
@@ -231,7 +231,7 @@ export default function ChatPage() {
                 hay nada que pensar.
               </p>
               <div style={{ marginTop: "2rem" }}>
-                <WadiIntro />
+                <WadiOnboarding mood="hostile" />
               </div>
             </div>
           )}
