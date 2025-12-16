@@ -13,6 +13,7 @@ import { rateLimiter } from "./middleware/rateLimiter.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 
 dotenv.config({ path: "../../.env" });
@@ -119,6 +120,33 @@ app.use(express.static(frontendPath));
 app.use("/api", routes);
 app.use("/api/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
+
+app.get("/system/debug-files", (req, res) => {
+  try {
+    const assetsPath = path.join(frontendPath, "assets");
+
+    const rootContents = fs.existsSync(frontendPath)
+      ? fs.readdirSync(frontendPath)
+      : "FRONTEND_DIR_NOT_FOUND";
+
+    const assetsContents = fs.existsSync(assetsPath)
+      ? fs.readdirSync(assetsPath)
+      : "ASSETS_DIR_NOT_FOUND";
+
+    res.json({
+      frontendPath,
+      cwd: process.cwd(),
+      rootContents,
+      assetsContents,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+      stack: err.stack,
+      frontendPath,
+    });
+  }
+});
 
 // 4. SPA fallback (NUNCA assets)
 // Excluye explícitamente assets, api, kivo, system para evitar servir HTML en lugar de 404/JSON
