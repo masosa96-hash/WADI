@@ -44,6 +44,7 @@ interface ChatState {
   conversationTitle: string | null;
   isLoading: boolean;
   error: string | null;
+  hasStarted: boolean;
 
   // Settings for NEW conversation
   mode: ChatMode;
@@ -79,6 +80,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   conversationTitle: null,
   isLoading: false,
   error: null,
+  hasStarted: false,
 
   mode: "normal",
   topic: "general",
@@ -135,6 +137,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       conversationTitle: null,
       messages: [],
       error: null,
+      hasStarted: false,
     }),
 
   startNewConversation: async (initialTitle?: string) => {
@@ -192,12 +195,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
         mode: data.mode as ChatMode,
         explainLevel: data.explain_level,
         isLoading: false,
+        hasStarted: data.messages && data.messages.length > 0,
       });
     } catch (err: unknown) {
       console.error(err);
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
-      set({ isLoading: false, error: errorMessage });
+      set({ isLoading: false, error: errorMessage, hasStarted: false });
     }
   },
 
@@ -209,7 +213,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   sendMessage: async (text: string) => {
     if (!text.trim()) return;
 
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, hasStarted: true });
 
     // 1. Optimistic User Message
     const tempId = crypto.randomUUID();

@@ -28,6 +28,7 @@ export default function ChatPage() {
     loadConversations,
     resetChat,
     loadConversation,
+    hasStarted,
     conversationId: storeConversationId,
   } = useChatStore();
 
@@ -192,7 +193,7 @@ export default function ChatPage() {
           }}
         >
           {/* Empty State */}
-          {messages.length === 0 && (
+          {!hasStarted && (
             <div
               style={{
                 display: "flex",
