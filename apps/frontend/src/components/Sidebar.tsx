@@ -1,9 +1,7 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useChatStore } from "../store/chatStore";
-import { useState, useEffect } from "react";
-import { Modal } from "./common/Modal";
-import { Input } from "./common/Input";
+import { useEffect } from "react";
 import { Button } from "./common/Button";
 
 interface SidebarProps {
@@ -15,15 +13,9 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, convertGuestToUser, signOut } = useAuthStore();
-  const { resetChat, conversations, fetchConversations, loadConversation } =
+  const { user, signOut } = useAuthStore();
+  const { conversations, fetchConversations, loadConversation, resetChat } =
     useChatStore();
-  const isAnonymous = user?.is_anonymous;
-
-  const [showRegister, setShowRegister] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -31,24 +23,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   }, [user, fetchConversations]);
 
-  const isActive = (path: string) => location.pathname === path;
+  const handleNewChat = () => {
+    resetChat();
+    // Navigate to /chat to start fresh, or /chat/new if implementation requires
+    navigate("/chat");
+    onClose?.();
+  };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await convertGuestToUser(email, password);
-      if (error) throw error;
-      setShowRegister(false);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("An error occurred");
-      }
-    } finally {
-      setLoading(false);
-    }
+  const handleHistoryClick = (id: string) => {
+    loadConversation(id);
+    navigate(`/chat/${id}`);
+    onClose?.();
   };
 
   return (
@@ -66,368 +51,115 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           "width 0.3s, transform 0.3s, background-color 0.2s, border-color 0.2s",
       }}
     >
-      {/* Brand & Close Button */}
-      <div
-        style={{
-          marginBottom: "2rem",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "start",
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              fontSize: "1.8rem",
-              fontWeight: 900,
-              letterSpacing: "-0.5px",
-              background: "var(--grad-main)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              margin: 0,
-            }}
-          >
-            WADI
-          </h2>
-          <small
-            style={{
-              fontSize: "0.8rem",
-              color: "var(--color-text-soft)",
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-            }}
-          ></small>
-        </div>
-
-        {/* Mobile Close Button */}
-        <button
-          className="mobile-only"
-          onClick={onClose}
+      {/* 1. Botón Nuevo Chat (Acción Global) */}
+      <div style={{ marginBottom: "2rem" }}>
+        <Button
+          fullWidth
+          onClick={handleNewChat}
           style={{
-            fontSize: "2rem",
-            color: "var(--color-text-soft)",
-            padding: "0.5rem 1rem",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          aria-label="Cerrar menú"
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* New Chat */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <Link
-          to="/chat"
-          onClick={() => {
-            resetChat();
-            onClose?.();
-          }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "0.5rem",
             background: "var(--color-primary)",
             color: "#FFFFFF",
-            padding: "0.8rem",
-            borderRadius: "var(--radius-lg)",
             fontWeight: 700,
-            textDecoration: "none",
+            justifyContent: "center",
+            padding: "0.8rem",
             boxShadow: "var(--shadow-y2k)",
-            transition: "transform 0.2s, background-color 0.2s",
           }}
         >
-          <span style={{ fontSize: "1.2rem" }}>+</span> Nuevo
-        </Link>
+          + Nuevo Chat
+        </Button>
       </div>
 
-      {/* Navigation */}
-      <nav
+      {/* 2. Historial de Conversaciones */}
+      <div
         style={{
           flex: 1,
+          overflowY: "auto",
           display: "flex",
           flexDirection: "column",
           gap: "0.5rem",
-          overflowY: "auto",
         }}
       >
-        {/* Navigation items removed: Dashboard & Tools */}
-        <Link
-          to="/"
+        <div
           style={{
-            padding: "1rem",
-            borderRadius: "var(--radius-md)",
-            backgroundColor: isActive("/")
-              ? "var(--color-surface-soft)"
-              : "transparent",
-            color: isActive("/")
-              ? "var(--color-text-main)"
-              : "var(--color-text-soft)",
-            transition: "all 0.2s",
-            display: "flex",
-            alignItems: "center",
-            gap: "1rem",
-            textDecoration: "none",
-            fontWeight: isActive("/") ? 600 : 400,
-            border: isActive("/")
-              ? "1px solid var(--color-border-active)"
-              : "1px solid transparent",
+            fontSize: "0.75rem",
+            textTransform: "uppercase",
+            color: "var(--color-text-soft)",
+            marginBottom: "0.5rem",
+            letterSpacing: "0.05em",
+            fontWeight: 600,
           }}
         >
-          <span role="img" aria-label="Casa">
-            🏠
-          </span>{" "}
-          Home
-        </Link>
+          Historial
+        </div>
 
-        {/* History Section - Only shown if there are conversations */}
-        {conversations && conversations.length > 0 && (
-          <>
+        {conversations && conversations.length > 0 ? (
+          conversations.map((c) => (
             <div
+              key={c.id}
+              onClick={() => handleHistoryClick(c.id)}
               style={{
-                fontSize: "0.7rem",
-                textTransform: "uppercase",
-                color: "var(--color-text-soft)",
-                marginBottom: "0.5rem",
-                marginTop: "1.5rem",
-                letterSpacing: "1px",
-                paddingLeft: "1rem",
-                fontWeight: 600,
+                padding: "0.75rem 1rem",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+                backgroundColor: location.pathname.includes(c.id)
+                  ? "var(--color-surface-soft)"
+                  : "transparent",
+                color: location.pathname.includes(c.id)
+                  ? "var(--color-text-main)"
+                  : "var(--color-text-soft)",
+                fontSize: "0.9rem",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                transition: "all 0.2s",
+                fontWeight: location.pathname.includes(c.id) ? 600 : 400,
               }}
             >
-              Historial
+              {c.title || "Sin título"}
             </div>
-            {conversations.map((c) => (
-              <div
-                key={c.id}
-                onClick={() => {
-                  loadConversation(c.id);
-                  navigate(`/chat/${c.id}`);
-                  onClose?.();
-                }}
-                className="tappable"
-                style={{
-                  padding: "1rem", // Increased touch target
-                  borderRadius: "var(--radius-md)",
-                  cursor: "pointer",
-                  backgroundColor: location.pathname.includes(c.id)
-                    ? "var(--color-surface-soft)"
-                    : "transparent",
-                  color: "var(--color-text-soft)",
-                  fontSize: "0.9rem",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  transition: "background 0.2s",
-                  fontWeight: location.pathname.includes(c.id) ? 600 : 400,
-                }}
-              >
-                💬 {c.title || "Sin título"}
-              </div>
-            ))}
-          </>
-        )}
-      </nav>
-
-      {/* Footer / Profile */}
-      <div
-        style={{
-          marginTop: "auto",
-          borderTop: "1px solid var(--color-border)",
-          paddingTop: "1.5rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-        }}
-      >
-        {isAnonymous ? (
-          <div
-            className="compact-mobile"
-            style={{
-              backgroundColor: "var(--color-surface-soft)",
-              padding: "1rem",
-              borderRadius: "1rem",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "var(--color-text-soft)",
-                marginBottom: "0.75rem",
-                lineHeight: "1.4",
-              }}
-            >
-              Estás en Modo Invitado.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              fullWidth
-              onClick={() => setShowRegister(true)}
-              style={{
-                fontSize: "0.85rem",
-                background: "var(--color-surface)",
-                borderColor: "var(--color-border)",
-              }}
-            >
-              ☁️ Crear Cuenta
-            </Button>
-          </div>
+          ))
         ) : (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              justifyContent: "space-between",
-              padding: "0.5rem",
-              borderRadius: "0.5rem",
-              background: "var(--color-surface-soft)",
+              color: "var(--color-text-soft)",
+              fontSize: "0.85rem",
+              fontStyle: "italic",
+              opacity: 0.7,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  background: "var(--grad-main)",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "0.875rem",
-                  fontWeight: "bold",
-                }}
-              >
-                {user?.email?.charAt(0).toUpperCase() || "U"}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  maxWidth: "120px",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "0.8rem",
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    color: "var(--color-text-main)",
-                  }}
-                >
-                  {user?.email}
-                </span>
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    color: "var(--color-text-soft)",
-                  }}
-                >
-                  Pro User
-                </span>
-              </div>
-            </div>
-            <button
-              onClick={() => signOut()}
-              style={{
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--color-text-soft)",
-                fontSize: "1.2rem",
-                padding: "4px",
-                borderRadius: "4px",
-              }}
-              title="Cerrar sesión"
-            >
-              ⏏️
-            </button>
+            No hay charlas guardadas.
           </div>
         )}
       </div>
 
-      <Modal
-        isOpen={showRegister}
-        onClose={() => setShowRegister(false)}
-        title="Crear tu cuenta"
+      {/* Footer Minimalista (Auth) */}
+      <div
+        style={{
+          marginTop: "auto",
+          paddingTop: "1rem",
+          borderTop: "1px solid var(--color-border)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
-        {/* Same modal content */}
-        <p
+        <div style={{ fontSize: "0.8rem", color: "var(--color-text-soft)" }}>
+          {user?.email}
+        </div>
+        <button
+          onClick={() => signOut()}
           style={{
-            fontSize: "0.9rem",
-            color: "var(--color-text-soft)",
-            marginBottom: "1.5rem",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "1.2rem",
+            opacity: 0.5,
           }}
+          title="Cerrar sesión"
         >
-          Guardá tus proyectos y accedé a todas las funciones premium de WADI.
-        </p>
-        <form
-          onSubmit={handleRegister}
-          style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-        >
-          <Input
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="tu@email.com"
-          />
-          <Input
-            label="Contraseña"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="••••••••"
-          />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "0.5rem",
-              marginTop: "1rem",
-            }}
-          >
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setShowRegister(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              style={{
-                background: "var(--grad-main)",
-                border: "none",
-                color: "#FFF",
-              }}
-            >
-              {loading ? "Creando..." : "Registrarme"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+          ⏏️
+        </button>
+      </div>
     </aside>
   );
 }

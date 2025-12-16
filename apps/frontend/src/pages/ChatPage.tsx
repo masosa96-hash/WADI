@@ -2,7 +2,6 @@ import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore } from "../store/chatStore";
-import { Button } from "../components/common/Button";
 
 import { ChatInput } from "../components/ChatInput";
 import { OnboardingModal } from "../components/OnboardingModal";
@@ -26,10 +25,8 @@ export default function ChatPage() {
     messages,
     isLoading,
     sendMessage,
-    deleteConversation,
     loadConversations,
     resetChat,
-    startNewConversation,
     loadConversation,
     conversationId: storeConversationId,
   } = useChatStore();
@@ -52,6 +49,15 @@ export default function ChatPage() {
     storeConversationId,
     loadConversations,
   ]);
+
+  // Auto-focus input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const input = document.getElementById("chat-input");
+      input?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [conversationId]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -129,7 +135,7 @@ export default function ChatPage() {
           backgroundColor: "var(--color-bg)",
         }}
       >
-        {/* Header Calm Y2K Style */}
+        {/* Header simple y fijo */}
         <header
           style={{
             padding: "1.5rem",
@@ -139,77 +145,34 @@ export default function ChatPage() {
             position: "sticky",
             top: 0,
             zIndex: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center", // Centramos el título como punto focal
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "1rem",
-            }}
-          >
-            <div>
-              <h2
-                style={{
-                  fontSize: "var(--text-xl)",
-                  fontWeight: 700,
-                  background: "var(--grad-main)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  margin: 0,
-                }}
-              >
-                WADI
-              </h2>
-              <p
-                style={{
-                  fontSize: "var(--text-sm)",
-                  color: "var(--color-text-soft)",
-                  margin: 0,
-                }}
-              >
-                Del caos al plan.
-              </p>
-            </div>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              {storeConversationId && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={async () => {
-                    if (
-                      window.confirm(
-                        "¿Seguro que querés borrar esta conversación? No se puede deshacer."
-                      )
-                    ) {
-                      await deleteConversation(storeConversationId);
-                      alert("Conversación eliminada.");
-                      navigate("/chat");
-                    }
-                  }}
-                  title="Eliminar conversación"
-                  style={{ color: "var(--color-text-soft)" }}
-                >
-                  Running 🗑️
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  startNewConversation();
-                  navigate("/chat");
-                }}
-                title="Nueva conversación"
-                style={{ color: "var(--color-primary)" }}
-              >
-                ✨ Nuevo
-              </Button>
-            </div>
+          <div style={{ textAlign: "center" }}>
+            <h2
+              style={{
+                fontSize: "var(--text-xl)",
+                fontWeight: 700,
+                background: "var(--grad-main)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                margin: 0,
+              }}
+            >
+              WADI
+            </h2>
+            <p
+              style={{
+                fontSize: "var(--text-sm)",
+                color: "var(--color-text-soft)",
+                margin: 0,
+              }}
+            >
+              Del caos al plan
+            </p>
           </div>
-
-          {/* Controls removed for cleaner UI */}
         </header>
 
         {/* Messages */}
