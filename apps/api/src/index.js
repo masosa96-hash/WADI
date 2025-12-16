@@ -105,24 +105,22 @@ app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
 // --------------------------------------------------
 const frontendPath = path.join(__dirname, "../../frontend/dist");
 
-// STATIC ASSET SERVING WITH EXPLICIT CONTENT-TYPE
-// Force serving /assets directory as static files to avoid SPA fallback
+// 1. Servir assets ANTES de cualquier catch-all
 app.use(
   "/assets",
   express.static(path.join(frontendPath, "assets"), {
-    immutable: true,
-    maxAge: "1y",
-    setHeaders: (res, path) => {
-      if (path.endsWith(".css")) {
-        res.setHeader("Content-Type", "text/css");
-      } else if (path.endsWith(".js")) {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith(".js")) {
         res.setHeader("Content-Type", "application/javascript");
+      }
+      if (filePath.endsWith(".css")) {
+        res.setHeader("Content-Type", "text/css");
       }
     },
   })
 );
 
-// Serve the rest of the static files (favicon, etc.)
+// 2. Servir archivos estáticos base
 app.use(express.static(frontendPath));
 
 // --------------------------------------------------
@@ -132,27 +130,25 @@ app.use("/api", routes);
 app.use("/api/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
 
-// --------------------------------------------------
-// SPA CATCH-ALL (Frontend Routing)
-// --------------------------------------------------
-// Cualquier ruta no atrapada por API o estáticos -> index.html
-app.get(/.*/, (req, res) => {
+// 3. SPA fallback FINAL (solo después de assets)
+app.get("*", (req, res) => {
+  // If it's an API route or ASSET that wasn't caught (404), return JSON
   if (
     req.path.startsWith("/api") ||
     req.path.startsWith("/kivo") ||
+    req.path.startsWith("/system") ||
     req.path.startsWith("/assets")
   ) {
     return res.status(404).json({ error: "Not found" });
   }
-  // Si existe el index.html lo enviamos, sino retornamos json básico info
-  // (útil si no se ha hecho build)
+
+  // SPA Fallback
   res.sendFile(path.join(frontendPath, "index.html"), (err) => {
     if (err) {
       res.json({
         service: "wadi-api",
         status: "online",
         note: "Frontend build not found. Please run build script.",
-        endpoints: ["/api", "/kivo", "/system/health"],
       });
     }
   });
