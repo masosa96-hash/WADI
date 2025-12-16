@@ -107,12 +107,15 @@ export default function ChatPage() {
   }, [messages, shouldAutoScroll]);
 
   const handleSendMessage = async (text: string) => {
-    // If we are already in a chat, we stay there.
-    // If we are sending a message from generic /chat, we want to capture the NEW ID and navigate.
+    // 1. If we are already in a chat (storeConversationId exists), we just send the message.
+    // 2. If we are in "New Chat" mode (no ID), this first message CREATES the conversation.
+    //    The store's sendMessage handles both cases on the backend.
 
-    // We cast the return type because we know we updated the store action
+    // We cast the return type because we know we updated the store action to return the ID
     const newId = (await sendMessage(text)) as unknown as string | null;
 
+    // If we were in a "New Chat" state (no URL param, no store ID effectively),
+    // and we got a new ID back, we navigate to that ID to "persist" the session in the URL.
     if (!conversationId && newId) {
       navigate(`/chat/${newId}`, { replace: true });
     }
