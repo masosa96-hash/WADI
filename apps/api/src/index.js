@@ -103,45 +103,27 @@ app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
 // --------------------------------------------------
 // STATIC FRONTEND (WADI MAIN UI)
 // --------------------------------------------------
+// --------------------------------------------------
+// STATIC FRONTEND (WADI MAIN UI)
+// --------------------------------------------------
 const frontendPath = path.join(__dirname, "../../frontend/dist");
+console.log("Frontend Path:", frontendPath); // [DEBUG] Verify path in Render logs
 
-// 1. Servir assets ANTES de cualquier catch-all
-app.use(
-  "/assets",
-  express.static(path.join(frontendPath, "assets"), {
-    setHeaders(res, filePath) {
-      if (filePath.endsWith(".js")) {
-        res.setHeader("Content-Type", "application/javascript");
-      }
-      if (filePath.endsWith(".css")) {
-        res.setHeader("Content-Type", "text/css");
-      }
-    },
-  })
-);
+// 1. Assets (primero) - Strict handling
+app.use("/assets", express.static(path.join(frontendPath, "assets")));
 
-// 2. Servir archivos estáticos base
+// 2. Static base (favicon, etc.)
 app.use(express.static(frontendPath));
 
-// --------------------------------------------------
-// API ROUTES
-// --------------------------------------------------
+// 3. API
 app.use("/api", routes);
 app.use("/api/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
 
-// 3. SPA fallback FINAL (solo después de assets)
-// Usamos Regex para compatibilidad con Express 5 y exclusión explícita
+// 4. SPA fallback (NUNCA assets)
+// Excluye explícitamente assets, api, kivo, system para evitar servir HTML en lugar de 404/JSON
 app.get(/^(?!\/assets|\/api|\/kivo|\/system).*/, (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"), (err) => {
-    if (err) {
-      res.json({
-        service: "wadi-api",
-        status: "online",
-        note: "Frontend build not found. Please run build script.",
-      });
-    }
-  });
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 // Error Handler
