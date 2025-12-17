@@ -37,7 +37,8 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex items-center gap-3">
             <button
               onClick={toggleSidebar}
-              className="text-2xl text-[var(--color-text-soft)] p-1 flex items-center"
+              className="text-2xl text-[var(--color-text-soft)] p-3 flex items-center justify-center min-w-[44px] min-h-[44px]"
+              aria-label="Abrir menú"
             >
               ☰
             </button>
@@ -62,9 +63,10 @@ export function Layout({ children }: LayoutProps) {
             style={{
               background: "var(--color-primary)",
               color: "white",
-              padding: "0.4rem 0.8rem",
+              padding: "0.6rem 1rem",
+              minHeight: "44px",
               borderRadius: "999px",
-              fontSize: "0.85rem",
+              fontSize: "0.9rem",
               fontWeight: 600,
               display: "flex",
               alignItems: "center",

@@ -57,6 +57,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             fontWeight: 700,
             justifyContent: "center",
             padding: "0.8rem",
+            minHeight: "44px",
             boxShadow: "var(--shadow-y2k)",
           }}
         >
@@ -94,6 +95,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={() => handleHistoryClick(c.id)}
               style={{
                 padding: "0.75rem 1rem",
+                minHeight: "44px",
+                display: "flex",
+                alignItems: "center",
                 borderRadius: "var(--radius-md)",
                 cursor: "pointer",
                 backgroundColor: location.pathname.includes(c.id)
@@ -103,14 +107,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   ? "var(--color-text-main)"
                   : "var(--color-text-soft)",
                 fontSize: "0.9rem",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
                 transition: "all 0.2s",
                 fontWeight: location.pathname.includes(c.id) ? 600 : 400,
               }}
             >
-              {c.title || "Sin título"}
+              <span className="truncate w-full">{c.title || "Sin título"}</span>
             </div>
           ))
         ) : (
@@ -149,6 +150,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             cursor: "pointer",
             fontSize: "1.2rem",
             opacity: 0.5,
+            minHeight: "44px",
+            minWidth: "44px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
           title="Cerrar sesión"
         >
