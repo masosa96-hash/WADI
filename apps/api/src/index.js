@@ -108,10 +108,40 @@ app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
 // STATIC FRONTEND (WADI MAIN UI)
 // --------------------------------------------------
 const frontendPath = path.join(__dirname, "../../frontend/dist");
-console.log("Frontend Path:", frontendPath); // [DEBUG] Verify path in Render logs
+console.log("Frontend Path:", frontendPath);
 
-// 1. Assets (primero) - Strict handling
-app.use("/assets", express.static(path.join(frontendPath, "assets")));
+// Debug: Log directory contents on startup to verify build on Render
+try {
+  if (fs.existsSync(frontendPath)) {
+    console.log("Check dist:", fs.readdirSync(frontendPath));
+    const assetsDebug = path.join(frontendPath, "assets");
+    if (fs.existsSync(assetsDebug)) {
+      console.log("Check assets:", fs.readdirSync(assetsDebug));
+    } else {
+      console.log("⚠️ Assets folder missing at:", assetsDebug);
+    }
+  } else {
+    console.log("⚠️ Frontend dist missing at:", frontendPath);
+  }
+} catch (err) {
+  console.error("Debug Log Error:", err);
+}
+
+// 1. Assets (First) - Strict handling with explicit 404
+app.use(
+  "/assets",
+  express.static(path.join(frontendPath, "assets"), {
+    fallthrough: false, // If not found, do NOT fall through to SPA
+  })
+);
+
+// Fallback for /assets if static didn't find it (handles the 404 from fallthrough:false)
+app.use("/assets", (err, req, res, next) => {
+  if (err && (err.status === 404 || err.statusCode === 404)) {
+    return res.status(404).type("text").send("Asset not found");
+  }
+  next(err);
+});
 
 // 2. Static base (favicon, etc.)
 app.use(express.static(frontendPath));

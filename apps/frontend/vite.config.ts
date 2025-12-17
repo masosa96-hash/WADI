@@ -16,5 +16,10 @@ export default defineConfig(({ mode }) => {
         env.VITE_SUPABASE_KEY || env.SUPABASE_KEY
       ),
     },
+    build: {
+      outDir: "dist",
+      assetsDir: "assets",
+      emptyOutDir: true,
+    },
   };
 });
