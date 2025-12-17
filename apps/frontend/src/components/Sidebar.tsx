@@ -38,18 +38,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <aside
-      className={`sidebar-drawer ${isOpen ? "open" : ""}`}
-      style={{
-        width: "280px",
-        height: "100vh",
-        background: "var(--color-surface)",
-        borderRight: "1px solid var(--color-border)",
-        display: "flex",
-        flexDirection: "column",
-        padding: "1.5rem",
-        transition:
-          "width 0.3s, transform 0.3s, background-color 0.2s, border-color 0.2s",
-      }}
+      className={`sidebar-drawer ${isOpen ? "open" : ""} flex flex-col p-6 bg-[var(--color-surface)] border-r border-[var(--color-border)]`}
     >
       {/* 1. Botón Nuevo Chat (Acción Global) */}
       <div style={{ marginBottom: "2rem" }}>

@@ -48,21 +48,7 @@ export default function WadiOnboarding({
   }, [step]);
 
   return (
-    <div
-      style={{
-        whiteSpace: "pre-wrap",
-        fontFamily: "monospace",
-        fontSize: "0.875rem",
-        lineHeight: "1.625",
-        padding: "1rem",
-        borderRadius: "0.75rem",
-        backgroundColor: "var(--color-surface)",
-        border: "1px solid var(--color-border)",
-        maxWidth: "32rem",
-        margin: "2.5rem auto 0",
-        color: "var(--color-text-main)",
-      }}
-    >
+    <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] w-[90vw] max-w-lg mx-auto mt-10 text-[var(--color-text-main)] flex flex-col">
       {messages.slice(0, step + 1).map((line, index) => (
         <p
           key={index}

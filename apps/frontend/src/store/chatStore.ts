@@ -47,6 +47,7 @@ interface ChatState {
   error: string | null;
   hasStarted: boolean;
   mood: WadiMood;
+  isSidebarOpen: boolean;
 
   // Settings for NEW conversation
   mode: ChatMode;
@@ -58,6 +59,8 @@ interface ChatState {
     preset: "tech" | "biz" | "learning" | "productivity" | "reflexivo"
   ) => void;
   setMood: (mood: WadiMood) => void;
+  toggleSidebar: () => void;
+  setSidebarOpen: (isOpen: boolean) => void;
   setExplainLevel: (level: "short" | "normal" | "detailed") => void;
 
   fetchConversations: () => Promise<void>;
@@ -85,6 +88,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   error: null,
   hasStarted: false,
   mood: "hostile",
+  isSidebarOpen: false,
 
   mode: "normal",
   topic: "general",
@@ -134,6 +138,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }),
 
   setMood: (mood) => set({ mood }),
+
+  toggleSidebar: () =>
+    set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
 
   setExplainLevel: (level) => set({ explainLevel: level }),
 

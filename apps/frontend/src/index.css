@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-wadi-neutral text-wadi-bg font-sans;
+    @apply bg-wadi-neutral text-wadi-bg font-sans max-w-full overflow-x-hidden;
   }
 
   .dark body {
@@ -20,7 +20,26 @@
   }
 }
 
-/* Base Reset (Fallback if Tailwind doesn't load immediately or for specific overrides) */
+@layer components {
+  /* Sidebar Logic */
+  .sidebar-drawer {
+    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 sm:relative sm:translate-x-0 sm:border-r;
+  }
+
+  .sidebar-drawer.open {
+    @apply translate-x-0 shadow-2xl sm:shadow-none;
+  }
+
+  .sidebar-overlay {
+    @apply fixed inset-0 z-40 bg-black/50 backdrop-blur-sm sm:hidden;
+  }
+
+  .mobile-only {
+    @apply flex sm:hidden;
+  }
+}
+
+/* Base Reset */
 :root {
   --color-bg: #111827;
   --color-surface: #1f2937;
@@ -32,37 +51,19 @@
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --grad-main: linear-gradient(135deg, #f9fafb 0%, #9ca3af 100%);
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-y2k: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
 }
 
 body,
 html {
   font-family: var(--font-sans);
+  height: 100%; /* Fallback */
 }
 
-/* Logic for 100dvh on mobile */
+/* 100dvh for mobile browsers */
 @supports (height: 100dvh) {
   body,
   html {
     height: 100dvh;
   }
-}
-
-/* Helper classes if Tailwind is not fully processing in dev yet */
-.bg-wadi-neutral {
-  background-color: #f3f4f6;
-}
-.text-wadi-bg {
-  color: #111827;
-}
-.bg-wadi-bg {
-  background-color: #111827;
-}
-.text-wadi-text {
-  color: #f9fafb;
-}
-.bg-wadi-tension {
-  background-color: #facc15;
-}
-.text-black {
-  color: #000;
 }

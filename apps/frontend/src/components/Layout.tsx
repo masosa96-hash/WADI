@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { useChatStore } from "../store/chatStore";
@@ -8,8 +8,8 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const { resetChat } = useChatStore();
+  const { isSidebarOpen, setSidebarOpen, toggleSidebar, resetChat } =
+    useChatStore();
   const navigate = useNavigate();
 
   const handleNewChat = () => {
@@ -19,68 +19,29 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        width: "100vw",
-        height: "100vh",
-        overflow: "hidden",
-        position: "relative",
-      }}
-    >
+    <div className="flex w-full h-full relative overflow-hidden bg-[var(--color-bg)]">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
-          className="sidebar-overlay mobile-only"
+          className="sidebar-overlay"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          backgroundColor: "var(--color-bg)",
-          overflow: "hidden",
-          position: "relative",
-          width: "100%", // Ensure full width
-        }}
-      >
+      <div className="flex-1 flex flex-col relative w-full overflow-hidden">
         {/* Mobile Top Bar */}
-        <div
-          className="mobile-only"
-          style={{
-            height: "60px",
-            borderBottom: "1px solid var(--color-border)",
-            background: "var(--color-surface)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 1rem",
-            flexShrink: 0,
-            zIndex: 40,
-          }}
-        >
+        <div className="mobile-only h-[60px] border-b border-[var(--color-border)] bg-[var(--color-surface)] items-center justify-between px-4 shrink-0 z-40">
           {/* Left: Hamburger & Logo */}
-          <div
-            style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
-          >
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => setSidebarOpen(true)}
-              style={{
-                fontSize: "1.5rem",
-                color: "var(--color-text-soft)",
-                padding: "0.25rem",
-                display: "flex",
-                alignItems: "center",
-              }}
+              onClick={toggleSidebar}
+              className="text-2xl text-[var(--color-text-soft)] p-1 flex items-center"
             >
               ☰
             </button>
-            <Link to="/" style={{ textDecoration: "none" }}>
+            <Link to="/" className="no-underline">
               <span
                 style={{
                   fontWeight: 900,
@@ -115,15 +76,7 @@ export function Layout({ children }: LayoutProps) {
           </button>
         </div>
 
-        <main
-          style={{
-            flex: 1,
-            overflow: "hidden", // Let children handle scroll (like ChatPage)
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
+        <main className="flex-1 overflow-hidden relative flex flex-col">
           {children}
         </main>
       </div>

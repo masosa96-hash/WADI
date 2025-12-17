@@ -185,14 +185,7 @@ export default function ChatPage() {
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "2rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1.5rem",
-          }}
+          className="flex-1 overflow-y-auto px-4 py-8 md:p-8 flex flex-col gap-6"
         >
           {/* Empty State */}
           {!hasStarted && (
