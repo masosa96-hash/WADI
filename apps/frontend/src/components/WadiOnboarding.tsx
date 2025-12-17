@@ -45,7 +45,7 @@ export default function WadiOnboarding({
       const timer = setTimeout(() => setStep(step + 1), 1000);
       return () => clearTimeout(timer);
     }
-  }, [step]);
+  }, [step, messages.length]);
 
   return (
     <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] w-[90vw] max-w-lg mx-auto mt-10 text-[var(--color-text-main)] flex flex-col">
