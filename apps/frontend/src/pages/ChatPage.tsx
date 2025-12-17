@@ -109,13 +109,15 @@ export default function ChatPage() {
     prevMessagesLength.current = newCount;
   }, [messages, shouldAutoScroll]);
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (text: string, attachments: string[]) => {
     // 1. If we are already in a chat (storeConversationId exists), we just send the message.
     // 2. If we are in "New Chat" mode (no ID), this first message CREATES the conversation.
     //    The store's sendMessage handles both cases on the backend.
 
     // We cast the return type because we know we updated the store action to return the ID
-    const newId = (await sendMessage(text)) as unknown as string | null;
+    const newId = (await sendMessage(text, attachments)) as unknown as
+      | string
+      | null;
 
     // If we were in a "New Chat" state (no URL param, no store ID effectively),
     // and we got a new ID back, we navigate to that ID to "persist" the session in the URL.
@@ -262,6 +264,36 @@ export default function ChatPage() {
                   }}
                 >
                   <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
+
+                  {/* Attachments Display */}
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {msg.attachments.map((url, idx) => {
+                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                        if (isImage) {
+                          return (
+                            <img
+                              key={idx}
+                              src={url}
+                              alt="adjunto"
+                              className="max-w-full h-auto rounded-lg border border-[var(--color-border)] max-h-60"
+                            />
+                          );
+                        }
+                        return (
+                          <a
+                            key={idx}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[var(--color-bg)] p-2 rounded text-xs border border-[var(--color-border)] hover:bg-[var(--color-surface-soft)] transition-colors"
+                          >
+                            📎 Archivo
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             );

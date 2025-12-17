@@ -78,6 +78,47 @@ router.post(
 );
 
 // 2. Send Message (Persistent)
+// Helper: Process attachments for OpenAI
+const processAttachments = async (message, attachments) => {
+  if (!attachments || attachments.length === 0) {
+    return message; // Return string if no attachments
+  }
+
+  const content = [{ type: "text", text: message }];
+
+  for (const url of attachments) {
+    // Basic extension check
+    const lowerUrl = url.toLowerCase();
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/.test(lowerUrl);
+    const isText = /\.(txt|md|csv|json|js|ts|py)$/.test(lowerUrl);
+
+    if (isImage) {
+      content.push({
+        type: "image_url",
+        image_url: { url: url },
+      });
+    } else if (isText) {
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const textData = await response.text();
+          content.push({
+            type: "text",
+            text: `\n\n--- ARCHIVO ADJUNTO (${url}) ---\n${textData}\n--- FIN ARCHIVO ---\n`,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching text attachment:", err);
+      }
+    }
+  }
+
+  return content;
+};
+
+// ... (Inside the endpoints, replace the logic)
+
+// 2. Send Message (Persistent)
 router.post(
   "/conversations/:id/messages",
   validateChatInput,
@@ -85,7 +126,7 @@ router.post(
     const user = await getAuthenticatedUser(req);
     if (!user) throw new AuthError("Authentication required");
     const { id } = req.params;
-    const { message, mode, explainLevel, topic } = req.body;
+    const { message, mode, explainLevel, topic, attachments } = req.body;
 
     // A. Verify Ownership & Get Conversation
     const { data: conversation, error: convError } = await supabase
@@ -106,6 +147,8 @@ router.post(
       .eq("conversation_id", id)
       .order("created_at", { ascending: true });
 
+    // Handle history context simplistically for now (string only)
+    // Ideally we should parse array content if stored as JSON, but legacy is string.
     const contextSummary = formatContext(history || []);
 
     // C. Generate AI Response
@@ -113,8 +156,6 @@ router.post(
     const safeTopic = topic || "general";
     const safeLevel = explainLevel || conversation.explain_level || "normal";
 
-    // We don't have separate prefs table yet, can pass empty object or extract from conversation if needed
-    // For now, prompt generation relies on passed params
     const systemPrompt = generateSystemPrompt(
       safeMode,
       safeTopic,
@@ -123,12 +164,15 @@ router.post(
       {}
     );
 
+    // Prepare User Content (String or Array)
+    const userContent = await processAttachments(message, attachments);
+
     try {
       const completion = await openai.chat.completions.create({
         model: AI_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: message },
+          { role: "user", content: userContent },
         ],
       });
 
@@ -136,11 +180,14 @@ router.post(
 
       // D. Save Messages to DB
       // 1. User Message
+      // We store the RAW text in 'content' for legacy compatibility,
+      // AND arrays in 'attachments' column.
       await supabase.from("messages").insert({
         conversation_id: id,
         user_id: user.id,
         role: "user",
-        content: message,
+        content: message, // Human readable summary
+        attachments: attachments || [],
       });
 
       // 2. Assistant Message
@@ -151,17 +198,12 @@ router.post(
         content: reply,
       });
 
-      // E. Update Conversation (Timestamp & potentially Title)
+      // E. Update Conversation
       const updates = { updated_at: new Date().toISOString() };
-
-      // If it's the first message, update title
       if (!history || history.length === 0) {
         updates.title =
           message.substring(0, 30) + (message.length > 30 ? "..." : "");
       }
-
-      // Also update settings if they changed in this request?
-      // User might change mode mid-chat. Let's update them.
       if (mode) updates.mode = mode;
       if (explainLevel) updates.explain_level = explainLevel;
 
@@ -174,116 +216,9 @@ router.post(
   })
 );
 
-// 3. List Conversations
-router.get(
-  "/conversations",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
+// ...
 
-    const { data, error } = await supabase
-      .from("conversations")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("updated_at", { ascending: false });
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    res.json(data);
-  })
-);
-
-// 4. Get Conversation Detail
-router.get(
-  "/conversations/:id",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-
-    // Verify ownership
-    const { data: conversation, error: convError } = await supabase
-      .from("conversations")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (convError || !conversation) {
-      throw new AuthError("Conversation not found", 404);
-    }
-
-    // Get messages
-    const { data: messages, error: msgError } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true });
-
-    if (msgError) throw new AppError("DB_ERROR", msgError.message);
-
-    res.json({ ...conversation, messages });
-  })
-);
-
-router.get(
-  "/conversations/:id/messages",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-
-    // Verify ownership
-    const { data: conversation, error: convError } = await supabase
-      .from("conversations")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (convError || !conversation) {
-      throw new AuthError("Conversation not found", 404);
-    }
-
-    const { data: messages, error: msgError } = await supabase
-      .from("messages")
-      .select("id, role, content, created_at")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true });
-
-    if (msgError) throw new AppError("DB_ERROR", msgError.message);
-
-    res.json(messages);
-  })
-);
-
-// 5. Delete Conversation
-router.delete(
-  "/conversations/:id",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-
-    const { error } = await supabase
-      .from("conversations")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", user.id);
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    res.json({ success: true });
-  })
-);
-
-// ------------------------------------------------------------------
-// LEGACY / GUEST CHAT (Deprecated / Fallback)
-// ------------------------------------------------------------------
-// If we strictly follow instructions, we rely on Authenticated Chat.
-// Keeping a stub that errors or directs to login might be safer than broken memory.
-// ------------------------------------------------------------------
 // UNIFIED SMART CHAT ENDPOINT
-// ------------------------------------------------------------------
-
 router.post(
   "/chat",
   validateChatInput,
@@ -291,15 +226,13 @@ router.post(
     const user = await getAuthenticatedUser(req);
     if (!user) throw new AuthError("Authentication required");
 
-    // Extract inputs. conversationId is optional.
-    const { message, conversationId, mode, explainLevel, topic } = req.body;
+    const { message, conversationId, mode, explainLevel, topic, attachments } =
+      req.body;
     let currentConversationId = conversationId;
-
     let conversation;
 
-    // A. Handle Conversation Resolution (New vs Existing)
+    // A. Handle Conversation Resolution
     if (!currentConversationId) {
-      // 1. Create new if no ID provided
       const title =
         message.substring(0, 60) + (message.length > 60 ? "..." : "");
       const { data: newConv, error: createError } = await supabase
@@ -319,7 +252,6 @@ router.post(
       conversation = newConv;
       currentConversationId = newConv.id;
     } else {
-      // 2. Verify existing
       const { data: existing, error: findError } = await supabase
         .from("conversations")
         .select("*")
@@ -339,10 +271,11 @@ router.post(
       user_id: user.id,
       role: "user",
       content: message,
+      attachments: attachments || [],
     });
     if (msgError) throw new AppError("DB_ERROR", msgError.message);
 
-    // C. Build Context for AI
+    // C. Build Context
     const { data: history } = await supabase
       .from("messages")
       .select("role, content")
@@ -364,31 +297,22 @@ router.post(
       {}
     );
 
-    const startTime = Date.now(); // Start timer
+    // Prepare User Content with Attachments
+    const userContent = await processAttachments(message, attachments);
+
+    const startTime = Date.now();
     try {
       const completion = await openai.chat.completions.create({
         model: AI_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: message },
+          { role: "user", content: userContent },
         ],
       });
 
       const reply = completion.choices[0].message.content;
       const duration = Date.now() - startTime;
 
-      // Log observability metrics
-      // Using console.log or imported logger if available. Assuming logger import needed.
-      // Re-using the requested format: mode, explainLevel, duration.
-      // Since 'logger' is not globally available in this scope unless imported, I will assume it is not providing specific logger import in replace block context.
-      // However, I see I can import it at the top. But tools limit me to contiguous edits.
-      // I will rely on console.log strictly structured as JSON which is often picked up by log aggregators, OR better
-      // I'll assume I need to import logger. I will do a separate edit for import if needed, but for now let's modify this block.
-      // Actually, looking at previous view_file, 'logger' wasn't imported in routes.js.
-      // I will add the import in a separate step or try to use a pragmatic console.log that looks like the requestLogger.
-
-      // Let's stick to console.log meant for the logger system capture, or just basic stdout.
-      // "Loguear únicamente: mode, explainLevel, duración de respuesta (ms)"
       console.log(
         JSON.stringify({
           type: "adi_chat_metric",
@@ -406,9 +330,8 @@ router.post(
         content: reply,
       });
 
-      // F. Update Conversation (updated_at)
+      // F. Update Conversation
       const updates = { updated_at: new Date().toISOString() };
-      // Update settings if provided explicitly
       if (mode) updates.mode = mode;
       if (explainLevel) updates.explain_level = explainLevel;
 

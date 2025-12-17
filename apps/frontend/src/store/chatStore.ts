@@ -7,7 +7,6 @@ const rawUrl = import.meta.env.VITE_API_URL;
 let apiUrl = rawUrl || "https://wadi-wxg7.onrender.com";
 
 // Runtime check: If we are NOT on localhost, we should NOT call localhost.
-// This prevents "Mixed Content" errors and CSP blocks when deployed.
 if (
   typeof window !== "undefined" &&
   window.location.hostname !== "localhost" &&
@@ -26,6 +25,7 @@ export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  attachments?: string[]; // New: Support for attachments
   created_at?: string;
 }
 
@@ -49,6 +49,7 @@ interface ChatState {
   hasStarted: boolean;
   mood: WadiMood;
   isSidebarOpen: boolean;
+  isUploading: boolean; // New: Uploading state
 
   // Settings for NEW conversation
   mode: ChatMode;
@@ -69,7 +70,8 @@ interface ChatState {
   loadConversations: () => Promise<void>;
   openConversation: (id: string) => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
-  sendMessage: (text: string) => Promise<void>;
+  uploadFile: (file: File) => Promise<string | null>; // New: Upload action
+  sendMessage: (text: string, attachments?: string[]) => Promise<string | null>; // Updated signature
   deleteConversation: (id: string) => Promise<void>;
   resetChat: () => void;
 }
@@ -92,6 +94,7 @@ export const useChatStore = create<ChatState>()(
       hasStarted: false,
       mood: "hostile",
       isSidebarOpen: false,
+      isUploading: false,
 
       mode: "normal",
       topic: "general",
@@ -232,8 +235,34 @@ export const useChatStore = create<ChatState>()(
         return get().openConversation(id);
       },
 
-      sendMessage: async (text: string) => {
-        if (!text.trim()) return;
+      uploadFile: async (file: File) => {
+        set({ isUploading: true });
+        try {
+          const fileExt = file.name.split(".").pop();
+          const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("wadi-attachments")
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data } = supabase.storage
+            .from("wadi-attachments")
+            .getPublicUrl(filePath);
+
+          set({ isUploading: false });
+          return data.publicUrl;
+        } catch (error) {
+          console.error("Error uploading file:", error);
+          set({ isUploading: false, error: "Error al subir archivo." });
+          return null;
+        }
+      },
+
+      sendMessage: async (text: string, attachments: string[] = []) => {
+        if (!text.trim() && attachments.length === 0) return null;
 
         set({ isLoading: true, error: null, hasStarted: true });
 
@@ -243,6 +272,7 @@ export const useChatStore = create<ChatState>()(
           id: tempId,
           role: "user",
           content: text,
+          attachments: attachments,
           created_at: new Date().toISOString(),
         };
         set((state) => ({ messages: [...state.messages, userMsg] }));
@@ -265,6 +295,7 @@ export const useChatStore = create<ChatState>()(
               topic,
               explainLevel,
               mood, // 💥 Sent to backend to influence system prompt
+              attachments, // 📎 Send attachments
             }),
           });
 
@@ -319,7 +350,6 @@ export const useChatStore = create<ChatState>()(
             }
             return { conversations: nextConversations };
           });
-          // Try to start new if empty? handled by UI
         } catch (err) {
           console.error(err);
         }
@@ -332,6 +362,7 @@ export const useChatStore = create<ChatState>()(
         conversationId: state.conversationId,
         messages: state.messages,
         hasStarted: state.hasStarted,
+        // Don't persist isUploading
       }),
     }
   )

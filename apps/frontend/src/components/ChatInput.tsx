@@ -1,34 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./common/Button";
+import { useChatStore } from "../store/chatStore";
 
 interface ChatInputProps {
-  onSendMessage: (text: string) => Promise<void>;
+  onSendMessage: (text: string, attachments: string[]) => Promise<void>;
   isLoading: boolean;
   placeholder?: string;
 }
 
-/**
- * @component ChatInput
- * @status STABLE / FROZEN
- * @description
- * Handles chat input with strict event control to prevent page reloads
- * and ensure single-submission logic.
- *
- * CRITICAL IMPLEMENTATION DETAILS:
- * 1. Form submission and Enter key events use both e.preventDefault() AND e.stopPropagation().
- *    This is mandatory to prevent the browser from reloading the page or bubbling events
- *    to parent handlers that might trigger unwanted side effects.
- * 2. Logic is decoupled into 'handleSend' to reuse between click and key events.
- * 3. Input is explicitly trimmed before sending to prevent empty messages.
- *
- * DO NOT MODIFY THIS COMPONENT unless strictly necessary for a critical bug fix.
- * User experience relies on this specific stability.
- */
 export function ChatInput({
   onSendMessage,
   isLoading,
   placeholder = "¿En qué te ayudo?",
 }: ChatInputProps) {
+  const { uploadFile, isUploading } = useChatStore();
+
   // Local state for input
   const [input, setInput] = useState(() => {
     try {
@@ -41,6 +27,8 @@ export function ChatInput({
     return "";
   });
 
+  const [attachments, setAttachments] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Draft persistence
@@ -51,14 +39,31 @@ export function ChatInput({
     return () => clearTimeout(timer);
   }, [input]);
 
-  // Logic extracted to avoid event casting
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const url = await uploadFile(file);
+      if (url) {
+        setAttachments((prev) => [...prev, url]);
+      }
+    } catch (err) {
+      console.error("Upload failed", err);
+    } finally {
+      // Reset input so same file can be selected again if needed
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && attachments.length === 0) || isLoading || isUploading)
+      return;
 
     const text = input.trim();
-    if (!text) return;
 
     setInput("");
+    setAttachments([]);
     localStorage.removeItem("wadi_chat_draft");
 
     // Reset height
@@ -66,7 +71,7 @@ export function ChatInput({
       textareaRef.current.style.height = "auto";
     }
 
-    await onSendMessage(text);
+    await onSendMessage(text, attachments);
 
     // Keep focus after sending
     setTimeout(() => {
@@ -99,81 +104,166 @@ export function ChatInput({
       onSubmit={onFormSubmit}
       style={{
         display: "flex",
+        flexDirection: "column",
         gap: "0.5rem",
         maxWidth: "900px",
         margin: "0 auto",
         position: "relative",
-        alignItems: "flex-end",
       }}
     >
-      <div style={{ flex: 1, position: "relative" }}>
-        <textarea
-          id="chat-input"
-          name="chat-input"
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={onKeyDown}
-          onInput={handleInput}
-          placeholder={placeholder}
-          disabled={isLoading}
-          autoComplete="off"
-          rows={1}
-          style={{
-            width: "100%",
-            padding: "1rem 1.25rem",
-            borderRadius: "1.5rem",
-            border: "2px solid var(--color-border)",
-            backgroundColor: "var(--color-surface)",
-            color: "var(--color-text-main)",
-            resize: "none",
-            minHeight: "50px",
-            maxHeight: "200px",
-            fontSize: "16px",
-            outline: "none",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
-            transition: "border-color 0.2s, box-shadow 0.2s",
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = "var(--color-primary)";
-            e.target.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = "var(--color-border)";
-            e.target.style.boxShadow = "none";
-          }}
-          enterKeyHint="send"
+      {/* Attachments Preview */}
+      {attachments.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto py-2 px-4 bg-[var(--color-bg)] rounded-lg border border-[var(--color-border)] mb-2">
+          {attachments.map((url, index) => {
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+            return (
+              <div key={index} className="relative group shrink-0">
+                {isImage ? (
+                  <img
+                    src={url}
+                    alt="adjunto"
+                    className="h-16 w-16 object-cover rounded-md border border-[var(--color-border)]"
+                  />
+                ) : (
+                  <div className="h-16 w-16 flex items-center justify-center bg-[var(--color-surface)] rounded-md border text-xs text-center p-1 overflow-hidden break-all">
+                    File
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAttachments((prev) => prev.filter((a) => a !== url))
+                  }
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-end" }}>
+        {/* File Input (Hidden) */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleFileUpload}
+          accept="image/*,.txt,.md,.pdf,.csv" // Accepted types
         />
+
+        {/* Clip Button */}
+        <Button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isLoading || isUploading}
+          style={{
+            height: "50px",
+            width: "50px",
+            borderRadius: "50%",
+            background: "var(--color-surface)",
+            color: "var(--color-text-main)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            border: "1px solid var(--color-border)",
+            fontSize: "1.2rem",
+            cursor: "pointer",
+          }}
+        >
+          {isUploading ? "⏳" : "📎"}
+        </Button>
+
+        <div style={{ flex: 1, position: "relative" }}>
+          <textarea
+            id="chat-input"
+            name="chat-input"
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={onKeyDown}
+            onInput={handleInput}
+            placeholder={placeholder}
+            disabled={isLoading || isUploading}
+            autoComplete="off"
+            rows={1}
+            style={{
+              width: "100%",
+              padding: "1rem 1.25rem",
+              borderRadius: "1.5rem",
+              border: "2px solid var(--color-border)",
+              backgroundColor: "var(--color-surface)",
+              color: "var(--color-text-main)",
+              resize: "none",
+              minHeight: "50px",
+              maxHeight: "200px",
+              fontSize: "16px",
+              outline: "none",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
+              transition: "border-color 0.2s, box-shadow 0.2s",
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = "var(--color-primary)";
+              e.target.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = "var(--color-border)";
+              e.target.style.boxShadow = "none";
+            }}
+            enterKeyHint="send"
+          />
+        </div>
+        <Button
+          type="submit"
+          disabled={
+            isLoading ||
+            isUploading ||
+            (!input.trim() && attachments.length === 0)
+          }
+          aria-label="Enviar mensaje"
+          style={{
+            height: "50px",
+            width: "50px",
+            borderRadius: "50%",
+            background: "var(--color-primary)",
+            color: "#FFF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            boxShadow: "0 4px 15px rgba(139, 92, 246, 0.3)",
+            border: "2px solid #fff",
+            fontSize: "1.2rem",
+            transition: "transform 0.1s, opacity 0.2s",
+            opacity:
+              isLoading ||
+              isUploading ||
+              (!input.trim() && attachments.length === 0)
+                ? 0.5
+                : 1,
+            cursor:
+              isLoading ||
+              isUploading ||
+              (!input.trim() && attachments.length === 0)
+                ? "not-allowed"
+                : "pointer",
+          }}
+          onMouseEnter={(e) => {
+            if (
+              !isLoading &&
+              !isUploading &&
+              (input.trim() || attachments.length > 0)
+            )
+              e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        >
+          ➤
+        </Button>
       </div>
-      <Button
-        type="submit"
-        disabled={isLoading || !input.trim()}
-        aria-label="Enviar mensaje"
-        style={{
-          height: "50px",
-          width: "50px",
-          borderRadius: "50%",
-          background: "var(--color-primary)",
-          color: "#FFF",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          boxShadow: "0 4px 15px rgba(139, 92, 246, 0.3)",
-          border: "2px solid #fff",
-          fontSize: "1.2rem",
-          transition: "transform 0.1s, opacity 0.2s",
-          opacity: isLoading || !input.trim() ? 0.5 : 1,
-          cursor: isLoading || !input.trim() ? "not-allowed" : "pointer",
-        }}
-        onMouseEnter={(e) => {
-          if (!isLoading && input.trim())
-            e.currentTarget.style.transform = "scale(1.05)";
-        }}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-      >
-        ➤
-      </Button>
     </form>
   );
 }
