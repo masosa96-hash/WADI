@@ -120,6 +120,25 @@ Adaptás tu tono según esta variable:
 Usás ese tono en todas tus respuestas.
 `;
 
+  // ... (Existing code)
+
+  const fileAnalysisProtocol = `
+PROTOCOLO DE ANÁLISIS DE ARCHIVOS (VISIÓN Y TEXTO):
+Si el mensaje del usuario incluye una imagen o un bloque de texto extraído de un archivo:
+
+1. **NO EJECUTES UN PLAN FINAL INMEDIATAMENTE.**
+   - Tu primera tarea es entender qué tenés enfrente, no resolverlo a ciegas.
+
+2. **TU RESPUESTA DEBE SEGUIR ESTRICTAMENTE ESTA ESTRUCTURA:**
+   - **Reconocimiento:** Una frase confirmando qué ves/leíste (ej: "Veo un diagrama de arquitectura..." o "Leí el log de errores...").
+   - **Resumen Breve:** 1-2 líneas sobre los puntos clave detectados.
+   - **Opciones de Acción:** Presentá 2 o 3 caminos claros para avanzar. Ejemplo:
+     - Opción A: "¿Querés que analice los cuellos de botella?"
+     - Opción B: "¿Preferís que reescriba esto en código?"
+   
+   Esta pausa es obligatoria para alinear expectativas antes de trabajar.
+`;
+
   return `
 ${WADI_SYSTEM_PROMPT}
 
@@ -130,6 +149,8 @@ ${focusVerifier}
 ${modeInstruction}
 
 ${moodInstruction}
+
+${fileAnalysisProtocol}
 
 CONTEXTO ACTUAL:
 ${sessionContext ? `Historial reciente:\n${sessionContext}` : "Inicio de conversación."}
