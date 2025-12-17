@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
-import { useChatStore, Attachment } from "../store/chatStore";
+import { useChatStore, type Attachment } from "../store/chatStore";
 
 import { ChatInput } from "../components/ChatInput";
 import WadiOnboarding from "../components/WadiOnboarding";
@@ -268,14 +268,21 @@ export default function ChatPage() {
                   {/* Attachments Display */}
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {msg.attachments.map((url, idx) => {
-                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                      {msg.attachments.map((att: string | Attachment, idx) => {
+                        const url = typeof att === "string" ? att : att.url;
+                        const name =
+                          typeof att === "string" ? "Archivo" : att.name;
+
+                        const isImage =
+                          /\.(jpg|jpeg|png|gif|webp)$/i.test(name) ||
+                          /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+
                         if (isImage) {
                           return (
                             <img
                               key={idx}
                               src={url}
-                              alt="adjunto"
+                              alt={name}
                               className="max-w-full h-auto rounded-lg border border-[var(--color-border)] max-h-60"
                             />
                           );
@@ -284,11 +291,12 @@ export default function ChatPage() {
                           <a
                             key={idx}
                             href={url}
+                            download={name}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-[var(--color-bg)] p-2 rounded text-xs border border-[var(--color-border)] hover:bg-[var(--color-surface-soft)] transition-colors"
+                            className="bg-[var(--color-bg)] p-2 rounded text-xs border border-[var(--color-border)] hover:bg-[var(--color-surface-soft)] transition-colors flex items-center gap-1"
                           >
-                            📎 Archivo
+                            📎 {name}
                           </a>
                         );
                       })}

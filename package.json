@@ -5,7 +5,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "build": "pnpm --filter frontend build",
-    "test:wadi": "node apps/tests/wadi-tests.js"
+    "test:wadi": "node apps/tests/wadi-tests.js",
+    "validate": "npm run build --workspaces && echo '✅ Build exitoso en Apps y API'"
   },
   "workspaces": [
     "apps/api",

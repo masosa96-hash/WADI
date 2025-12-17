@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./common/Button";
-import { useChatStore, Attachment } from "../store/chatStore";
+import { useChatStore, type Attachment } from "../store/chatStore";
 
 interface ChatInputProps {
   onSendMessage: (text: string, attachments: Attachment[]) => Promise<void>;
