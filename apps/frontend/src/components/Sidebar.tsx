@@ -14,8 +14,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuthStore();
-  const { conversations, fetchConversations, loadConversation, resetChat } =
-    useChatStore();
+  const {
+    conversations,
+    fetchConversations,
+    loadConversation,
+    resetChat,
+    setSidebarOpen,
+  } = useChatStore();
 
   useEffect(() => {
     if (user) {
@@ -33,7 +38,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const handleHistoryClick = (id: string) => {
     loadConversation(id);
     navigate(`/chat/${id}`);
-    onClose?.();
+    onClose?.(); // Keep for robust fallback if needed
+    setSidebarOpen(false); // Force close on mobile via store
   };
 
   return (
