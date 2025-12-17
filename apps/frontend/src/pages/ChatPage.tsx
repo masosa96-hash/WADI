@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
-import { useChatStore } from "../store/chatStore";
+import { useChatStore, Attachment } from "../store/chatStore";
 
 import { ChatInput } from "../components/ChatInput";
 import WadiOnboarding from "../components/WadiOnboarding";
@@ -109,7 +109,7 @@ export default function ChatPage() {
     prevMessagesLength.current = newCount;
   }, [messages, shouldAutoScroll]);
 
-  const handleSendMessage = async (text: string, attachments: string[]) => {
+  const handleSendMessage = async (text: string, attachments: Attachment[]) => {
     // 1. If we are already in a chat (storeConversationId exists), we just send the message.
     // 2. If we are in "New Chat" mode (no ID), this first message CREATES the conversation.
     //    The store's sendMessage handles both cases on the backend.

@@ -79,6 +79,7 @@ router.post(
 
 // 2. Send Message (Persistent)
 // Helper: Process attachments for OpenAI
+// Helper: Process attachments for OpenAI
 const processAttachments = async (message, attachments) => {
   if (!attachments || attachments.length === 0) {
     return message; // Return string if no attachments
@@ -86,7 +87,10 @@ const processAttachments = async (message, attachments) => {
 
   const content = [{ type: "text", text: message }];
 
-  for (const url of attachments) {
+  for (const att of attachments) {
+    // Handle both object and string (legacy/robustness)
+    const url = typeof att === "string" ? att : att.url;
+
     // Basic extension check
     const lowerUrl = url.toLowerCase();
     const isImage = /\.(jpg|jpeg|png|gif|webp)$/.test(lowerUrl);
@@ -182,13 +186,32 @@ router.post(
       // 1. User Message
       // We store the RAW text in 'content' for legacy compatibility,
       // AND arrays in 'attachments' column.
+      // ...
+      // D. Save Messages to DB
+      // 1. User Message
       await supabase.from("messages").insert({
         conversation_id: id,
         user_id: user.id,
         role: "user",
-        content: message, // Human readable summary
-        attachments: attachments || [],
+        content: message,
+        attachments: attachments
+          ? attachments.map((a) => (typeof a === "string" ? a : a.url))
+          : [],
       });
+      // ...
+
+      // ...
+      // B. Insert User Message
+      const { error: msgError } = await supabase.from("messages").insert({
+        conversation_id: currentConversationId,
+        user_id: user.id,
+        role: "user",
+        content: message,
+        attachments: attachments
+          ? attachments.map((a) => (typeof a === "string" ? a : a.url))
+          : [],
+      });
+      // ...
 
       // 2. Assistant Message
       await supabase.from("messages").insert({

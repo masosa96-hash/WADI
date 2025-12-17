@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./common/Button";
-import { useChatStore } from "../store/chatStore";
+import { useChatStore, Attachment } from "../store/chatStore";
 
 interface ChatInputProps {
-  onSendMessage: (text: string, attachments: string[]) => Promise<void>;
+  onSendMessage: (text: string, attachments: Attachment[]) => Promise<void>;
   isLoading: boolean;
   placeholder?: string;
 }
@@ -27,7 +27,7 @@ export function ChatInput({
     return "";
   });
 
-  const [attachments, setAttachments] = useState<string[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -44,9 +44,9 @@ export function ChatInput({
     if (!file) return;
 
     try {
-      const url = await uploadFile(file);
-      if (url) {
-        setAttachments((prev) => [...prev, url]);
+      const attachment = await uploadFile(file);
+      if (attachment) {
+        setAttachments((prev) => [...prev, attachment]);
       }
     } catch (err) {
       console.error("Upload failed", err);
@@ -114,25 +114,28 @@ export function ChatInput({
       {/* Attachments Preview */}
       {attachments.length > 0 && (
         <div className="flex gap-2 overflow-x-auto py-2 px-4 bg-[var(--color-bg)] rounded-lg border border-[var(--color-border)] mb-2">
-          {attachments.map((url, index) => {
-            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+          {attachments.map((att, index) => {
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(att.name);
             return (
               <div key={index} className="relative group shrink-0">
                 {isImage ? (
                   <img
-                    src={url}
+                    src={att.url}
                     alt="adjunto"
                     className="h-16 w-16 object-cover rounded-md border border-[var(--color-border)]"
                   />
                 ) : (
-                  <div className="h-16 w-16 flex items-center justify-center bg-[var(--color-surface)] rounded-md border text-xs text-center p-1 overflow-hidden break-all">
-                    File
+                  <div className="h-16 w-16 flex flex-col items-center justify-center bg-[var(--color-surface)] rounded-md border text-[10px] text-center p-1 overflow-hidden break-all gap-1">
+                    <span>📄</span>
+                    <span className="line-clamp-2">{att.name}</span>
                   </div>
                 )}
                 <button
                   type="button"
                   onClick={() =>
-                    setAttachments((prev) => prev.filter((a) => a !== url))
+                    setAttachments((prev) =>
+                      prev.filter((a) => a.url !== att.url)
+                    )
                   }
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                 >

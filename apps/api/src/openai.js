@@ -13,4 +13,4 @@ export const openai = new OpenAI({
 
 export const AI_MODEL = useGroq
   ? process.env.GROQ_MODEL || "llama-3.1-8b-instant"
-  : "gpt-4o-mini";
+  : "gpt-4o";

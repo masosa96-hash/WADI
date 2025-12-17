@@ -21,11 +21,18 @@ if (
 
 const API_URL = apiUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
 
+// New Type Definition
+export interface Attachment {
+  url: string;
+  name: string;
+  type: string;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  attachments?: string[]; // New: Support for attachments
+  attachments?: Attachment[]; // Refactored to Object Array
   created_at?: string;
 }
 
@@ -70,8 +77,11 @@ interface ChatState {
   loadConversations: () => Promise<void>;
   openConversation: (id: string) => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
-  uploadFile: (file: File) => Promise<string | null>; // New: Upload action
-  sendMessage: (text: string, attachments?: string[]) => Promise<string | null>; // Updated signature
+  uploadFile: (file: File) => Promise<Attachment | null>; // Return full object
+  sendMessage: (
+    text: string,
+    attachments?: Attachment[]
+  ) => Promise<string | null>; // Updated signature
   deleteConversation: (id: string) => Promise<void>;
   resetChat: () => void;
 }
@@ -253,7 +263,12 @@ export const useChatStore = create<ChatState>()(
             .getPublicUrl(filePath);
 
           set({ isUploading: false });
-          return data.publicUrl;
+
+          return {
+            url: data.publicUrl,
+            name: file.name,
+            type: file.type,
+          };
         } catch (error) {
           console.error("Error uploading file:", error);
           set({ isUploading: false, error: "Error al subir archivo." });
@@ -261,7 +276,7 @@ export const useChatStore = create<ChatState>()(
         }
       },
 
-      sendMessage: async (text: string, attachments: string[] = []) => {
+      sendMessage: async (text: string, attachments: Attachment[] = []) => {
         if (!text.trim() && attachments.length === 0) return null;
 
         set({ isLoading: true, error: null, hasStarted: true });
@@ -290,12 +305,12 @@ export const useChatStore = create<ChatState>()(
             },
             body: JSON.stringify({
               message: text,
-              conversationId, // Optional (null for new chat)
+              conversationId,
               mode,
               topic,
               explainLevel,
-              mood, // 💥 Sent to backend to influence system prompt
-              attachments, // 📎 Send attachments
+              mood,
+              attachments, // Sends full object array now
             }),
           });
 
