@@ -105,9 +105,9 @@ app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
 // STATIC FRONTEND (WADI MAIN UI)
 // --------------------------------------------------
 // --------------------------------------------------
-// STATIC FRONTEND (WADI MAIN UI)
+// 109: STATIC FRONTEND (WADI MAIN UI)
 // --------------------------------------------------
-const frontendPath = path.join(__dirname, "../../frontend/dist");
+const frontendPath = path.resolve(__dirname, "../../frontend/dist");
 console.log("Frontend Path:", frontendPath);
 
 // Debug: Log directory contents on startup to verify build on Render
@@ -127,24 +127,16 @@ try {
   console.error("Debug Log Error:", err);
 }
 
-// 1. Assets (First) - Strict handling with explicit 404
-app.use(
-  "/assets",
-  express.static(path.join(frontendPath, "assets"), {
-    fallthrough: false, // If not found, do NOT fall through to SPA
-  })
-);
-
-// Fallback for /assets if static didn't find it (handles the 404 from fallthrough:false)
-app.use("/assets", (err, req, res, next) => {
-  if (err && (err.status === 404 || err.statusCode === 404)) {
-    return res.status(404).type("text").send("Asset not found");
-  }
-  next(err);
-});
-
-// 2. Static base (favicon, etc.)
+// 1. Static Files (Assets + Root)
+// Serve everything in 'dist' (includes index.html, assets/*, favicon.ico)
 app.use(express.static(frontendPath));
+
+// 2. Asset 404 Handling
+// If a request for /assets/* wasn't handled by express.static above, it's missing.
+// Return 404 immediately to avoid falling through to SPA fallback (which causes MIME type errors)
+app.use("/assets/*", (req, res) => {
+  res.status(404).send("Asset not found");
+});
 
 // 3. API
 app.use("/api", routes);
