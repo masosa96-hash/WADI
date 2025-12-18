@@ -133,19 +133,31 @@ try {
   console.error("Debug Log Error:", err);
 }
 
-// 1. Static Files (Assets + Root)
-// Serve everything in 'dist' (includes index.html, assets/*, favicon.ico)
-app.use(express.static(frontendPath));
-
-// 2. Asset 404 Handling (Fixed for Express 5 regexp)
-// Explicitly serve /assets from the dist/assets folder to avoid ambiguity
+// 1. Static Files & Assets
+// Serve everything in 'dist' with specific headers
 app.use(
-  "/assets",
-  express.static(path.join(__dirname, "../../frontend/dist/assets"))
+  express.static(frontendPath, {
+    setHeaders: (res, filePath) => {
+      // Disable caching for index.html to ensure clients get the latest build hash
+      if (filePath.endsWith("index.html")) {
+        res.setHeader(
+          "Cache-Control",
+          "no-store, no-cache, must-revalidate, proxy-revalidate"
+        );
+        res.setHeader("Pragma", "no-cache");
+        res.setHeader("Expires", "0");
+      } else if (filePath.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
+        // Cache assets aggressively since they have hashes
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      }
+    },
+  })
 );
 
-// Fallback for missing assets (if not found in static above)
-app.use("/assets", (req, res) => {
+// Debug: Log missing assets
+app.use("/assets", (req, res, next) => {
+  console.log(`❌ Missing Asset Requested: ${req.url}`);
+  console.log(`   - Looked in: ${path.join(frontendPath, "assets", req.url)}`);
   res.status(404).send("Asset not found");
 });
 
