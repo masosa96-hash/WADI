@@ -77,6 +77,57 @@ router.post(
   })
 );
 
+// 1.5 Get All Conversations
+router.get(
+  "/conversations",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false });
+
+    if (error) throw new AppError("DB_ERROR", error.message);
+    res.json(data);
+  })
+);
+
+// 1.6 Get Single Conversation (with messages)
+router.get(
+  "/conversations/:id",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+
+    // Get conversation details
+    const { data: conversation, error: convError } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (convError || !conversation) {
+      throw new AuthError("Conversation not found", 404);
+    }
+
+    // Get messages
+    const { data: messages, error: msgError } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", id)
+      .order("created_at", { ascending: true });
+
+    if (msgError) throw new AppError("DB_ERROR", msgError.message);
+
+    res.json({ ...conversation, messages });
+  })
+);
+
 // 2. Send Message (Persistent)
 // Helper: Process attachments for OpenAI
 // Helper: Process attachments for OpenAI
