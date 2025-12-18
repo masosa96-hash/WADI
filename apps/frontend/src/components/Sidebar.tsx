@@ -65,6 +65,30 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </Button>
       </div>
 
+      {/* Botón de Pánico: Limpiar Sesión (Solo si hay caos) */}
+      {useChatStore.getState().messages.length > 0 && (
+        <div style={{ marginBottom: "1rem" }}>
+          <Button
+            fullWidth
+            onClick={() => {
+              if (confirm("¿Seguro? Esto borra la memoria local de WADI.")) {
+                resetChat();
+                navigate("/chat");
+                onClose?.();
+              }
+            }}
+            style={{
+              background: "rgba(255, 60, 60, 0.1)",
+              color: "#ff4d4d",
+              border: "1px solid rgba(255, 60, 60, 0.3)",
+              fontSize: "0.8rem",
+            }}
+          >
+            🗑️ Limpiar Sesión
+          </Button>
+        </div>
+      )}
+
       {/* 2. Historial de Conversaciones */}
       <div
         style={{

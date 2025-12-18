@@ -372,7 +372,7 @@ export const useChatStore = create<ChatState>()(
       },
     }),
     {
-      name: "wadi-storage",
+      name: "wadi-session-v1",
       partialize: (state) => ({
         mood: state.mood,
         conversationId: state.conversationId,
@@ -380,6 +380,22 @@ export const useChatStore = create<ChatState>()(
         hasStarted: state.hasStarted,
         // Don't persist isUploading
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && state.messages && state.messages.length > 0) {
+          const lastMsg = state.messages[state.messages.length - 1];
+          const welcomeBackText =
+            "Volviste. El desorden sigue donde lo dejaste.";
+
+          if (lastMsg.content !== welcomeBackText) {
+            state.messages.push({
+              id: "welcome-back-" + Date.now(),
+              role: "assistant",
+              content: welcomeBackText,
+              created_at: new Date().toISOString(),
+            });
+          }
+        }
+      },
     }
   )
 );
