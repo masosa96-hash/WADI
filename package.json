@@ -4,8 +4,7 @@
   "scripts": {
     "lint": "eslint .",
     "format": "prettier --write .",
-    "prebuild": "rm -rf apps/frontend/dist",
-    "build": "pnpm --filter frontend build",
+    "build": "pnpm -r exec rm -rf dist && pnpm run build --filter frontend && pnpm run build --filter wadi-api",
     "test:wadi": "node apps/tests/wadi-tests.js",
     "validate": "npm run build --workspaces && echo '✅ Build exitoso en Apps y API'",
     "test:smoke": "node scripts/smoke-test.js",
