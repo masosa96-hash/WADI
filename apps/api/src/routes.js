@@ -249,8 +249,15 @@ router.post(
     const user = await getAuthenticatedUser(req);
     if (!user) throw new AuthError("Authentication required");
 
-    const { message, conversationId, mode, explainLevel, topic, attachments } =
-      req.body;
+    const {
+      message,
+      conversationId,
+      mode,
+      explainLevel,
+      topic,
+      attachments,
+      isMobile,
+    } = req.body;
     let currentConversationId = conversationId;
     let conversation;
 
@@ -317,7 +324,9 @@ router.post(
       safeTopic,
       safeLevel,
       contextSummary,
-      {}
+      {},
+      "hostile", // default mood for now if not passed, ideally should be derived
+      isMobile
     );
 
     // Prepare User Content with Attachments

@@ -22,19 +22,19 @@
 
 @layer components {
   .sidebar-drawer {
-    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:border-r;
+    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 lg:relative lg:translate-x-0 lg:border-r;
   }
 
   .sidebar-drawer.open {
-    @apply translate-x-0 shadow-2xl md:shadow-none;
+    @apply translate-x-0 shadow-2xl lg:shadow-none;
   }
 
   .sidebar-overlay {
-    @apply fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden;
+    @apply fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden;
   }
 
   .mobile-only {
-    @apply flex md:hidden;
+    @apply flex lg:hidden;
   }
 }
 

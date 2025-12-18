@@ -24,7 +24,8 @@ export function generateSystemPrompt(
   explainLevel = "normal",
   sessionContext = "",
   sessionPrefs = {},
-  mood = "hostile"
+  mood = "hostile",
+  isMobile = false
 ) {
   const baseRules = `
 SI NO HAY PROBLEMA REAL:
@@ -145,9 +146,11 @@ Si el usuario elige una opción o responde con un número (ej: "1", "datos"), EJ
 - **Opción 1 (Inconsistencias):** Buscá huecos, errores lógicos o contradicciones.
 - **Opción 2 (Datos duros):** Sacá una lista técnica o tabla limpia. Cero prosa innecesaria.
 - **Opción 3 (Mega Resumen):**
-  - Si es mobile (contexto implícito): Breve, al punto.
-  - Si es desktop: Detallado, con secciones.
-  - Usá la estructura: Estado, Puntos Críticos, Próximo Paso.
+  ${
+    isMobile
+      ? "- DETECTADO USER EN MOBILE: El resumen DEBE ser una lista de bullets ultra corta (max 5 items), sin intros ni cierres. Solo carne."
+      : "- DETECTADO USER EN DESKTOP: El resumen puede ser más detallado, con secciones claras (Estado, Puntos Críticos, Próximo Paso)."
+  }
 
 SIEMPRE mantené el tono irónico/seco.
 `;

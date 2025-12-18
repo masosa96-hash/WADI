@@ -311,6 +311,7 @@ export const useChatStore = create<ChatState>()(
               explainLevel,
               mood,
               attachments, // Sends full object array now
+              isMobile: window.innerWidth < 1024,
             }),
           });
 
