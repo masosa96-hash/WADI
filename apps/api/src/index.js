@@ -112,17 +112,23 @@ console.log("Frontend Path:", frontendPath);
 
 // Debug: Log directory contents on startup to verify build on Render
 try {
+  console.log("----- DEBUG FILES START -----");
   if (fs.existsSync(frontendPath)) {
-    console.log("Check dist:", fs.readdirSync(frontendPath));
-    const assetsDebug = path.join(frontendPath, "assets");
-    if (fs.existsSync(assetsDebug)) {
-      console.log("Check assets:", fs.readdirSync(assetsDebug));
-    } else {
-      console.log("⚠️ Assets folder missing at:", assetsDebug);
+    console.log("Detected frontendPath:", frontendPath);
+    // Use recursive ls to see everything
+    const { execSync } = await import("child_process");
+    try {
+      const output = execSync(`ls -R ${frontendPath}`, { encoding: "utf-8" });
+      console.log("ls -R output:\n", output);
+    } catch (e) {
+      console.log("ls -R failed:", e.message);
+      // Fallback
+      console.log("Root contents:", fs.readdirSync(frontendPath));
     }
   } else {
     console.log("⚠️ Frontend dist missing at:", frontendPath);
   }
+  console.log("----- DEBUG FILES END -----");
 } catch (err) {
   console.error("Debug Log Error:", err);
 }
