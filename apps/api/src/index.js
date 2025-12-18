@@ -20,6 +20,7 @@ dotenv.config({ path: "../../.env" });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const frontendPath = path.resolve(__dirname, "../../frontend/dist");
 
 import helmet from "helmet";
 
@@ -135,11 +136,6 @@ app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
 // --------------------------------------------------
 // STATIC FRONTEND (WADI MAIN UI)
 // --------------------------------------------------
-// --------------------------------------------------
-// 109: STATIC FRONTEND (WADI MAIN UI)
-// --------------------------------------------------
-const frontendPath = path.resolve(__dirname, "../../frontend/dist");
-console.log("Frontend Path:", frontendPath);
 
 // Debug: Log directory contents on startup to verify build on Render
 try {
