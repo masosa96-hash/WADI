@@ -6,6 +6,7 @@ import { useChatStore, type Attachment } from "../store/chatStore";
 import { ChatInput } from "../components/ChatInput";
 import WadiOnboarding from "../components/WadiOnboarding";
 import { OnboardingModal } from "../components/OnboardingModal";
+import { useScouter } from "../hooks/useScouter";
 
 const PLACEHOLDERS = ["¿Una idea?", "¿Un problema?", "¿Un objetivo?"];
 
@@ -94,6 +95,9 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const { playScanSound, playAlertSound } = useScouter();
+  const [isFlashing, setIsFlashing] = useState(false);
+
   useLayoutEffect(() => {
     // Only scroll if message count increased AND (it's my message OR I was near bottom)
     const newCount = messages.length;
@@ -106,9 +110,29 @@ export default function ChatPage() {
       if (isMyMessage || shouldAutoScroll) {
         scrollToBottom();
       }
+
+      // SCOUTER LOGIC: Check for alerts in Assistant messages
+      if (!isMyMessage) {
+        const text = lastMsg.content || "";
+        const isChaotic = text.includes("[ALERTA DE CAOS DETECTADA]");
+        const isRejected = text.toLowerCase().includes("tostadora");
+
+        if (isChaotic || isRejected) {
+          playAlertSound();
+          // Timeout cleans render cycle
+          setTimeout(() => setIsFlashing(true), 0);
+          setTimeout(() => setIsFlashing(false), 800);
+        } else if (
+          text.includes("Analizar inconsistencias") ||
+          text.includes("Diagnóstico")
+        ) {
+          // Normal analysis friction
+          playScanSound();
+        }
+      }
     }
     prevMessagesLength.current = newCount;
-  }, [messages, shouldAutoScroll]);
+  }, [messages, shouldAutoScroll, playAlertSound, playScanSound]);
 
   const handleSendMessage = async (text: string, attachments: Attachment[]) => {
     // 1. If we are already in a chat (storeConversationId exists), we just send the message.
@@ -142,6 +166,13 @@ export default function ChatPage() {
           margin: "0 auto",
           position: "relative",
           backgroundColor: "var(--color-bg)",
+          borderRadius: "var(--radius-lg)",
+          overflow: "hidden",
+          border: isFlashing ? "4px solid #ff00ff" : "1px solid transparent",
+          boxShadow: isFlashing
+            ? "0 0 20px #ff00ff, inset 0 0 20px #ff00ff"
+            : "none",
+          transition: "all 0.1s ease-in-out",
         }}
       >
         {/* Header simple y fijo */}
