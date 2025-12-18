@@ -191,6 +191,9 @@ export const useChatStore = create<ChatState>()(
             headers: { Authorization: `Bearer ${token}` },
           });
           if (!res.ok) throw new Error("Failed to fetch conversations");
+          if (res.headers.get("content-type")?.includes("text/html")) {
+            throw new Error("Servidor retornó HTML en lugar de JSON");
+          }
           const data = await res.json();
           set({ conversations: data });
         } catch (err) {
@@ -316,6 +319,15 @@ export const useChatStore = create<ChatState>()(
           });
 
           if (!res.ok) throw new Error("Failed to send message");
+
+          // Verify we got JSON, not an HTML error page (common with 404s/500s)
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("text/html")) {
+            throw new Error(
+              "Servidor retornó HTML en lugar de datos JSON (Posible 404/500)"
+            );
+          }
+
           const data = await res.json();
 
           // 3. Update State

@@ -127,10 +127,15 @@ app.get("/system/debug-files", (req, res) => {
 });
 
 // --------------------------------------------------
-// PRIORITY 1: Assets (Explicit & No-Cache for Stability)
+// PRIORITY 1: API & System Routes (Must come before static)
 // --------------------------------------------------
+app.use("/api", rateLimiter);
+app.use("/api", routes);
+app.use("/api/kivo", kivoRoutes);
+app.use("/system", monitoringRoutes);
+
 // --------------------------------------------------
-// PRIORITY 1: Assets (Explicit & No-Cache for Stability)
+// PRIORITY 2: Assets (Explicit & No-Cache for Stability)
 // --------------------------------------------------
 app.use(
   "/assets",
@@ -143,8 +148,6 @@ app.use(
     },
   })
 );
-
-app.use("/api", rateLimiter); // Only rate limit API
 
 // --------------------------------------------------
 // REDIRECT LEGACY KIVO
@@ -175,10 +178,7 @@ try {
   console.error("Debug Log Error:", err);
 }
 
-// 3. API
-app.use("/api", routes);
-app.use("/api/kivo", kivoRoutes);
-app.use("/system", monitoringRoutes);
+// 3. API - Moved to top priority
 
 // 4. SPA fallback (Catch-all)
 // Any request not handled by previous routes serves index.html

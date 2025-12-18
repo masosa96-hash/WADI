@@ -3,8 +3,23 @@
 @tailwind utilities;
 
 @layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    min-height: 100vh;
+    background-color: #0f111a; /* Base Neon Dark */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
   body {
-    @apply bg-wadi-neutral text-wadi-bg font-sans max-w-full overflow-x-hidden;
+    @apply bg-wadi-neutral text-wadi-bg font-sans;
+  }
+
+  #root {
+    @apply flex flex-col;
   }
 
   .dark body {
@@ -17,10 +32,6 @@
 
   button:hover {
     @apply bg-wadi-tension text-black;
-  }
-
-  #root {
-    @apply min-h-screen h-screen flex flex-col overflow-hidden;
   }
 }
 

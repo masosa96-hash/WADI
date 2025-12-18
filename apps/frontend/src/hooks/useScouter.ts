@@ -46,22 +46,21 @@ export function useScouter() {
     const ctx = getAudioContext();
     if (!ctx) return;
 
-    // Create a more aggressive "Error/Alert" buzzer
+    // Create a more aggressive "Error/Alert" buzzer (2500Hz, 80ms)
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
     osc.type = "square";
-    osc.frequency.setValueAtTime(150, ctx.currentTime); // Low buzz
-    osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
+    osc.frequency.setValueAtTime(2500, ctx.currentTime);
 
     gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
 
     osc.connect(gainNode);
     gainNode.connect(ctx.destination);
 
     osc.start();
-    osc.stop(ctx.currentTime + 0.4);
+    osc.stop(ctx.currentTime + 0.08);
   }, []);
 
   return { playScanSound, playAlertSound };
