@@ -132,8 +132,13 @@ try {
 app.use(express.static(frontendPath));
 
 // 2. Asset 404 Handling (Fixed for Express 5 regexp)
-// If a request for /assets/* wasn't handled by express.static above, it's missing.
-// Return 404 immediately to avoid falling through to SPA fallback (which causes MIME type errors)
+// Explicitly serve /assets from the dist/assets folder to avoid ambiguity
+app.use(
+  "/assets",
+  express.static(path.join(__dirname, "../../frontend/dist/assets"))
+);
+
+// Fallback for missing assets (if not found in static above)
 app.use("/assets", (req, res) => {
   res.status(404).send("Asset not found");
 });
@@ -170,9 +175,9 @@ app.get("/system/debug-files", (req, res) => {
   }
 });
 
-// 4. SPA fallback (NUNCA assets)
-// Excluye explícitamente assets, api, kivo, system para evitar servir HTML en lugar de 404/JSON
-app.get(/^(?!\/assets|\/api|\/kivo|\/system).*/, (req, res) => {
+// 4. SPA fallback (Catch-all)
+// Any request not handled by previous routes (assets, api, system) serves index.html
+app.get("*", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 

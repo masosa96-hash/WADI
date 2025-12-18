@@ -6,7 +6,9 @@
     "format": "prettier --write .",
     "build": "pnpm --filter frontend build",
     "test:wadi": "node apps/tests/wadi-tests.js",
-    "validate": "npm run build --workspaces && echo '✅ Build exitoso en Apps y API'"
+    "validate": "npm run build --workspaces && echo '✅ Build exitoso en Apps y API'",
+    "test:smoke": "node scripts/smoke-test.js",
+    "postbuild": "ls -R apps/frontend/dist"
   },
   "workspaces": [
     "apps/api",

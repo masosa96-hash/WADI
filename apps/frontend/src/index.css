@@ -36,6 +36,40 @@
   .mobile-only {
     @apply flex lg:hidden;
   }
+  /* New Bubble Styles */
+  .bubble-base {
+    @apply max-w-[85%] lg:max-w-[75%] py-3 px-5 rounded-2xl text-[0.95rem] leading-relaxed shadow-sm;
+  }
+
+  .bubble-wadi {
+    @apply bubble-base bg-[var(--color-surface)] text-[var(--color-text-main)] border border-violet-500/20 shadow-[0_0_10px_rgba(124,58,237,0.1)];
+    border-top-left-radius: 4px;
+  }
+
+  .bubble-user {
+    @apply bubble-base bg-[var(--color-primary)] text-white ml-auto border-none;
+    border-top-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s infinite;
+  }
+}
+
+@keyframes pulse-soft {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Base Reset */

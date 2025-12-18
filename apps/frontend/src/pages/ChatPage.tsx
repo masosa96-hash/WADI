@@ -32,6 +32,7 @@ export default function ChatPage() {
     hasStarted,
     mood,
     conversationId: storeConversationId,
+    isUploading,
   } = useChatStore();
 
   // Load conversation on mount/param change
@@ -243,26 +244,7 @@ export default function ChatPage() {
                   justifyContent: isUser ? "flex-end" : "flex-start",
                 }}
               >
-                <div
-                  className="chat-bubble"
-                  style={{
-                    maxWidth: "80%",
-                    padding: "1rem 1.25rem",
-                    borderRadius: "1.25rem",
-                    borderTopRightRadius: isUser ? "0.25rem" : "1.25rem",
-                    borderTopLeftRadius: isUser ? "1.25rem" : "0.25rem",
-                    background: isUser
-                      ? "var(--color-primary)"
-                      : "var(--color-surface)",
-                    color: isUser ? "#FFF" : "var(--color-text-main)",
-                    boxShadow: isUser
-                      ? "0 4px 12px rgba(139, 92, 246, 0.25)"
-                      : "var(--shadow-sm)",
-                    lineHeight: "1.6",
-                    fontSize: "var(--text-base)",
-                    border: isUser ? "none" : "1px solid var(--color-border)",
-                  }}
-                >
+                <div className={isUser ? "bubble-user" : "bubble-wadi"}>
                   <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
 
                   {/* Attachments Display */}
@@ -307,7 +289,8 @@ export default function ChatPage() {
             );
           })}
 
-          {isLoading && (
+          {/* Uploading or Processing State */}
+          {(isLoading || isUploading) && (
             <div style={{ display: "flex", justifyContent: "flex-start" }}>
               <div
                 style={{
@@ -321,6 +304,7 @@ export default function ChatPage() {
                   gap: "0.5rem",
                   boxShadow: "var(--shadow-sm)",
                 }}
+                className="animate-pulse-soft"
               >
                 <div
                   style={{
@@ -331,7 +315,7 @@ export default function ChatPage() {
                     animation: "pulse 1s infinite",
                   }}
                 ></div>
-                Ordenando tus ideas...
+                {isUploading ? "Subiendo archivo..." : "Ordenando tus ideas..."}
               </div>
             </div>
           )}
