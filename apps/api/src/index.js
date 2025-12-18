@@ -131,7 +131,7 @@ try {
 // Serve everything in 'dist' (includes index.html, assets/*, favicon.ico)
 app.use(express.static(frontendPath));
 
-// 2. Asset 404 Handling
+// 2. Asset 404 Handling (Fixed for Express 5 regexp)
 // If a request for /assets/* wasn't handled by express.static above, it's missing.
 // Return 404 immediately to avoid falling through to SPA fallback (which causes MIME type errors)
 app.use("/assets", (req, res) => {
