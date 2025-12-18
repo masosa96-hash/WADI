@@ -177,7 +177,7 @@ app.get("/system/debug-files", (req, res) => {
 
 // 4. SPA fallback (Catch-all)
 // Any request not handled by previous routes (assets, api, system) serves index.html
-app.get("*", (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
