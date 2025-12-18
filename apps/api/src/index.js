@@ -130,9 +130,19 @@ app.get("/system/debug-files", (req, res) => {
 // PRIORITY 1: Assets (Explicit & No-Cache for Stability)
 // --------------------------------------------------
 // --------------------------------------------------
-// PRIORITY 1: Static Files (Serve entire dist)
+// PRIORITY 1: Assets (Explicit & No-Cache for Stability)
 // --------------------------------------------------
-app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+app.use(
+  "/assets",
+  express.static(path.join(__dirname, "../../frontend/dist/assets"), {
+    fallthrough: false, // Force 404 if asset missing
+    etag: false,
+    lastModified: false,
+    setHeaders: (res) => {
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    },
+  })
+);
 
 app.use("/api", rateLimiter); // Only rate limit API
 
