@@ -134,6 +134,7 @@ app.use(
   express.static(path.join(__dirname, "../../frontend/dist/assets"), {
     etag: false,
     lastModified: false,
+    fallthrough: false,
     setHeaders: (res) => {
       // Force freshness for assets to prevent MIME mismatches
       res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
