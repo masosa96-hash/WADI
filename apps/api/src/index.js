@@ -129,23 +129,10 @@ app.get("/system/debug-files", (req, res) => {
 // --------------------------------------------------
 // PRIORITY 1: Assets (Explicit & No-Cache for Stability)
 // --------------------------------------------------
-app.use(
-  "/assets",
-  (req, res, next) => {
-    // Log asset request for debugging priority
-    // console.log("🚑 Asset middleware hit:", req.url);
-    next();
-  },
-  express.static(path.join(__dirname, "../../frontend/dist/assets"), {
-    etag: false,
-    lastModified: false,
-    fallthrough: false,
-    setHeaders: (res) => {
-      // Force freshness for assets to prevent MIME mismatches
-      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-    },
-  })
-);
+// --------------------------------------------------
+// PRIORITY 1: Static Files (Serve entire dist)
+// --------------------------------------------------
+app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 
 app.use("/api", rateLimiter); // Only rate limit API
 
@@ -155,9 +142,6 @@ app.use("/api", rateLimiter); // Only rate limit API
 app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
 
 // --------------------------------------------------
-// STATIC FRONTEND (WADI MAIN UI) - ROOT & OTHERS
-// --------------------------------------------------
-
 // Debug: Log directory contents on startup to verify build on Render
 try {
   console.log("----- DEBUG FILES START -----");
@@ -181,38 +165,15 @@ try {
   console.error("Debug Log Error:", err);
 }
 
-// 2. Serve remaining static files (index.html, favicon, etc.)
-app.use(
-  express.static(frontendPath, {
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith("index.html")) {
-        res.setHeader(
-          "Cache-Control",
-          "no-store, no-cache, must-revalidate, proxy-revalidate"
-        );
-        res.setHeader("Pragma", "no-cache");
-        res.setHeader("Expires", "0");
-      }
-    },
-  })
-);
-
-// Debug: Log missing assets (if not caught by explicit route above)
-app.use("/assets", (req, res, next) => {
-  console.log(`❌ Missing Asset Requested: ${req.url}`);
-  console.log(`   - Looked in: ${path.join(frontendPath, "assets", req.url)}`);
-  res.status(404).send("Asset not found");
-});
-
 // 3. API
 app.use("/api", routes);
 app.use("/api/kivo", kivoRoutes);
 app.use("/system", monitoringRoutes);
 
 // 4. SPA fallback (Catch-all)
-// Any request not handled by previous routes (assets, api, system) serves index.html
+// Any request not handled by previous routes serves index.html
 app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
+  res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
 });
 
 // Error Handler
