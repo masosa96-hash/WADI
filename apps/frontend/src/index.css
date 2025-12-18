@@ -18,6 +18,10 @@
   button:hover {
     @apply bg-wadi-tension text-black;
   }
+
+  #root {
+    @apply min-h-screen h-screen flex flex-col overflow-hidden;
+  }
 }
 
 @layer components {
