@@ -34,8 +34,14 @@ const asyncHandler = (fn) => (req, res, next) => {
 // Helper: Format messages for AI context
 const formatContext = (messages) => {
   if (!messages || messages.length === 0) return "";
-  // Take last 10 messages
-  const recent = messages.slice(-10);
+
+  const validRoles = ["user", "assistant", "system"];
+
+  // Filter valid messages and take last 10
+  const recent = messages
+    .filter((m) => m && m.content && validRoles.includes(m.role))
+    .slice(-10);
+
   return recent
     .map(
       (m) =>
@@ -432,7 +438,12 @@ router.post(
         explainLevel: safeLevel,
       });
     } catch (e) {
-      throw new ModelError(e.message);
+      console.error("[CRITICAL API ERROR]:", e);
+      // Return JSON directly to prevent HTML fallback
+      res.status(500).json({
+        error: "ERROR DE SISTEMA - FRICCIÓN CRÍTICA",
+        details: e.message,
+      });
     }
   })
 );
