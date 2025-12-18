@@ -121,7 +121,7 @@ export default function ChatPage() {
           playAlertSound();
           // Timeout cleans render cycle
           setTimeout(() => setIsFlashing(true), 0);
-          setTimeout(() => setIsFlashing(false), 800);
+          setTimeout(() => setIsFlashing(false), 200);
         } else if (
           text.includes("Analizar inconsistencias") ||
           text.includes("Diagnóstico")
@@ -168,9 +168,9 @@ export default function ChatPage() {
           backgroundColor: "var(--color-bg)",
           borderRadius: "var(--radius-lg)",
           overflow: "hidden",
-          border: isFlashing ? "4px solid #ff00ff" : "1px solid transparent",
+          border: isFlashing ? "4px solid #ff073a" : "1px solid transparent", // Neon Red
           boxShadow: isFlashing
-            ? "0 0 20px #ff00ff, inset 0 0 20px #ff00ff"
+            ? "0 0 20px #ff073a, inset 0 0 20px #ff073a"
             : "none",
           transition: "all 0.1s ease-in-out",
         }}

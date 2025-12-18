@@ -127,12 +127,17 @@ app.get("/system/debug-files", (req, res) => {
 });
 
 // --------------------------------------------------
-// PRIORITY 1: API & System Routes (Must come before static)
+// PRIORITY 1: API & System Routes (MOVED TO TOP)
 // --------------------------------------------------
 app.use("/api", rateLimiter);
-app.use("/api", routes);
-app.use("/api/kivo", kivoRoutes);
+app.use("/api", routes); // Main API
+app.use("/api/kivo", kivoRoutes); // Legacy/Module
 app.use("/system", monitoringRoutes);
+
+// Explicit 404 for API to prevent falling through to SPA
+app.all("/api/*", (req, res) => {
+  res.status(404).json({ error: "API_ROUTE_NOT_FOUND" });
+});
 
 // --------------------------------------------------
 // PRIORITY 2: Assets (Explicit & No-Cache for Stability)
