@@ -134,7 +134,7 @@ app.use(express.static(frontendPath));
 // 2. Asset 404 Handling
 // If a request for /assets/* wasn't handled by express.static above, it's missing.
 // Return 404 immediately to avoid falling through to SPA fallback (which causes MIME type errors)
-app.use("/assets/*", (req, res) => {
+app.use("/assets", (req, res) => {
   res.status(404).send("Asset not found");
 });
 
