@@ -7,7 +7,10 @@ export function useScouter() {
   const getAudioContext = () => {
     if (!audioContextRef.current) {
       // Use standard AudioContext (Safari requires webkit prefix but modern React/Vite targets modern browsers mostly; keep simple)
-      const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+      const Win = window as unknown as Window & {
+        webkitAudioContext?: typeof AudioContext;
+      };
+      const Ctx = window.AudioContext || Win.webkitAudioContext;
       if (Ctx) {
         audioContextRef.current = new Ctx();
       }
