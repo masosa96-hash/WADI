@@ -94,6 +94,37 @@ app.use(
 );
 app.use(express.json());
 app.use(requestLogger);
+
+// TOP PRIORITY DEBUG ROUTE
+app.get("/system/debug-files", (req, res) => {
+  try {
+    const assetsPath = path.join(frontendPath, "assets");
+
+    const rootContents = fs.existsSync(frontendPath)
+      ? fs.readdirSync(frontendPath)
+      : "FRONTEND_DIR_NOT_FOUND";
+
+    const assetsContents = fs.existsSync(assetsPath)
+      ? fs.readdirSync(assetsPath)
+      : "ASSETS_DIR_NOT_FOUND";
+
+    res.json({
+      frontendPath,
+      cwd: process.cwd(),
+      rootContents,
+      assetsContents,
+      timestamp: Date.now(),
+      version: "1.0.1", // Bump version to verify deploy
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+      stack: err.stack,
+      frontendPath,
+    });
+  }
+});
+
 app.use("/api", rateLimiter); // Only rate limit API
 
 // --------------------------------------------------
