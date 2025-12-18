@@ -131,6 +131,11 @@ app.get("/system/debug-files", (req, res) => {
 // --------------------------------------------------
 app.use(
   "/assets",
+  (req, res, next) => {
+    // Log asset request for debugging priority
+    // console.log("🚑 Asset middleware hit:", req.url);
+    next();
+  },
   express.static(path.join(__dirname, "../../frontend/dist/assets"), {
     etag: false,
     lastModified: false,
