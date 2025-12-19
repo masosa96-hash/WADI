@@ -134,6 +134,49 @@ router.get(
   })
 );
 
+// 1.7 Delete Conversation
+router.delete(
+  "/conversations/:id",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+
+    // Check ownership
+    const { count, error: checkError } = await supabase
+      .from("conversations")
+      .select("*", { count: "exact", head: true })
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (checkError || count === 0) {
+      throw new AuthError("Conversation not found or access denied", 404);
+    }
+
+    // Delete (Cascade should handle messages if configured, but let's be safe)
+    // If cascade is NOT set in DB, we'd need to delete messages first.
+    // User mentioned: "If deletion fails due to FK, generate SQL".
+    // We will try to delete conversation directly.
+
+    const { error: delError } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", id);
+
+    if (delError) {
+      // Fallback: Delete messages first
+      await supabase.from("messages").delete().eq("conversation_id", id);
+      const { error: retryError } = await supabase
+        .from("conversations")
+        .delete()
+        .eq("id", id);
+      if (retryError) throw new AppError("DB_ERROR", retryError.message);
+    }
+
+    res.json({ success: true, message: "Conversation deleted" });
+  })
+);
+
 // 2. Send Message (Persistent)
 // Helper: Process attachments for OpenAI
 // Helper: Process attachments for OpenAI

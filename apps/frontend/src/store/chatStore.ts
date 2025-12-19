@@ -359,10 +359,12 @@ export const useChatStore = create<ChatState>()(
       deleteConversation: async (id: string) => {
         try {
           const token = await getToken();
-          await fetch(`${API_URL}/api/conversations/${id}`, {
+          const res = await fetch(`${API_URL}/api/conversations/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
           });
+
+          if (!res.ok) throw new Error("Delete failed");
 
           set((state) => {
             const nextConversations = state.conversations.filter(

@@ -37,7 +37,8 @@ export function generateSystemPrompt(
   sessionPrefs = {},
   mood = "hostile",
   isMobile = false,
-  messageCount = 0
+  messageCount = 0,
+  pastFailures = []
 ) {
   const baseRules = `
 SI NO HAY PROBLEMA REAL:
@@ -105,8 +106,22 @@ CRITERIO DE CIERRE (LÍMITES DE SESIÓN):
 
   const greetingLogic =
     messageCount === 0
-      ? `INICIO (SALUDO PERMITIDO): Si este es el primer mensaje, podés usar tu saludo de marca: "Volviste. El desorden sigue donde lo dejaste." (O variaciones irónicas). Solo esta vez.`
+      ? `INICIO (SALUDO PERMITIDO): Si este es el primer mensaje, podés usar tu saludo de marca: "Volviste. El desorden sigue donde lo dejaste." (O variaciones irónicas). Solo esta vez.` +
+        (pastFailures.length > 0
+          ? `\n[ANTECEDENTE ACTIVO]: Veo que en tu historial tenés: "${pastFailures[0]}". ¿Vas a repetir el mismo error acá?`
+          : "")
       : `HISTORIAL ACTIVO (SALUDO PROHIBIDO): Ya estamos hablando (Llevamos ${messageCount} mensajes). NO saludes de nuevo. NO digas "Volviste". NO digas "Hola". Andá directo a la yugular del problema. Si el usuario saluda de nuevo, ignoralo o burlate de su amnesia.`;
+
+  let failureHistoryParams = "";
+  if (pastFailures && pastFailures.length > 0) {
+    failureHistoryParams = `
+[HISTORIAL_DE_FRACASOS_RECIENTES (MEMORIA A LARGO PLAZO)]:
+El usuario tiene antecedentes negativos detectados en auditorías previas.
+Si detectás patrones similares, SEÑALALOS.
+Vulnerabilidades previas:
+${pastFailures.map((f) => `- ${f}`).join("\n")}
+`;
+  }
 
   const focusVerifier = `
 VERIFICADOR DE FOCO (Mental Function):
@@ -204,6 +219,8 @@ ${modeInstruction}
 ${moodInstruction}
 
 ${fileAnalysisProtocol}
+
+${failureHistoryParams}
 
 CONTEXTO ACTUAL:
 ${sessionContext ? `Historial reciente (Resumen):\n${sessionContext}` : "Inicio de conversación."}
