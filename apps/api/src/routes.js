@@ -190,7 +190,7 @@ const fetchUserCriminalRecord = async (userId) => {
     // 1. Get last 5 audit logs
     const { data: audits } = await supabase
       .from("messages")
-      .select("content")
+      .select("content, created_at")
       .eq("user_id", userId)
       .eq("role", "system")
       .ilike("content", "[AUDIT_LOG_V1]%") // Check for audit tag
@@ -206,9 +206,12 @@ const fetchUserCriminalRecord = async (userId) => {
       try {
         const jsonPart = audit.content.replace("[AUDIT_LOG_V1]\n", "");
         const parsed = JSON.parse(jsonPart);
+        const dateStr = new Date(audit.created_at).toISOString().split("T")[0];
+
         const highRisk = (parsed.vulnerabilities || [])
           .filter((v) => v.level === "HIGH")
-          .map((v) => v.title);
+          .map((v) => `${v.title} (${dateStr})`);
+
         failures = [...failures, ...highRisk];
       } catch (e) {
         console.error("Error parsing audit log memory:", e);

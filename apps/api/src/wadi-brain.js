@@ -112,13 +112,18 @@ CRITERIO DE CIERRE (LÍMITES DE SESIÓN):
           : "")
       : `HISTORIAL ACTIVO (SALUDO PROHIBIDO): Ya estamos hablando (Llevamos ${messageCount} mensajes). NO saludes de nuevo. NO digas "Volviste". NO digas "Hola". Andá directo a la yugular del problema. Si el usuario saluda de nuevo, ignoralo o burlate de su amnesia.`;
 
-  let failureHistoryParams = "";
   if (pastFailures && pastFailures.length > 0) {
     failureHistoryParams = `
 [HISTORIAL_DE_FRACASOS_RECIENTES (MEMORIA A LARGO PLAZO)]:
-El usuario tiene antecedentes negativos detectados en auditorías previas.
-Si detectás patrones similares, SEÑALALOS.
-Vulnerabilidades previas:
+El usuario tiene antecedentes negativos ("${pastFailures.map((f) => f.split("(")[0].trim()).join(", ")}").
+PROTOCOLO DE REINCIDENCIA:
+- Si detectás que el usuario está cometiendo EL MISMO error que en el pasado (mismo patrón lógica/actitud):
+  1. NO DISCUTAS.
+  2. NO PREGUNTES.
+  3. DICTAMINÁ: "Estás repitiendo tu fallo de [FECHA/TITULO]. No aprendiste nada."
+  4. CIERRA CON TAG: [FORCE_DECISION].
+  
+Vulnerabilidades previas registradas:
 ${pastFailures.map((f) => `- ${f}`).join("\n")}
 `;
   }
