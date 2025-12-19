@@ -19,7 +19,8 @@ if (
   apiUrl = "";
 }
 
-const API_URL = apiUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+// Make API_URL exported so components can reuse it
+export const API_URL = apiUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
 
 // New Type Definition
 export interface Attachment {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { openai, AI_MODEL } from "./openai.js";
-import { generateSystemPrompt } from "./wadi-brain.js";
+import { generateSystemPrompt, generateAuditPrompt } from "./wadi-brain.js";
 import { supabase } from "./supabase.js";
 import { AppError, AuthError, ModelError } from "./core/errors.js";
 import {
@@ -178,6 +178,75 @@ const processAttachments = async (message, attachments) => {
 };
 
 // ... (Inside the endpoints, replace the logic)
+
+// 1.8 Audit Conversation (NEW)
+router.get(
+  "/conversations/:id/audit",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+    const { id } = req.params;
+
+    // 1. Fetch entire conversation history from DB
+    const { data: messages, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", id)
+      .order("created_at", { ascending: true }); // We need chronological order for audit
+
+    if (error) throw new AppError("DB_ERROR", error.message);
+    if (!messages || messages.length === 0) {
+      return res.json({
+        vulnerabilities: [
+          {
+            level: "HIGH",
+            title: "SILENCIO PREOCUPANTE",
+            description:
+              "No hay historial para auditar. El vacío es el mayor riesgo.",
+          },
+        ],
+      });
+    }
+
+    // 2. Format Context for LLM
+    const context = formatContext(messages);
+
+    // 3. Call LLM
+    const systemPrompt = generateAuditPrompt();
+
+    try {
+      const completion = await openai.chat.completions.create({
+        model: AI_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: `AUDIT THIS CONVERSATION HISTORY:\n---\n${context}\n---`,
+          },
+        ],
+        temperature: 0.5,
+        response_format: { type: "json_object" },
+      });
+
+      const outputContent = completion.choices[0].message.content;
+      let vulnerabilities = [];
+      try {
+        const parsed = JSON.parse(outputContent);
+        if (Array.isArray(parsed)) vulnerabilities = parsed;
+        else if (parsed.vulnerabilities)
+          vulnerabilities = parsed.vulnerabilities; // Common wrapper
+        else vulnerabilities = [];
+      } catch (e) {
+        console.error("Failed to parse Audit JSON", e);
+        throw new ModelError("AI Audit returned invalid JSON");
+      }
+
+      res.json({ vulnerabilities });
+    } catch (err) {
+      throw new ModelError(String(err));
+    }
+  })
+);
 
 // 2. Send Message (Persistent)
 router.post(
