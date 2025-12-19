@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import ChatPage from "./pages/ChatPage";
+import { AuditReport } from "./components/auditor/AuditReport";
 
 import IntroWadi from "./pages/IntroWadi";
 import TermsPage from "./pages/TermsPage";
@@ -59,6 +60,14 @@ export const router = createBrowserRouter([
     element: (
       <AuthLoader>
         <ChatPage />
+      </AuthLoader>
+    ),
+  },
+  {
+    path: "/chat/:conversationId/audit",
+    element: (
+      <AuthLoader>
+        <AuditReport />
       </AuthLoader>
     ),
   },

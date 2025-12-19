@@ -1,3 +1,4 @@
+import { FileText } from "lucide-react";
 import type { HTMLAttributes } from "react";
 
 interface LogItemProps extends HTMLAttributes<HTMLDivElement> {
@@ -5,6 +6,7 @@ interface LogItemProps extends HTMLAttributes<HTMLDivElement> {
   title: string;
   isActive?: boolean;
   onDelete?: (e: React.MouseEvent) => void;
+  onReport?: (e: React.MouseEvent) => void;
 }
 
 export function LogItem({
@@ -12,6 +14,7 @@ export function LogItem({
   title,
   isActive,
   onDelete,
+  onReport,
   onClick,
   className,
 }: LogItemProps) {
@@ -36,6 +39,16 @@ export function LogItem({
           {title}
         </span>
       </div>
+
+      {onReport && (
+        <button
+          onClick={onReport}
+          className="absolute right-8 opacity-0 group-hover:opacity-100 hover:text-[var(--wadi-primary)] transition-opacity mr-2"
+          title="Audit Report"
+        >
+          <FileText size={14} />
+        </button>
+      )}
 
       {onDelete && (
         <button

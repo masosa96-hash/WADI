@@ -4,6 +4,7 @@ import { useChatStore } from "../store/chatStore";
 import { useEffect } from "react";
 import { Button } from "./ui/Button";
 import { LogItem } from "./ui/LogItem";
+import { useScouter } from "../hooks/useScouter";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -42,6 +43,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     onClose?.();
     setSidebarOpen(false);
   };
+
+  const { playScanSound } = useScouter();
+
+  const handleReport = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    playScanSound();
+    // Navigate to Audit View (mocked as a route for now, but UI asks for it)
+    navigate(`/chat/${id}/audit`);
+    onClose?.();
+  };
+
+  // ... existing handleDelete ...
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -101,6 +114,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 title={c.title || "REGISTRO_SIN_TITULO"}
                 isActive={isActive}
                 onClick={() => handleHistoryClick(c.id)}
+                onReport={(e) => handleReport(e, c.id)}
                 onDelete={(e) => handleDelete(e, c.id)}
               />
             );
