@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { useChatStore, type Attachment } from "../../store/chatStore";
+import { type Attachment } from "../../store/chatStore";
 import { Button } from "./Button";
+import { useScouter } from "../../hooks/useScouter";
 
 interface TerminalInputProps {
   onSendMessage: (text: string, attachments: Attachment[]) => Promise<void>;
@@ -23,11 +24,13 @@ export function TerminalInput({
   isLoading,
   isDecisionBlocked = false,
 }: TerminalInputProps) {
-  const { uploadFile, isUploading } = useChatStore();
   const [input, setInput] = useState("");
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  // Local state for selected files (not yet uploaded/processed)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { playScanSound } = useScouter();
 
   // Dynamic Placeholder Logic
   const [placeholder, setPlaceholder] = useState(PLACEHOLDERS_NORMAL[0]);
@@ -46,24 +49,69 @@ export function TerminalInput({
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if ((!input.trim() && attachments.length === 0) || isLoading || isUploading)
-      return;
+    if ((!input.trim() && !selectedFile) || isLoading) return;
 
-    await onSendMessage(input, attachments);
+    let finalPrompt = input;
+    const finalAttachments: Attachment[] = [];
+
+    // Process "Evidence"
+    if (selectedFile) {
+      const isText =
+        selectedFile.type.startsWith("text/") ||
+        selectedFile.name.endsWith(".md") ||
+        selectedFile.name.endsWith(".csv") ||
+        selectedFile.name.endsWith(".json");
+
+      // Note: PDF natively cannot be read as text without libraries.
+      // We will treat PDF as a base64 attachment (Standard behaviour).
+
+      if (isText) {
+        try {
+          const textContent = await selectedFile.text();
+          finalPrompt += `\n\n[CONTENIDO_EVIDENCIA_ADJUNTA]\n[ARCHIVO: ${selectedFile.name}]\n---\n${textContent}\n---`;
+        } catch (err) {
+          console.error("Error reading text file", err);
+          finalPrompt += `\n\n[ERROR_LEYENDO_EVIDENCIA: ${selectedFile.name}]`;
+        }
+      } else {
+        // Convert Image/PDF/Other to Base64 DataURI for attachment
+        try {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(selectedFile);
+          });
+
+          finalAttachments.push({
+            url: base64, // DataURI
+            name: selectedFile.name,
+            type: selectedFile.type,
+          });
+        } catch (err) {
+          console.error("Error converting file to base64", err);
+        }
+      }
+    }
+
+    await onSendMessage(finalPrompt, finalAttachments);
+
+    // Clear State
     setInput("");
-    setAttachments([]);
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    try {
-      const attachment = await uploadFile(file);
-      if (attachment) setAttachments((prev) => [...prev, attachment]);
-    } catch (err) {
-      console.error(err);
-    }
-    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    // Scouter Feedback
+    playScanSound();
+
+    setSelectedFile(file);
+    // Reset input value to allow re-selecting same file if needed (after clear) is handled by state logic usually,
+    // but good practice to clear ref if we want to ensure change event fires again if cleared.
   };
 
   return (
@@ -71,31 +119,25 @@ export function TerminalInput({
       onSubmit={handleSend}
       className="w-full max-w-4xl mx-auto flex flex-col gap-2 relative"
     >
-      {/* Attachments Preview - Minimalist Chips */}
-      {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2 px-2">
-          {attachments.map((att, i) => (
-            <div
-              key={i}
-              className="bg-[var(--wadi-surface)] border border-[var(--wadi-border)] px-2 py-1 text-xs text-[var(--wadi-text-muted)] font-mono-wadi flex items-center gap-2"
+      {/* Evidence Preview Badge */}
+      {selectedFile && (
+        <div className="px-2">
+          <div className="inline-flex items-center gap-3 bg-[var(--wadi-surface)] border border-[var(--wadi-primary)] px-3 py-1.5 shadow-[0_0_10px_rgba(139,92,246,0.2)] animate-in slide-in-from-bottom-2 fade-in duration-300">
+            <span className="text-[var(--wadi-primary)] font-mono-wadi text-xs tracking-wider uppercase flex items-center gap-2">
+              <span className="w-2 h-2 bg-[var(--wadi-primary)] animate-pulse rounded-full"></span>
+              [EVIDENCIA_CARGADA: {selectedFile.name}]
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFile(null);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+              className="text-[var(--wadi-text-muted)] hover:text-[var(--wadi-alert)] ml-2 transition-colors font-bold"
             >
-              <span>
-                FILE:{" "}
-                {att.name.length > 15
-                  ? att.name.substring(0, 12) + "..."
-                  : att.name}
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setAttachments((prev) => prev.filter((a) => a !== att))
-                }
-                className="hover:text-[var(--wadi-alert)]"
-              >
-                ×
-              </button>
-            </div>
-          ))}
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
@@ -104,8 +146,8 @@ export function TerminalInput({
           type="file"
           ref={fileInputRef}
           className="hidden"
-          onChange={handleFileUpload}
-          accept="image/*,.txt,.md,.pdf,.csv"
+          onChange={handleFileSelect}
+          accept="image/*,.txt,.md,.pdf,.csv,.json"
         />
 
         {/* CLIP BUTTON */}
@@ -115,9 +157,19 @@ export function TerminalInput({
           size="icon"
           className="rounded-none text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] mb-1"
           onClick={() => fileInputRef.current?.click()}
-          disabled={isLoading || isUploading}
+          disabled={isLoading}
         >
-          <span className="text-xl">+</span>
+          {/* Simple Plus Icon */}
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
         </Button>
 
         {/* TEXT INPUT */}
@@ -127,16 +179,22 @@ export function TerminalInput({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={placeholder}
-            disabled={isLoading || isUploading}
+            disabled={isLoading}
             className={`
-                            w-full bg-transparent border-b text-base py-2 px-2 font-mono-wadi focus:outline-none transition-all
-                            ${
-                              isDecisionBlocked
-                                ? "border-[var(--wadi-alert)] text-[var(--wadi-alert)] placeholder:text-[var(--wadi-alert)]/50"
-                                : "border-[var(--wadi-border)] text-[var(--wadi-text)] placeholder:text-[var(--wadi-text-muted)] focus:border-[var(--wadi-primary)]"
-                            }
-                        `}
+                w-full bg-transparent border-b text-base py-2 px-2 font-mono-wadi focus:outline-none transition-all
+                ${
+                  isDecisionBlocked
+                    ? "border-[var(--wadi-alert)] text-[var(--wadi-alert)] placeholder:text-[var(--wadi-alert)]/50"
+                    : "border-[var(--wadi-border)] text-[var(--wadi-text)] placeholder:text-[var(--wadi-text-muted)] focus:border-[var(--wadi-primary)]"
+                }
+            `}
             autoComplete="off"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
           />
           {isLoading && (
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -151,7 +209,7 @@ export function TerminalInput({
         <Button
           type="submit"
           variant="ghost"
-          disabled={!input.trim() && attachments.length === 0}
+          disabled={(!input.trim() && !selectedFile) || isLoading}
           className="rounded-none text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)] hover:text-white mb-1 px-4 font-mono-wadi"
         >
           EXE
