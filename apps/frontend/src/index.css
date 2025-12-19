@@ -1,4 +1,30 @@
-@tailwind base;
+Instrucción para Antigravity:
+
+1. Habilitación de Edición Online (GitHub):
+
+Configurá el archivo .devcontainer/devcontainer.json en la raíz del proyecto.
+
+Propósito: Esto permitirá que, al entrar a GitHub, el usuario pueda abrir un "Codespace" (un VS Code en el navegador) con todas las extensiones y dependencias (pnpm, node) ya preinstaladas.
+
+2. Conectividad Segura (Servidor):
+
+Asegurá que el puerto 10000 esté correctamente mapeado en las variables de entorno para que el Shell de Render siempre tenga una terminal receptiva.
+
+Implementá un log de auditoría más detallado en la consola del servidor para que, al ver los logs desde cualquier dispositivo, se entienda exactamente qué está procesando el "Cerebro".
+
+3. Blindaje de Persistencia (Supabase):
+
+Creá el script de migración para la tabla audit_logs que mencionamos.
+
+Columnas: id (uuid), timestamp, error_type, severity (Critical/Warning), y scouter_triggered (boolean).
+
+Esto permitirá monitorear el comportamiento de WADI directamente desde el panel de Supabase que el usuario ya tiene abierto.
+
+4. Parche Visual Final (PC):
+
+Reiterar el ajuste en apps/frontend/src/index.css: html, body { height: 100vh !important; width: 100vw !important; overflow: hidden !important; background: #0f111a; }
+
+Asegurar que el Sidebar use sticky o fixed para que no se desplace al interactuar con el chat en pantallas grandes.@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -10,8 +36,8 @@
     width: 100vw !important;
     margin: 0;
     padding: 0;
-    background-color: #0f111a; /* El color oscuro neón */
-    overflow: hidden; /* Evita scrolls dobles molestos */
+    background-color: #0f111a;
+    overflow: hidden !important;
   }
 
   body {
@@ -37,7 +63,7 @@
 
 @layer components {
   .sidebar-drawer {
-    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 lg:relative lg:translate-x-0 lg:border-r;
+    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0 lg:border-r;
   }
 
   .sidebar-drawer.open {

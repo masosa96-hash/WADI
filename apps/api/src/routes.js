@@ -403,12 +403,30 @@ router.post(
       const duration = Date.now() - startTime;
 
       console.log(
-        JSON.stringify({
-          type: "adi_chat_metric",
-          mode: safeMode,
-          explainLevel: safeLevel,
-          durationMs: duration,
-        })
+        JSON.stringify(
+          {
+            type: "ADI_CEREBRO_AUDIT",
+            timestamp: new Date().toISOString(),
+            userId: user.id || "anon",
+            workflow: {
+              mode: safeMode,
+              explainLevel: safeLevel,
+              topic: safeTopic,
+            },
+            performance: {
+              durationMs: duration,
+              completionTokens: completion.usage?.completion_tokens,
+              promptTokens: completion.usage?.prompt_tokens,
+            },
+            contentSample: {
+              input: message.substring(0, 50),
+              output: reply.substring(0, 50) + "...",
+            },
+            status: "SUCCESS",
+          },
+          null,
+          2
+        )
       );
 
       // E. Insert Assistant Message
