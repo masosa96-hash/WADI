@@ -135,7 +135,7 @@ app.use("/api/kivo", kivoRoutes); // Legacy/Module
 app.use("/system", monitoringRoutes);
 
 // Explicit 404 for API to prevent falling through to SPA
-app.all("/api/(.*)", (req, res) => {
+app.all("/api/:path*", (req, res) => {
   res.status(404).json({ error: "API_ROUTE_NOT_FOUND" });
 });
 
@@ -187,7 +187,7 @@ try {
 
 // 4. SPA fallback (Catch-all)
 // Any request not handled by previous routes serves index.html
-app.get(/.*/, (req, res) => {
+app.get("/:any*", (req, res) => {
   res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
 });
 
