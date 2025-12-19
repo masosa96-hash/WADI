@@ -51,6 +51,7 @@
   .mobile-only {
     @apply flex lg:hidden;
   }
+
   /* New Bubble Styles */
   .bubble-base {
     @apply max-w-[85%] lg:max-w-[75%] py-3 px-5 rounded-2xl text-[0.95rem] leading-relaxed shadow-sm;
