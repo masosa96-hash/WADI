@@ -115,13 +115,14 @@ export default function ChatPage() {
       if (!isMyMessage) {
         const text = lastMsg.content || "";
         const isChaotic = text.includes("[ALERTA DE CAOS DETECTADA]");
+        const isForcedDecision = text.includes("[FORCE_DECISION]");
         const isRejected = text.toLowerCase().includes("tostadora");
 
-        if (isChaotic || isRejected) {
+        if (isChaotic || isRejected || isForcedDecision) {
           playAlertSound();
           // Timeout cleans render cycle
           setTimeout(() => setIsFlashing(true), 0);
-          setTimeout(() => setIsFlashing(false), 200);
+          setTimeout(() => setIsFlashing(false), isForcedDecision ? 800 : 200); // Longer flash for forced decision
         } else if (
           text.includes("Analizar inconsistencias") ||
           text.includes("Diagnóstico")
