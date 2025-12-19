@@ -176,35 +176,22 @@ export default function ChatPage() {
         }}
       >
         {/* Header simple y fijo */}
-        <header
-          style={{
-            padding: "1rem",
-            borderBottom: "1px solid var(--color-border)",
-            background: "rgba(17, 24, 39, 0.95)", // More opaque for mobile
-            backdropFilter: "blur(16px)",
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ textAlign: "center" }}>
-            <h2
-              style={{
-                fontSize: "var(--text-lg)", // Slightly smaller for mobile
-                fontWeight: 700,
-                background: "var(--grad-main)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                margin: 0,
-              }}
-            >
-              WADI
+        <header className="p-4 border-b border-[var(--wadi-border)] bg-[var(--wadi-bg)]/95 backdrop-blur-md sticky top-0 z-10 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-lg font-bold font-mono-wadi bg-clip-text text-transparent bg-gradient-to-r from-[var(--wadi-primary)] to-white m-0">
+              WADI::AUDIT
             </h2>
           </div>
         </header>
+
+        {/* FORCE DECISION OVERLAY */}
+        {isFlashing && (
+          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center pointer-events-none transition-opacity duration-300">
+            <div className="text-[var(--wadi-alert)] font-mono-wadi text-2xl font-bold animate-pulse">
+              [DECISIÓN REQUERIDA]
+            </div>
+          </div>
+        )}
 
         {/* Messages */}
         <div
@@ -212,45 +199,33 @@ export default function ChatPage() {
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto px-4 py-8 md:p-8 flex flex-col gap-6 scroll-smooth"
         >
-          {/* Empty State */}
+          {/* Empty State - WADI OS */}
           {!hasStarted && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: "100%",
-                gap: "2rem",
-                marginTop: "-2rem",
-                textAlign: "center",
-                padding: "3rem 1rem",
-              }}
-            >
-              <h1
-                style={{
-                  fontSize: "1.5rem", // Mobile friendly
-                  fontWeight: "bold",
-                  color: "var(--color-text-main)",
-                  margin: 0,
-                }}
-              >
-                WADI no charla. Ordena.
-              </h1>
-              <p
-                style={{
-                  marginTop: "1rem",
-                  color: "var(--color-text-soft)",
-                  maxWidth: "28rem",
-                  fontSize: "1rem",
-                  lineHeight: "1.5",
-                }}
-              >
-                Decime directamente qué querés resolver. Si no hay objetivo, no
-                hay nada que pensar.
-              </p>
-              <div style={{ marginTop: "2rem", width: "100%" }}>
-                <WadiOnboarding mood={mood} />
+            <div className="flex flex-col items-center justify-center min-h-full gap-8 -mt-8 text-center px-4">
+              <div className="bg-[var(--wadi-surface)] border border-[var(--wadi-border)] p-8 rounded-sm shadow-2xl max-w-lg w-full relative overflow-hidden">
+                {/* Decorative Tech Lines */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--wadi-primary)] to-transparent opacity-50"></div>
+
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 font-['Outfit'] tracking-tight">
+                  WADI
+                </h1>
+                <div className="text-[var(--wadi-primary)] font-mono-wadi text-sm tracking-[0.2em] mb-6 uppercase">
+                  Sistema de Auditoría Operativo
+                </div>
+
+                <p className="text-[var(--wadi-text-muted)] text-lg mb-8 font-light">
+                  "Reportá tu caos. El tiempo es el único recurso que no podés
+                  recuperar."
+                </p>
+
+                <div className="w-full">
+                  {/* Using ChatInput directly as the trigger is cleaner, but for visual effect we can put a fake button here often. 
+                         However, WADI UX is about directness. Pointing to the input is better. 
+                         Let's just use the Onboarding comp formatted nicely. */}
+                  <div className="opacity-80 scale-95">
+                    <WadiOnboarding mood={mood} />
+                  </div>
+                </div>
               </div>
             </div>
           )}

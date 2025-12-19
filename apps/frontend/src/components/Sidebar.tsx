@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useChatStore } from "../store/chatStore";
 import { useEffect } from "react";
-import { Button } from "./common/Button";
+import { Button } from "./ui/Button";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -20,6 +20,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     loadConversation,
     resetChat,
     setSidebarOpen,
+    deleteConversation, 
   } = useChatStore();
 
   useEffect(() => {
@@ -30,7 +31,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleNewChat = () => {
     resetChat();
-    // Navigate to /chat to start fresh, or /chat/new if implementation requires
     navigate("/chat");
     onClose?.();
   };
@@ -38,153 +38,104 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const handleHistoryClick = (id: string) => {
     loadConversation(id);
     navigate(`/chat/${id}`);
-    onClose?.(); // Keep for robust fallback if needed
-    setSidebarOpen(false); // Force close on mobile via store
+    onClose?.(); 
+    setSidebarOpen(false); 
   };
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if(confirm("¿Eliminar evidencia permanentemente?")) {
+        await deleteConversation(id);
+        if(location.pathname.includes(id)) {
+            navigate("/chat");
+        }
+        fetchConversations();
+    }
+  }
 
   return (
     <aside
-      className={`sidebar-drawer ${isOpen ? "open" : ""} flex flex-col p-6 bg-[var(--color-surface)] border-r border-[var(--color-border)]`}
+      className={`sidebar-drawer ${isOpen ? "open" : ""} flex flex-col p-0 border-r border-[var(--wadi-border)] bg-[var(--wadi-bg)] w-[280px] h-full sm:w-[320px]`}
     >
+        {/* LOGO AREA */}
+        <div className="p-6 border-b border-[var(--wadi-border)] flex items-center gap-3">
+            <div className="w-3 h-3 bg-[var(--wadi-primary)] rounded-full animate-pulse-soft shadow-[0_0_10px_var(--wadi-primary)]"></div>
+            <h1 className="font-mono-wadi text-xl font-bold tracking-tight text-white select-none">
+                WADI <span className="text-[var(--wadi-text-muted)] text-xs font-normal align-top">OS v1.2</span>
+            </h1>
+        </div>
+
       {/* 1. Botón Nuevo Chat (Acción Global) */}
-      <div style={{ marginBottom: "2rem" }}>
+      <div className="p-4">
         <Button
-          fullWidth
           onClick={handleNewChat}
-          style={{
-            background: "var(--color-primary)",
-            color: "#FFFFFF",
-            fontWeight: 700,
-            justifyContent: "center",
-            padding: "0.8rem",
-            minHeight: "44px",
-            boxShadow: "var(--shadow-y2k)",
-          }}
+          variant="default"
+          className="w-full justify-start gap-2 font-mono-wadi tracking-widest text-xs"
         >
-          + Nuevo Chat
+          <span className="text-lg leading-none">+</span> INICIAR PROTOCOLO
         </Button>
       </div>
 
-      {/* Botón de Pánico: Limpiar Sesión (Solo si hay caos) */}
-      {useChatStore.getState().messages.length > 0 && (
-        <div style={{ marginBottom: "1rem" }}>
-          <Button
-            fullWidth
-            onClick={() => {
-              if (confirm("¿Seguro? Esto borra la memoria local de WADI.")) {
-                resetChat();
-                navigate("/chat");
-                onClose?.();
-              }
-            }}
-            style={{
-              background: "rgba(255, 60, 60, 0.1)",
-              color: "#ff4d4d",
-              border: "1px solid rgba(255, 60, 60, 0.3)",
-              fontSize: "0.8rem",
-            }}
-          >
-            🗑️ Limpiar Sesión
-          </Button>
-        </div>
-      )}
-
-      {/* 2. Historial de Conversaciones */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.5rem",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "0.75rem",
-            textTransform: "uppercase",
-            color: "var(--color-text-soft)",
-            marginBottom: "0.5rem",
-            letterSpacing: "0.05em",
-            fontWeight: 600,
-          }}
-        >
-          Historial
+      {/* 2. Historial de Conversaciones (LOGS) */}
+      <div className="flex-1 overflow-y-auto px-2 space-y-1">
+        <div className="px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-[var(--wadi-text-muted)] font-mono-wadi opacity-70">
+            Log de Evidencias
         </div>
 
         {conversations && conversations.length > 0 ? (
-          conversations.map((c) => (
+          conversations.map((c) => {
+            const isActive = location.pathname.includes(c.id);
+            // Format date YYYY-MM-DD
+            const date = c.updated_at ? new Date(c.updated_at).toISOString().split('T')[0] : 'UNKNOWN';
+            
+            return (
             <div
               key={c.id}
               onClick={() => handleHistoryClick(c.id)}
-              style={{
-                padding: "0.75rem 1rem",
-                minHeight: "44px",
-                display: "flex",
-                alignItems: "center",
-                borderRadius: "var(--radius-md)",
-                cursor: "pointer",
-                backgroundColor: location.pathname.includes(c.id)
-                  ? "var(--color-surface-soft)"
-                  : "transparent",
-                color: location.pathname.includes(c.id)
-                  ? "var(--color-text-main)"
-                  : "var(--color-text-soft)",
-                fontSize: "0.9rem",
-                transition: "all 0.2s",
-                fontWeight: location.pathname.includes(c.id) ? 600 : 400,
-              }}
+              className={`
+                group relative flex items-center justify-between
+                px-4 py-3 cursor-pointer transition-all duration-200
+                border-l-2
+                ${isActive 
+                    ? "bg-[var(--wadi-surface)] border-[var(--wadi-primary)] text-[var(--wadi-text)]" 
+                    : "border-transparent text-[var(--wadi-text-muted)] hover:bg-[var(--wadi-surface)] hover:text-[var(--wadi-text)] hover:border-[var(--wadi-border)]"
+                }
+              `}
             >
-              <span className="truncate w-full">{c.title || "Sin título"}</span>
+              <div className="flex flex-col gap-0.5 overflow-hidden font-mono-wadi">
+                <span className="text-[10px] opacity-60">[{date}]</span>
+                <span className="truncate text-xs font-medium w-full">{c.title || "REGISTRO_SIN_TITULO"}</span>
+              </div>
+              
+              {/* Delete Button (Hover Only) */}
+              <button 
+                onClick={(e) => handleDelete(e, c.id)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:text-[var(--wadi-alert)]"
+                title="Borrar Evidencia"
+              >
+                ✕
+              </button>
             </div>
-          ))
+          )})
         ) : (
-          <div
-            style={{
-              color: "var(--color-text-soft)",
-              fontSize: "0.85rem",
-              fontStyle: "italic",
-              opacity: 0.7,
-            }}
-          >
-            No hay charlas guardadas.
-          </div>
+            <div className="px-4 py-8 text-center text-[var(--wadi-text-muted)] text-xs font-mono-wadi border border-dashed border-[var(--wadi-border)] m-2 bg-[var(--wadi-surface)]/30">
+                [NO HAY REGISTROS]
+            </div>
         )}
       </div>
 
       {/* Footer Minimalista (Auth) */}
-      <div
-        style={{
-          marginTop: "auto",
-          paddingTop: "1rem",
-          borderTop: "1px solid var(--color-border)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ fontSize: "0.8rem", color: "var(--color-text-soft)" }}>
-          {user?.email}
+        <div className="p-4 border-t border-[var(--wadi-border)] bg-[var(--wadi-bg)]">
+            <div className="flex items-center justify-between text-xs text-[var(--wadi-text-muted)] font-mono-wadi">
+                <span className="truncate max-w-[150px]">{user?.email}</span>
+                <button
+                    onClick={() => signOut()}
+                    className="hover:text-[var(--wadi-alert)] transition-colors uppercase tracking-wider"
+                >
+                    [SALIR]
+                </button>
+            </div>
         </div>
-        <button
-          onClick={() => signOut()}
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "1.2rem",
-            opacity: 0.5,
-            minHeight: "44px",
-            minWidth: "44px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          title="Cerrar sesión"
-        >
-          ⏏️
-        </button>
-      </div>
     </aside>
   );
 }

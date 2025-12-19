@@ -1,57 +1,109 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;700;900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* WADI Y2K COLD PALETTE */
+  --wadi-bg: #050816; /* Midnight Blue */
+  --wadi-surface: #0a0f29; /* Deep Blue */
+  --wadi-border: #1e293b;
+  --wadi-text: #f8fafc;
+  --wadi-text-muted: #94a3b8;
+  --wadi-primary: #8b5cf6; /* Lavender */
+  --wadi-primary-glow: rgba(139, 92, 246, 0.4);
+  --wadi-alert: #ff003c; /* Crimson */
+  --wadi-alert-glow: rgba(255, 0, 60, 0.6);
+  --wadi-success: #10b981;
+
+  --glass-bg: rgba(5, 8, 22, 0.7);
+  --glass-border: rgba(139, 92, 246, 0.1);
+}
 
 @layer base {
   html,
   body,
   #root {
     height: 100vh !important;
-    height: 100dvh !important; /* Mobile viewport fix */
+    height: 100dvh !important;
     width: 100vw !important;
     margin: 0;
     padding: 0;
-    background-color: #0f111a;
+    background-color: var(--wadi-bg);
+    color: var(--wadi-text);
     overflow: hidden !important;
-    overscroll-behavior: none; /* Prevent rubber-banding */
+    font-family: "Outfit", sans-serif;
   }
 
-  body {
-    @apply bg-wadi-neutral text-wadi-bg font-sans;
-    -webkit-tap-highlight-color: transparent; /* Remove tap flash */
+  /* Auditor Font */
+  .font-mono-wadi {
+    font-family: "JetBrains Mono", monospace;
   }
 
-  #root {
-    @apply flex flex-col;
+  /* Animations */
+  @keyframes critical-error {
+    0% {
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.8;
+      background-color: rgba(255, 0, 60, 0.4);
+    }
+    100% {
+      opacity: 0;
+    }
   }
 
-  .dark body {
-    @apply bg-wadi-bg text-wadi-text;
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 10px var(--wadi-primary-glow);
+    }
+    50% {
+      opacity: 0.7;
+      box-shadow: 0 0 20px var(--wadi-primary-glow);
+    }
   }
 
-  button {
-    @apply transition duration-150 ease-in-out font-semibold;
+  .wadi-scouter-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    background: transparent;
   }
 
-  button:hover {
-    @apply bg-wadi-tension text-black;
-  }
-
-  /* Font size minimum for inputs to prevent zoom */
-  input,
-  textarea,
-  select {
-    font-size: 16px !important;
+  .wadi-scouter-alert.flashing {
+    animation: critical-error 0.8s ease-in-out forwards;
   }
 }
 
 @layer components {
+  /* WADI UI UTILITIES */
+  .wadi-glass {
+    @apply backdrop-blur-md bg-[rgba(10,15,41,0.6)] border border-[rgba(139,92,246,0.1)];
+  }
+
+  .wadi-button {
+    @apply relative overflow-hidden transition-all duration-200 uppercase tracking-widest text-xs font-bold font-mono-wadi
+    hover:shadow-[0_0_15px_var(--wadi-primary-glow)] hover:border-[var(--wadi-primary)];
+  }
+
+  .touch-target-min {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
   .sidebar-drawer {
-    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0 lg:border-r bg-[var(--color-bg)];
+    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0 bg-[var(--wadi-bg)] border-r border-[var(--wadi-border)];
   }
 
   .sidebar-drawer.open {
-    @apply translate-x-0 shadow-2xl lg:shadow-none;
+    @apply translate-x-0 shadow-2xl;
   }
 
   .sidebar-overlay {
@@ -68,31 +120,19 @@
   }
 
   .bubble-wadi {
-    @apply bubble-base bg-[var(--color-surface)] text-[var(--color-text-main)] border border-violet-500/20 shadow-[0_0_10px_rgba(124,58,237,0.1)];
+    @apply bubble-base bg-[var(--wadi-surface)] text-[var(--wadi-text)] border border-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.1)];
     border-top-left-radius: 4px;
+    font-family: "JetBrains Mono", monospace;
   }
 
   .bubble-user {
-    @apply bubble-base bg-[var(--color-primary)] text-white ml-auto border-none;
+    @apply bubble-base bg-[var(--wadi-primary)] text-white ml-auto border-none;
     border-top-right-radius: 4px;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-  }
-
-  .touch-target-min {
-    min-width: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
   }
 
   .animate-pulse-soft {
     animation: pulse-soft 2s infinite;
-  }
-
-  /* Scouter Mode - Full Screen Flash */
-  .scouter-alert {
-    animation: critical-error 0.5s ease-in-out infinite alternate;
   }
 }
 
