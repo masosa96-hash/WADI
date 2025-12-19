@@ -217,22 +217,33 @@ router.post(
     const safeTopic = topic || "general";
     const safeLevel = explainLevel || conversation.explain_level || "normal";
 
+    const historyCount = history ? history.length : 0;
     const systemPrompt = generateSystemPrompt(
       safeMode,
       safeTopic,
       safeLevel,
       contextSummary,
-      {}
+      {},
+      "hostile",
+      false,
+      historyCount
     );
 
     // Prepare User Content (String or Array)
     const userContent = await processAttachments(message, attachments);
+
+    // Filter valid history for OpenAI
+    const openAIHistory = (history || []).map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
 
     try {
       const completion = await openai.chat.completions.create({
         model: AI_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
+          ...openAIHistory,
           { role: "user", content: userContent },
         ],
       });
@@ -375,6 +386,7 @@ router.post(
     const safeMode = mode || conversation.mode || "normal";
     const safeTopic = topic || "general";
     const safeLevel = explainLevel || conversation.explain_level || "normal";
+    const historyCount = history ? history.length : 0;
 
     const systemPrompt = generateSystemPrompt(
       safeMode,
@@ -383,11 +395,18 @@ router.post(
       contextSummary,
       {},
       "hostile", // default mood for now if not passed, ideally should be derived
-      isMobile
+      isMobile,
+      historyCount
     );
 
     // Prepare User Content with Attachments
     const userContent = await processAttachments(message, attachments);
+
+    // Filter valid history for OpenAI
+    const openAIHistory = (history || []).map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
 
     const startTime = Date.now();
     try {
@@ -395,6 +414,7 @@ router.post(
         model: AI_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
+          ...openAIHistory,
           { role: "user", content: userContent },
         ],
       });
