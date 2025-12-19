@@ -23,6 +23,9 @@ export default function ChatPage() {
     conversationId: storeConversationId,
   } = useChatStore();
 
+  const [decisionBlockContent, setDecisionBlockContent] = useState<
+    string | null
+  >(null);
   const [isDecisionBlocked, setIsDecisionBlocked] = useState(false);
 
   // Load conversation on mount/param change
@@ -77,7 +80,9 @@ export default function ChatPage() {
       if (!isMyMessage) {
         const text = lastMsg.content || "";
         if (text.includes("[FORCE_DECISION]")) {
+          // eslint-disable-next-line react-hooks/exhaustive-deps
           setIsDecisionBlocked(true);
+          setDecisionBlockContent(text);
         } else {
           // If WADI continues without the tag, we assume normal flow.
           // Ideally we untoggle when user replies.
@@ -85,6 +90,7 @@ export default function ChatPage() {
       } else {
         // If I just sent a message, unblock
         setIsDecisionBlocked(false);
+        setDecisionBlockContent(null);
       }
     }
     prevMessagesLength.current = newCount;
@@ -103,7 +109,9 @@ export default function ChatPage() {
     <Layout>
       {/* ATOMIC COMPONENTS */}
       <Scouter />
-      {isDecisionBlocked && <DecisionWall />}
+      {isDecisionBlocked && (
+        <DecisionWall messageContent={decisionBlockContent || undefined} />
+      )}
 
       <div className="flex flex-col h-full max-w-[1000px] mx-auto relative bg-[var(--wadi-bg)] overflow-hidden">
         <AuditorHeader />
@@ -152,15 +160,11 @@ export default function ChatPage() {
 
               <div className="space-y-4 max-w-md">
                 <h1 className="text-4xl font-bold font-['Outfit'] tracking-tight text-white mb-0">
-                  WADI{" "}
-                  <span className="opacity-50 font-mono-wadi text-lg">
-                    ::OS
-                  </span>
+                  WADI
                 </h1>
                 <div className="h-px w-24 bg-gradient-to-r from-transparent via-[var(--wadi-primary)] to-transparent mx-auto"></div>
-                <p className="text-[var(--wadi-text-muted)] text-lg font-light leading-relaxed">
-                  "Reportá tu caos. El tiempo es el único recurso que no podés
-                  recuperar."
+                <p className="text-[var(--wadi-primary)] font-mono-wadi text-sm tracking-[0.2em] uppercase">
+                  AUDITORÍA DE CAOS ACTIVA
                 </p>
               </div>
 
@@ -168,7 +172,7 @@ export default function ChatPage() {
                 onClick={() => document.querySelector("input")?.focus()}
                 className="mt-8 px-8 py-3 bg-[var(--wadi-surface)] border border-[var(--wadi-primary)]/30 text-[var(--wadi-primary)] font-mono-wadi text-xs tracking-[0.2em] hover:bg-[var(--wadi-primary)] hover:text-white transition-all duration-300 uppercase shadow-[0_0_20px_rgba(139,92,246,0.1)] hover:shadow-[0_0_30px_rgba(139,92,246,0.4)]"
               >
-                [ABRIR CANAL DE AUDITORÍA]
+                [ABRIR CANAL]
               </button>
             </div>
           )}
