@@ -181,43 +181,46 @@ router.delete(
 // Helper: Process attachments for OpenAI
 // Helper: Process attachments for OpenAI
 const processAttachments = async (message, attachments) => {
-  if (!attachments || attachments.length === 0) {
-    return message; // Return string if no attachments
-  }
+  // ... (existing logic)
+};
 
-  const content = [{ type: "text", text: message }];
+// Helper: Fetch Past Failures (Long Term Memory)
+const fetchUserCriminalRecord = async (userId) => {
+  try {
+    // 1. Get last 5 audit logs
+    const { data: audits } = await supabase
+      .from("messages")
+      .select("content")
+      .eq("user_id", userId)
+      .eq("role", "system")
+      .ilike("content", "[AUDIT_LOG_V1]%") // Check for audit tag
+      .order("created_at", { ascending: false })
+      .limit(3);
 
-  for (const att of attachments) {
-    // Handle both object and string (legacy/robustness)
-    const url = typeof att === "string" ? att : att.url;
+    if (!audits || audits.length === 0) return [];
 
-    // Basic extension check
-    const lowerUrl = url.toLowerCase();
-    const isImage = /\.(jpg|jpeg|png|gif|webp)$/.test(lowerUrl);
-    const isText = /\.(txt|md|csv|json|js|ts|py)$/.test(lowerUrl);
+    let failures = [];
 
-    if (isImage) {
-      content.push({
-        type: "image_url",
-        image_url: { url: url },
-      });
-    } else if (isText) {
+    // 2. Extract HIGH vulnerabilities
+    for (const audit of audits) {
       try {
-        const response = await fetch(url);
-        if (response.ok) {
-          const textData = await response.text();
-          content.push({
-            type: "text",
-            text: `\n\n--- ARCHIVO ADJUNTO (${url}) ---\n${textData}\n--- FIN ARCHIVO ---\n`,
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching text attachment:", err);
+        const jsonPart = audit.content.replace("[AUDIT_LOG_V1]\n", "");
+        const parsed = JSON.parse(jsonPart);
+        const highRisk = (parsed.vulnerabilities || [])
+          .filter((v) => v.level === "HIGH")
+          .map((v) => v.title);
+        failures = [...failures, ...highRisk];
+      } catch (e) {
+        console.error("Error parsing audit log memory:", e);
       }
     }
-  }
 
-  return content;
+    // Deduplicate and limit
+    return [...new Set(failures)].slice(0, 3);
+  } catch (err) {
+    console.warn("Memory fetch error", err);
+    return [];
+  }
 };
 
 // ... (Inside the endpoints, replace the logic)
@@ -510,15 +513,19 @@ router.post(
     const safeLevel = explainLevel || conversation.explain_level || "normal";
     const historyCount = history ? history.length : 0;
 
+    // 1. Fetch Past Failures
+    const pastFailures = await fetchUserCriminalRecord(user.id);
+
     const systemPrompt = generateSystemPrompt(
       safeMode,
       safeTopic,
       safeLevel,
       contextSummary,
       {},
-      "hostile", // default mood for now if not passed, ideally should be derived
+      "hostile",
       isMobile,
-      historyCount
+      historyCount,
+      pastFailures // INJECTED MEMORY
     );
 
     // Prepare User Content with Attachments

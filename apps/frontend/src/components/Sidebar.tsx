@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { Button } from "./ui/Button";
 import { LogItem } from "./ui/LogItem";
 import { useScouter } from "../hooks/useScouter";
+import { ShieldAlert } from "lucide-react";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -95,8 +96,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* 2. Historial de Conversaciones (LOGS) */}
       <div className="flex-1 overflow-y-auto px-2 space-y-1">
-        <div className="px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-[var(--wadi-text-muted)] font-mono-wadi opacity-70">
-          Log de Evidencias
+        <div className="px-4 py-2 flex justify-between items-center text-[10px] uppercase tracking-[0.2em] text-[var(--wadi-text-muted)] font-mono-wadi opacity-70">
+          <span>Log de Evidencias</span>
+          <div
+            className="flex items-center gap-1 cursor-help hover:text-[var(--wadi-alert)] transition-colors"
+            title="[AUDITORÍAS_PASADAS: 3] | [RIESGOS_REINCIDENTES: 1]"
+          >
+            <ShieldAlert size={12} />
+            <span>EXPEDIENTE</span>
+          </div>
         </div>
 
         {conversations && conversations.length > 0 ? (
