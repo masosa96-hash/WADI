@@ -38,7 +38,12 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "https://js.hcaptcha.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://hcaptcha.com"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://hcaptcha.com",
+          "https://fonts.googleapis.com",
+        ],
         imgSrc: [
           "'self'",
           "data:",
@@ -46,16 +51,18 @@ app.use(
           "https://*.supabase.co",
           "https://*.supabase.in",
         ],
-        fontSrc: ["'self'", "data:"],
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         connectSrc: [
           "'self'",
-          "https://smkbiguvgiscojwxgbae.supabase.co", // Explicit Supabase Project
-          "https://*.supabase.co", // Wildcard fallback
+          "https://smkbiguvgiscojwxgbae.supabase.co",
+          "https://*.supabase.co",
           "https://*.supabase.in",
           "https://api.openai.com",
           "https://api.groq.com",
           "https://*.hcaptcha.com",
           "https://hcaptcha.com",
+          "https://fonts.googleapis.com",
+          "https://fonts.gstatic.com",
         ],
         frameSrc: [
           "'self'",

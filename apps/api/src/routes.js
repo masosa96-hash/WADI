@@ -242,6 +242,16 @@ router.get(
       }
 
       res.json({ vulnerabilities });
+
+      // 4. PERSIST AUDIT (For Long Term Memory)
+      if (vulnerabilities.length > 0) {
+        await supabase.from("messages").insert({
+          conversation_id: id,
+          user_id: user.id,
+          role: "system",
+          content: `[AUDIT_LOG_V1]\n${JSON.stringify({ vulnerabilities })}`,
+        });
+      }
     } catch (err) {
       throw new ModelError(String(err));
     }
