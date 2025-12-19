@@ -135,7 +135,7 @@ app.use("/api/kivo", kivoRoutes); // Legacy/Module
 app.use("/system", monitoringRoutes);
 
 // Explicit 404 for API to prevent falling through to SPA
-app.all("/api/:splat*", (req, res) => {
+app.all("/api/(.*)", (req, res) => {
   res.status(404).json({ error: "API_ROUTE_NOT_FOUND" });
 });
 
