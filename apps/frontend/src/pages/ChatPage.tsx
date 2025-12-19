@@ -157,6 +157,11 @@ export default function ChatPage() {
         <OnboardingModal onComplete={handleOnboardingComplete} />
       )}
 
+      {/* Scouter Alert Overlay (Mobile Diegetic Feedback) */}
+      {isFlashing && (
+        <div className="fixed inset-0 z-[100] pointer-events-none scouter-alert" />
+      )}
+
       <div
         style={{
           display: "flex",
@@ -166,34 +171,28 @@ export default function ChatPage() {
           margin: "0 auto",
           position: "relative",
           backgroundColor: "var(--color-bg)",
-          borderRadius: "var(--radius-lg)",
           overflow: "hidden",
-          border: isFlashing ? "4px solid #ff073a" : "1px solid transparent", // Neon Red
-          boxShadow: isFlashing
-            ? "0 0 20px #ff073a, inset 0 0 20px #ff073a"
-            : "none",
-          transition: "all 0.1s ease-in-out",
         }}
       >
         {/* Header simple y fijo */}
         <header
           style={{
-            padding: "1.5rem",
+            padding: "1rem",
             borderBottom: "1px solid var(--color-border)",
-            background: "rgba(17, 24, 39, 0.8)",
+            background: "rgba(17, 24, 39, 0.95)", // More opaque for mobile
             backdropFilter: "blur(16px)",
             position: "sticky",
             top: 0,
             zIndex: 10,
             display: "flex",
             alignItems: "center",
-            justifyContent: "center", // Centramos el título como punto focal
+            justifyContent: "center",
           }}
         >
           <div style={{ textAlign: "center" }}>
             <h2
               style={{
-                fontSize: "var(--text-xl)",
+                fontSize: "var(--text-lg)", // Slightly smaller for mobile
                 fontWeight: 700,
                 background: "var(--grad-main)",
                 WebkitBackgroundClip: "text",
@@ -203,15 +202,6 @@ export default function ChatPage() {
             >
               WADI
             </h2>
-            <p
-              style={{
-                fontSize: "var(--text-sm)",
-                color: "var(--color-text-soft)",
-                margin: 0,
-              }}
-            >
-              Del caos al plan
-            </p>
           </div>
         </header>
 
@@ -219,7 +209,7 @@ export default function ChatPage() {
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto px-4 py-8 md:p-8 flex flex-col gap-6"
+          className="flex-1 overflow-y-auto px-4 py-8 md:p-8 flex flex-col gap-6 scroll-smooth"
         >
           {/* Empty State */}
           {!hasStarted && (
@@ -233,12 +223,12 @@ export default function ChatPage() {
                 gap: "2rem",
                 marginTop: "-2rem",
                 textAlign: "center",
-                padding: "5rem 1rem",
+                padding: "3rem 1rem",
               }}
             >
               <h1
                 style={{
-                  fontSize: "1.875rem", // text-3xl
+                  fontSize: "1.5rem", // Mobile friendly
                   fontWeight: "bold",
                   color: "var(--color-text-main)",
                   margin: 0,
@@ -258,7 +248,7 @@ export default function ChatPage() {
                 Decime directamente qué querés resolver. Si no hay objetivo, no
                 hay nada que pensar.
               </p>
-              <div style={{ marginTop: "2rem" }}>
+              <div style={{ marginTop: "2rem", width: "100%" }}>
                 <WadiOnboarding mood={mood} />
               </div>
             </div>
@@ -307,7 +297,7 @@ export default function ChatPage() {
                             download={name}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-[var(--color-bg)] p-2 rounded text-xs border border-[var(--color-border)] hover:bg-[var(--color-surface-soft)] transition-colors flex items-center gap-1"
+                            className="bg-[var(--color-bg)] p-3 rounded-lg text-xs border border-[var(--color-border)] hover:bg-[var(--color-surface-soft)] transition-colors flex items-center gap-2 touch-target-min"
                           >
                             📎 {name}
                           </a>
@@ -346,7 +336,7 @@ export default function ChatPage() {
                     animation: "pulse 1s infinite",
                   }}
                 ></div>
-                {isUploading ? "Subiendo archivo..." : "Ordenando tus ideas..."}
+                {isUploading ? "Subiendo..." : "Procesando..."}
               </div>
             </div>
           )}
@@ -357,11 +347,13 @@ export default function ChatPage() {
         {/* Input Area */}
         <div
           style={{
-            padding: "1rem",
-            background: "rgba(17, 24, 39, 0.8)",
+            padding: "0.75rem",
+            background: "rgba(17, 24, 39, 0.95)",
             backdropFilter: "blur(20px)",
             borderTop: "1px solid var(--color-border)",
-            marginBottom: "env(keyboard-inset-height, 0px)", // Handle software keyboard
+            position: "sticky",
+            bottom: 0,
+            zIndex: 20,
           }}
         >
           <ChatInput
@@ -372,15 +364,13 @@ export default function ChatPage() {
           <div
             style={{
               textAlign: "center",
-              marginTop: "0.5rem",
-              fontSize: "0.75rem",
+              marginTop: "0.25rem",
+              fontSize: "0.7rem",
               color: "var(--color-text-soft)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.25rem",
+              opacity: 0.7,
             }}
           >
-            <span>WADI puede fallar. Usalo como copiloto.</span>
+            WADI v1.0 • Mobile Optimized
           </div>
         </div>
       </div>

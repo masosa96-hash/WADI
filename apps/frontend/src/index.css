@@ -7,15 +7,18 @@
   body,
   #root {
     height: 100vh !important;
+    height: 100dvh !important; /* Mobile viewport fix */
     width: 100vw !important;
     margin: 0;
     padding: 0;
     background-color: #0f111a;
     overflow: hidden !important;
+    overscroll-behavior: none; /* Prevent rubber-banding */
   }
 
   body {
     @apply bg-wadi-neutral text-wadi-bg font-sans;
+    -webkit-tap-highlight-color: transparent; /* Remove tap flash */
   }
 
   #root {
@@ -33,11 +36,18 @@
   button:hover {
     @apply bg-wadi-tension text-black;
   }
+
+  /* Font size minimum for inputs to prevent zoom */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 @layer components {
   .sidebar-drawer {
-    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0 lg:border-r;
+    @apply fixed left-0 top-0 z-50 h-full w-[280px] -translate-x-full transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0 lg:border-r bg-[var(--color-bg)];
   }
 
   .sidebar-drawer.open {
@@ -52,9 +62,9 @@
     @apply flex lg:hidden;
   }
 
-  /* New Bubble Styles */
+  /* New Bubble Styles - Mobile First */
   .bubble-base {
-    @apply max-w-[85%] lg:max-w-[75%] py-3 px-5 rounded-2xl text-[0.95rem] leading-relaxed shadow-sm;
+    @apply max-w-[85%] lg:max-w-[75%] py-3 px-5 rounded-2xl text-[0.95rem] leading-relaxed shadow-sm break-words;
   }
 
   .bubble-wadi {
@@ -68,23 +78,47 @@
     box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
   }
 
+  .touch-target-min {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .animate-pulse-soft {
     animation: pulse-soft 2s infinite;
+  }
+
+  /* Scouter Mode - Full Screen Flash */
+  .scouter-alert {
+    animation: critical-error 0.5s ease-in-out infinite alternate;
   }
 }
 
 @keyframes pulse-soft {
   0% {
-    transform: scale(1);
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    transform: scale(1.02);
     opacity: 0.8;
+    transform: scale(1.02);
   }
   100% {
-    transform: scale(1);
     opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes critical-error {
+  from {
+    background-color: rgba(255, 0, 0, 0.1);
+    box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.5);
+  }
+  to {
+    background-color: rgba(255, 0, 0, 0.3);
+    box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.8);
   }
 }
 
@@ -106,13 +140,5 @@
 body,
 html {
   font-family: var(--font-sans);
-  height: 100%; /* Fallback */
-}
-
-/* 100dvh for mobile browsers */
-@supports (height: 100dvh) {
-  body,
-  html {
-    height: 100dvh;
-  }
+  height: 100%;
 }
