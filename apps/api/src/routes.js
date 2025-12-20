@@ -860,7 +860,7 @@ router.post(
 
     const { data: project } = await supabase
       .from("projects")
-      .select("id")
+      .select("id, noise_count, total_items_audited")
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
@@ -868,6 +868,7 @@ router.post(
     if (!project)
       throw new AuthError("Access denied or project not found", 403);
 
+    // 1. Create Pending Run
     const { data: run, error: runError } = await supabase
       .from("runs")
       .insert([{ project_id: id, input, user_id: user.id }])
@@ -876,13 +877,121 @@ router.post(
 
     if (runError) throw new AppError("DB_ERROR", runError.message);
 
+    // 2. Fetch Context (Previous Runs)
+    // We treat Runs as a conversation history for specific project context
+    const { data: previousRuns } = await supabase
+      .from("runs")
+      .select("input, output, created_at")
+      .eq("project_id", id)
+      .neq("id", run.id) // Exclude current
+      .order("created_at", { ascending: true })
+      .limit(10); // Context window
+
+    const contextMessages = [];
+    if (previousRuns) {
+      previousRuns.forEach((r) => {
+        if (r.input) contextMessages.push({ role: "user", content: r.input });
+        if (r.output)
+          contextMessages.push({ role: "assistant", content: r.output });
+      });
+    }
+
+    const contextSummary = formatContext(contextMessages);
+
+    // 3. Fetch Profile for System Prompt
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("efficiency_rank, efficiency_points, active_focus")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const pastFailures = await fetchUserCriminalRecord(user.id);
+
+    const systemPrompt = generateSystemPrompt(
+      "tech", // Project runs imply technical work
+      "audit", // Topic
+      "detailed", // Explain Level
+      contextSummary,
+      {}, // Memories
+      "hostile", // Mood
+      false, // IsMobile
+      contextMessages.length,
+      pastFailures,
+      profile?.efficiency_rank || "GENERADOR_DE_HUMO",
+      profile?.efficiency_points || 0,
+      profile?.active_focus || null
+    );
+
     try {
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: input }],
+        model: AI_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...contextMessages,
+          { role: "user", content: input },
+        ],
       });
       const output = completion.choices[0].message.content;
 
+      // 4. Calculate Smoke Index (Parse Deconstruction)
+      let noiseFound = 0;
+      let itemsFound = 0;
+
+      if (output.includes("[DECONSTRUCT_START]")) {
+        const lines = output.split("\n");
+        let inside = false;
+
+        for (const line of lines) {
+          if (line.includes("[DECONSTRUCT_START]")) {
+            inside = true;
+            continue;
+          }
+          if (line.includes("[DECONSTRUCT_END]")) {
+            inside = false;
+            break;
+          }
+          if (inside && line.trim().startsWith("|")) {
+            // Check if it's a separator line (e.g. |---|)
+            if (line.includes("---")) continue;
+            // Check if it's a header (usually first line of table)
+            if (
+              line.toLowerCase().includes("status") &&
+              line.toLowerCase().includes("action")
+            )
+              continue;
+
+            // Valid Item Row
+            itemsFound++;
+            if (line.includes("[RUIDO]")) {
+              noiseFound++;
+            }
+          }
+        }
+      }
+
+      // 5. Update Project Stats
+      if (itemsFound > 0) {
+        await supabase
+          .rpc("increment_project_stats", {
+            p_id: id,
+            p_noise: noiseFound,
+            p_total: itemsFound,
+          })
+          .catch(async (e) => {
+            // Fallback if RPC doesn't exist (manual update, race condition possible but OK for MVP)
+            const newNoise = (project.noise_count || 0) + noiseFound;
+            const newTotal = (project.total_items_audited || 0) + itemsFound;
+            await supabase
+              .from("projects")
+              .update({
+                noise_count: newNoise,
+                total_items_audited: newTotal,
+              })
+              .eq("id", id);
+          });
+      }
+
+      // 6. Update Run output
       const { data: updatedRun, error: updateError } = await supabase
         .from("runs")
         .update({ output })

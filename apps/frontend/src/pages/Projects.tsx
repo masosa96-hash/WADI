@@ -318,7 +318,34 @@ export default function Projects() {
                       letterSpacing: "0.5px",
                     }}
                   >
-                    [ÍNDICE_DE_HUMO: 0%]
+                    {/* Smoke Index Calculation */}
+                    {(() => {
+                      const noise = (p as any).noise_count || 0;
+                      const total = (p as any).total_items_audited || 0;
+                      const percentage =
+                        total > 0 ? Math.round((noise / total) * 100) : 0;
+
+                      let color = "var(--wadi-primary)";
+                      let blink = false;
+
+                      if (percentage > 50) {
+                        color = "var(--wadi-alert)"; // Red
+                        blink = true;
+                      } else if (percentage > 20) {
+                        color = "#fbbf24"; // Yellow/Amber
+                      }
+
+                      return (
+                        <span
+                          style={{
+                            color: color,
+                          }}
+                          className={blink ? "animate-pulse" : ""}
+                        >
+                          [ÍNDICE_DE_HUMO: {percentage}%]
+                        </span>
+                      );
+                    })()}
                   </span>
                 </Card>
               </Link>

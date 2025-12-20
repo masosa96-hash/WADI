@@ -8,7 +8,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { isSidebarOpen, setSidebarOpen, toggleSidebar, resetChat } =
+  const { isSidebarOpen, setSidebarOpen, toggleSidebar, resetChat, rank } =
     useChatStore();
   const navigate = useNavigate();
 
@@ -18,8 +18,29 @@ export function Layout({ children }: LayoutProps) {
     setSidebarOpen(false);
   };
 
+  // Immersion Logic: "Generador de Humo" gets a degraded experience
+  const isLowRank = rank === "GENERADOR_DE_HUMO";
+  const wrapperStyle = isLowRank
+    ? { filter: "contrast(1.2) brightness(0.8) sepia(0.1)" }
+    : {};
+
   return (
-    <div className="flex w-full h-screen min-h-screen relative overflow-hidden bg-[var(--color-bg)]">
+    <div
+      className="flex w-full h-screen min-h-screen relative overflow-hidden bg-[var(--color-bg)] transition-all duration-1000"
+      style={wrapperStyle}
+    >
+      {/* Chromatic Aberration for Low Rank (Overlay) */}
+      {isLowRank && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[99999] opacity-10 mix-blend-overlay bg-repeat"
+          style={{
+            backgroundImage:
+              "linear-gradient(45deg, #ff0000 25%, transparent 25%, transparent 75%, #00ff00 75%, #00ff00), linear-gradient(45deg, #0000ff 25%, transparent 25%, transparent 75%, #ff0000 75%, #ff0000)",
+            backgroundSize: "4px 4px",
+            animation: "noise 0.2s infinite",
+          }}
+        />
+      )}
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div

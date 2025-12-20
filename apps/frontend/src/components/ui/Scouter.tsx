@@ -14,8 +14,13 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
   const resetChat = useChatStore((state) => state.resetChat);
   const navigate = useNavigate();
 
-  const { playAlertSound, playScanSound, initAmbientHum, setAmbientIntensity } =
-    useScouter();
+  const {
+    playAlertSound,
+    playScanSound,
+    initAmbientHum,
+    setAmbientIntensity,
+    playDeathSound,
+  } = useScouter();
   const prevMessagesLength = useRef(messages.length);
   const prevRank = useRef(rank);
 
@@ -42,6 +47,7 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
   // System Death Visual Loop & Redirect
   useEffect(() => {
     if (systemDeath) {
+      playDeathSound(); // Trigger sound immediately
       const overlay = document.getElementById("scouter-flash-overlay");
       let active = true;
       const loop = () => {
@@ -71,7 +77,7 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
         if (overlay) overlay.style.opacity = "0";
       };
     }
-  }, [systemDeath, navigate, resetChat]);
+  }, [systemDeath, navigate, resetChat, playDeathSound]);
 
   // Rank Change Logic
   useEffect(() => {
