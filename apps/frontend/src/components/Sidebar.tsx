@@ -102,8 +102,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="px-4 py-2 flex justify-between items-center text-[10px] uppercase tracking-[0.2em] text-[var(--wadi-text-muted)] font-mono-wadi opacity-70">
           <span>Log de Evidencias</span>
           <div
-            className="flex items-center gap-1 cursor-help hover:text-[var(--wadi-alert)] transition-colors"
-            title="[AUDITORÍAS_PASADAS: 3] | [RIESGOS_REINCIDENTES: 1]"
+            className={`flex items-center gap-1 cursor-help hover:text-[var(--wadi-alert)] transition-colors ${criminalRecord.riskCount > 5 ? "text-[var(--wadi-alert)] animate-pulse" : ""}`}
+            title={
+              criminalRecord.auditCount === 0
+                ? "[EXPEDIENTE_LIMPIO: OK]"
+                : `[AUDITORÍAS_PASADAS: ${criminalRecord.auditCount}] | [RIESGOS_CRÍTICOS: ${criminalRecord.riskCount}]`
+            }
           >
             <ShieldAlert size={12} />
             <span>EXPEDIENTE</span>
