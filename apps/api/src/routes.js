@@ -34,445 +34,63 @@ const asyncHandler = (fn) => (req, res, next) => {
 // Helper: Format messages for AI context
 const formatContext = (messages) => {
   if (!messages || messages.length === 0) return "";
-
   const validRoles = ["user", "assistant", "system"];
-
-  // Filter valid messages and take last 10
   const recent = messages
     .filter((m) => m && m.content && validRoles.includes(m.role))
     .slice(-10);
 
   return recent
-    .map(
-      (m) =>
-        `${m.role === "user" ? "Usuario" : "WADI"}: ${m.content.substring(0, 500)}`
-    )
+    .map((m) => `${m.role === "user" ? "Usuario" : "WADI"}: ${m.content.substring(0, 500)}`)
     .join("\n");
 };
 
-// ------------------------------------------------------------------
-// CONVERSATIONS & CHAT PERSISTENCE
-// ------------------------------------------------------------------
-
-// 1. Create Conversation
-router.post(
-  "/conversations",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-
-    const { mode, explainLevel, topic } = req.body;
-
-    const title = `Chat ${new Date().toLocaleDateString()}`; // Temporary title
-
-    const { data, error } = await supabase
-      .from("conversations")
-      .insert([
-        {
-          user_id: user.id,
-          title, // Can be updated later with first message content
-          mode: mode || "normal",
-          explain_level: explainLevel || "normal",
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    res.json(data);
-  })
-);
-
-// 1.5 Get All Conversations
-router.get(
-  "/conversations",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-
-    const { data, error } = await supabase
-      .from("conversations")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("updated_at", { ascending: false });
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    res.json(data);
-  })
-);
-
-// 1.6 Get Single Conversation (with messages)
-router.get(
-  "/conversations/:id",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-
-    // Get conversation details
-    const { data: conversation, error: convError } = await supabase
-      .from("conversations")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (convError || !conversation) {
-      throw new AuthError("Conversation not found", 404);
-    }
-
-    // Get messages
-    const { data: messages, error: msgError } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true });
-
-    if (msgError) throw new AppError("DB_ERROR", msgError.message);
-
-    res.json({ ...conversation, messages });
-  })
-);
-
-// 1.7 Delete Conversation
-router.delete(
-  "/conversations/:id",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-
-    // Check ownership
-    const { count, error: checkError } = await supabase
-      .from("conversations")
-      .select("*", { count: "exact", head: true })
-      .eq("id", id)
-      .eq("user_id", user.id);
-
-    if (checkError || count === 0) {
-      throw new AuthError("Conversation not found or access denied", 404);
-    }
-
-    // Delete (Cascade should handle messages if configured, but let's be safe)
-    // If cascade is NOT set in DB, we'd need to delete messages first.
-    // User mentioned: "If deletion fails due to FK, generate SQL".
-    // We will try to delete conversation directly.
-
-    const { error: delError } = await supabase
-      .from("conversations")
-      .delete()
-      .eq("id", id);
-
-    if (delError) {
-      // Fallback: Delete messages first
-      await supabase.from("messages").delete().eq("conversation_id", id);
-      const { error: retryError } = await supabase
-        .from("conversations")
-        .delete()
-        .eq("id", id);
-      if (retryError) throw new AppError("DB_ERROR", retryError.message);
-    }
-
-    res.json({ success: true, message: "Conversation deleted" });
-  })
-);
-
-// 2. Send Message (Persistent)
-// Helper: Process attachments for OpenAI
 // Helper: Process attachments for OpenAI
 const processAttachments = async (message, attachments) => {
-  // ... (existing logic)
+  if (!attachments || attachments.length === 0) return message;
+  
+  // Si hay adjuntos, preparamos el contenido estructurado
+  const content = [{ type: "text", text: message }];
+  
+  attachments.forEach(att => {
+    const url = typeof att === "string" ? att : att.url;
+    if (url && (url.startsWith("data:image") || url.includes("supabase"))) {
+      content.push({ type: "image_url", image_url: { url } });
+    }
+  });
+  
+  return content;
 };
 
 // Helper: Fetch Past Failures (Long Term Memory)
 const fetchUserCriminalRecord = async (userId) => {
   try {
-    // 1. Get last 5 audit logs
     const { data: audits } = await supabase
       .from("messages")
       .select("content, created_at")
       .eq("user_id", userId)
       .eq("role", "system")
-      .ilike("content", "[AUDIT_LOG_V1]%") // Check for audit tag
+      .ilike("content", "[AUDIT_LOG_V1]%")
       .order("created_at", { ascending: false })
       .limit(3);
 
     if (!audits || audits.length === 0) return [];
-
     let failures = [];
 
-    // 2. Extract HIGH vulnerabilities
     for (const audit of audits) {
       try {
         const jsonPart = audit.content.replace("[AUDIT_LOG_V1]\n", "");
         const parsed = JSON.parse(jsonPart);
         const dateStr = new Date(audit.created_at).toISOString().split("T")[0];
-
         const highRisk = (parsed.vulnerabilities || [])
           .filter((v) => v.level === "HIGH")
           .map((v) => `${v.title} (${dateStr})`);
-
         failures = [...failures, ...highRisk];
-      } catch (e) {
-        console.error("Error parsing audit log memory:", e);
-      }
+      } catch (e) { console.error("Memory parse error", e); }
     }
-
-    // Deduplicate and limit
     return [...new Set(failures)].slice(0, 3);
-  } catch (err) {
-    console.warn("Memory fetch error", err);
-    return [];
-  }
+  } catch (err) { return []; }
 };
 
-// 1.9 User Criminal Summary (Criminal Record)
-router.get(
-  "/user/criminal-summary",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-
-    // Count Total Audits
-    const { count: totalAudits, data: audits } = await supabase
-      .from("messages")
-      .select("content", { count: "exact" })
-      .eq("user_id", user.id)
-      .eq("role", "system")
-      .ilike("content", "[AUDIT_LOG_V1]%");
-
-    let totalHighRisks = 0;
-
-    // Count High Risks
-    if (audits) {
-      audits.forEach((audit) => {
-        try {
-          const jsonPart = audit.content.replace("[AUDIT_LOG_V1]\n", "");
-          const parsed = JSON.parse(jsonPart);
-          const highRiskCount = (parsed.vulnerabilities || []).filter(
-            (v) => v.level === "HIGH"
-          ).length;
-          totalHighRisks += highRiskCount;
-        } catch (e) {
-          // ignore parse error
-        }
-      });
-    }
-
-    res.json({ totalAudits: totalAudits || 0, totalHighRisks });
-  })
-);
-
-// ... (Inside the endpoints, replace the logic)
-
-// 1.8 Audit Conversation (NEW)
-router.get(
-  "/conversations/:id/audit",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-
-    // 1. Fetch entire conversation history from DB
-    const { data: messages, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true }); // We need chronological order for audit
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    if (!messages || messages.length === 0) {
-      return res.json({
-        vulnerabilities: [
-          {
-            level: "HIGH",
-            title: "SILENCIO PREOCUPANTE",
-            description:
-              "No hay historial para auditar. El vacío es el mayor riesgo.",
-          },
-        ],
-      });
-    }
-
-    // 2. Format Context for LLM
-    const context = formatContext(messages);
-
-    // 3. Call LLM
-    const systemPrompt = generateAuditPrompt();
-
-    try {
-      const completion = await openai.chat.completions.create({
-        model: AI_MODEL,
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `AUDIT THIS CONVERSATION HISTORY:\n---\n${context}\n---`,
-          },
-        ],
-        temperature: 0.5,
-        response_format: { type: "json_object" },
-      });
-
-      const outputContent = completion.choices[0].message.content;
-      let vulnerabilities = [];
-      try {
-        const parsed = JSON.parse(outputContent);
-        if (Array.isArray(parsed)) vulnerabilities = parsed;
-        else if (parsed.vulnerabilities)
-          vulnerabilities = parsed.vulnerabilities; // Common wrapper
-        else vulnerabilities = [];
-      } catch (e) {
-        console.error("Failed to parse Audit JSON", e);
-        throw new ModelError("AI Audit returned invalid JSON");
-      }
-
-      res.json({ vulnerabilities });
-
-      // 4. PERSIST AUDIT (For Long Term Memory)
-      if (vulnerabilities.length > 0) {
-        await supabase.from("messages").insert({
-          conversation_id: id,
-          user_id: user.id,
-          role: "system",
-          content: `[AUDIT_LOG_V1]\n${JSON.stringify({ vulnerabilities })}`,
-        });
-      }
-    } catch (err) {
-      throw new ModelError(String(err));
-    }
-  })
-);
-
-// 2. Send Message (Persistent)
-router.post(
-  "/conversations/:id/messages",
-  validateChatInput,
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-    const { message, mode, explainLevel, topic, attachments } = req.body;
-
-    // A. Verify Ownership & Get Conversation
-    const { data: conversation, error: convError } = await supabase
-      .from("conversations")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (convError || !conversation) {
-      throw new AuthError("Conversation not found or access denied", 404);
-    }
-
-    // B. Fetch History for Context
-    const { data: history } = await supabase
-      .from("messages")
-      .select("role, content")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true });
-
-    // Handle history context simplistically for now (string only)
-    // Ideally we should parse array content if stored as JSON, but legacy is string.
-    const contextSummary = formatContext(history || []);
-
-    // C. Generate AI Response
-    const safeMode = mode || conversation.mode || "normal";
-    const safeTopic = topic || "general";
-    const safeLevel = explainLevel || conversation.explain_level || "normal";
-
-    const historyCount = history ? history.length : 0;
-    const systemPrompt = generateSystemPrompt(
-      safeMode,
-      safeTopic,
-      safeLevel,
-      contextSummary,
-      {},
-      "hostile",
-      false,
-      historyCount
-    );
-
-    // Prepare User Content (String or Array)
-    const userContent = await processAttachments(message, attachments);
-
-    // Filter valid history for OpenAI
-    const openAIHistory = (history || []).map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
-
-    try {
-      const completion = await openai.chat.completions.create({
-        model: AI_MODEL,
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...openAIHistory,
-          { role: "user", content: userContent },
-        ],
-      });
-
-      const reply = completion.choices[0].message.content;
-
-      // D. Save Messages to DB
-      // 1. User Message
-      // We store the RAW text in 'content' for legacy compatibility,
-      // AND arrays in 'attachments' column.
-      // ...
-      // D. Save Messages to DB
-      // 1. User Message
-      await supabase.from("messages").insert({
-        conversation_id: id,
-        user_id: user.id,
-        role: "user",
-        content: message,
-        attachments: attachments
-          ? attachments.map((a) => (typeof a === "string" ? a : a.url))
-          : [],
-      });
-      // ...
-
-      // ...
-      // B. Insert User Message
-      const { error: msgError } = await supabase.from("messages").insert({
-        conversation_id: currentConversationId,
-        user_id: user.id,
-        role: "user",
-        content: message,
-        attachments: attachments
-          ? attachments.map((a) => (typeof a === "string" ? a : a.url))
-          : [],
-      });
-      // ...
-
-      // 2. Assistant Message
-      await supabase.from("messages").insert({
-        conversation_id: id,
-        user_id: user.id,
-        role: "assistant",
-        content: reply,
-      });
-
-      // E. Update Conversation
-      const updates = { updated_at: new Date().toISOString() };
-      if (!history || history.length === 0) {
-        updates.title =
-          message.substring(0, 30) + (message.length > 30 ? "..." : "");
-      }
-      if (mode) updates.mode = mode;
-      if (explainLevel) updates.explain_level = explainLevel;
-
-      await supabase.from("conversations").update(updates).eq("id", id);
-
-      res.json({ reply });
-    } catch (e) {
-      throw new ModelError(e.message);
-    }
-  })
-);
-
-// Helper: Calculate Rank based on points
 const calculateRank = (points) => {
   if (points >= 801) return "ENTIDAD_DE_ORDEN";
   if (points >= 401) return "ESTRATEGA_JUNIOR";
@@ -480,530 +98,159 @@ const calculateRank = (points) => {
   return "GENERADOR_DE_HUMO";
 };
 
-// 1.10 Admit Failure (Expiation)
-router.post(
-  "/user/admit-failure",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
+// --- ROUTES ---
 
-    // 1. Fetch current points
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("efficiency_points")
-      .eq("id", user.id)
-      .single();
+router.get("/user/criminal-summary", asyncHandler(async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  if (!user) throw new AuthError("Authentication required");
 
-    const currentPoints = profile?.efficiency_points || 0;
-    const newPoints = currentPoints - 50;
-    const newRank = calculateRank(newPoints);
+  const { data: audits } = await supabase
+    .from("messages")
+    .select("content")
+    .eq("user_id", user.id)
+    .eq("role", "system")
+    .ilike("content", "[AUDIT_LOG_V1]%");
 
-    // 2. Update Profile: Clear focus, penalize points
+  let totalHighRisks = 0;
+  if (audits) {
+    audits.forEach(audit => {
+      try {
+        const parsed = JSON.parse(audit.content.replace("[AUDIT_LOG_V1]\n", ""));
+        totalHighRisks += (parsed.vulnerabilities || []).filter(v => v.level === "HIGH").length;
+      } catch (e) {}
+    });
+  }
+  res.json({ totalAudits: audits?.length || 0, totalHighRisks });
+}));
+
+router.post("/user/admit-failure", asyncHandler(async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  if (!user) throw new AuthError("Authentication required");
+
+  const { data: profile } = await supabase.from("profiles").select("efficiency_points").eq("id", user.id).maybeSingle();
+  const newPoints = (profile?.efficiency_points || 0) - 50;
+  const newRank = calculateRank(newPoints);
+
+  await supabase.from("profiles").upsert({
+    id: user.id,
+    active_focus: null,
+    efficiency_points: newPoints,
+    efficiency_rank: newRank,
+    updated_at: new Date().toISOString()
+  });
+
+  res.json({ reply: "Al menos tuviste la decencia de admitir que no servís para esto. Empezamos de cero.", efficiencyPoints: newPoints, efficiencyRank: newRank });
+}));
+
+router.post("/chat", validateChatInput, asyncHandler(async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  if (!user) throw new AuthError("Authentication required");
+
+  const { message, conversationId, mode, explainLevel, topic, attachments, isMobile } = req.body;
+  let currentConversationId = conversationId;
+
+  // A. Conversation Resolution
+  if (!currentConversationId) {
+    const { data: newConv } = await supabase.from("conversations").insert([{
+      user_id: user.id,
+      title: message.substring(0, 60),
+      mode: mode || "normal",
+      explain_level: explainLevel || "normal"
+    }]).select().single();
+    currentConversationId = newConv.id;
+  }
+
+  // B. Store User Message
+  await supabase.from("messages").insert({
+    conversation_id: currentConversationId,
+    user_id: user.id,
+    role: "user",
+    content: message,
+    attachments: attachments || []
+  });
+
+  // C. Generate AI Response
+  const { data: history } = await supabase.from("messages").select("role, content").eq("conversation_id", currentConversationId).order("created_at", { ascending: true });
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+  const pastFailures = await fetchUserCriminalRecord(user.id);
+
+  const fullSystemPrompt = generateSystemPrompt(
+    mode || "normal", topic || "general", explainLevel || "normal",
+    formatContext(history), {}, "hostile", isMobile, history?.length || 0,
+    pastFailures, profile?.efficiency_rank || "GENERADOR_DE_HUMO",
+    profile?.efficiency_points || 0, profile?.active_focus || null
+  );
+
+  const userContent = await processAttachments(message, attachments);
+  const openAIHistory = (history || []).map(m => ({ role: m.role, content: m.content }));
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: AI_MODEL,
+      messages: [{ role: "system", content: fullSystemPrompt }, ...openAIHistory, { role: "user", content: userContent }]
+    });
+
+    const reply = completion.choices[0].message.content;
+    
+    // D. Gamification Logic
+    let pointChange = reply.includes("[FOCO_LIBERADO]") ? 20 : (reply.includes("[FORCE_DECISION]") ? -10 : 0);
+    let newPoints = (profile?.efficiency_points || 0) + pointChange;
+    let systemDeath = newPoints <= -50;
+
+    if (systemDeath) {
+      await supabase.from("messages").delete().eq("user_id", user.id);
+      await supabase.from("conversations").delete().eq("user_id", user.id);
+      newPoints = 0;
+    }
+
     await supabase.from("profiles").upsert({
       id: user.id,
-      active_focus: null,
       efficiency_points: newPoints,
-      efficiency_rank: newRank,
-      updated_at: new Date().toISOString(),
+      efficiency_rank: calculateRank(newPoints),
+      active_focus: reply.includes("[FOCO_LIBERADO]") ? null : profile?.active_focus,
+      updated_at: new Date().toISOString()
     });
 
-    // 3. Force Monday Response
-    const reply =
-      "Al menos tuviste la decencia de admitir que no servís para esto. Empezamos de cero, inútil.";
-
-    res.json({
-      reply,
-      efficiencyPoints: newPoints,
-      efficiencyRank: newRank,
-      activeFocus: null,
-    });
-  })
-);
-
-// UNIFIED SMART CHAT ENDPOINT
-router.post(
-  "/chat",
-  validateChatInput,
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-
-    const {
-      message,
-      conversationId,
-      mode,
-      explainLevel,
-      topic,
-      attachments,
-      isMobile,
-    } = req.body;
-    let currentConversationId = conversationId;
-    let conversation;
-
-    // A. Handle Conversation Resolution
-    if (!currentConversationId) {
-      const title =
-        message.substring(0, 60) + (message.length > 60 ? "..." : "");
-      const { data: newConv, error: createError } = await supabase
-        .from("conversations")
-        .insert([
-          {
-            user_id: user.id,
-            title,
-            mode: mode || "normal",
-            explain_level: explainLevel || "normal",
-          },
-        ])
-        .select()
-        .single();
-
-      if (createError) throw new AppError("DB_ERROR", createError.message);
-      conversation = newConv;
-      currentConversationId = newConv.id;
-    } else {
-      const { data: existing, error: findError } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("id", currentConversationId)
-        .eq("user_id", user.id)
-        .single();
-
-      if (findError || !existing) {
-        throw new AuthError("Conversation not found or access denied", 404);
-      }
-      conversation = existing;
+    if (!systemDeath) {
+      await supabase.from("messages").insert({ conversation_id: currentConversationId, user_id: user.id, role: "assistant", content: reply });
     }
 
-    // B. Insert User Message
-    const { error: msgError } = await supabase.from("messages").insert({
-      conversation_id: currentConversationId,
-      user_id: user.id,
-      role: "user",
-      content: message,
-      attachments: attachments || [],
-    });
-    if (msgError) throw new AppError("DB_ERROR", msgError.message);
+    res.json({ reply: systemDeath ? "SYSTEM FAILURE" : reply, conversationId: currentConversationId, efficiencyPoints: newPoints, systemDeath });
+  } catch (e) {
+    res.status(500).json({ error: "ERROR DE SISTEMA", details: e.message });
+  }
+}));
 
-    // C. Build Context
-    const { data: history } = await supabase
-      .from("messages")
-      .select("role, content")
-      .eq("conversation_id", currentConversationId)
-      .order("created_at", { ascending: true });
+// --- PROYECTOS (Simplificados) ---
+router.get("/projects", asyncHandler(async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  const { data } = await supabase.from("projects").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+  res.json(data);
+}));
 
-    const contextSummary = formatContext(history || []);
+router.post("/projects", validateProjectInput, asyncHandler(async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  const { data } = await supabase.from("projects").insert([{ ...req.body, user_id: user.id }]).select().single();
+  res.json(data);
+}));
 
-    // D. Generate AI Response
-    const safeMode = mode || conversation.mode || "normal";
-    const safeTopic = topic || "general";
-    const safeLevel = explainLevel || conversation.explain_level || "normal";
-    const historyCount = history ? history.length : 0;
+router.delete("/projects/:id", asyncHandler(async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  await supabase.from("projects").delete().eq("id", req.params.id).eq("user_id", user.id);
+  res.json({ success: true });
+}));
 
-    // 2. Fetch Profile for Gamification & Proof of Life
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("efficiency_rank, efficiency_points, active_focus")
-      .eq("id", user.id)
-      .maybeSingle();
+// Conversations list
+router.get("/conversations", asyncHandler(async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  const { data } = await supabase.from("conversations").select("*").eq("user_id", user.id).order("updated_at", { ascending: false });
+  res.json(data);
+}));
 
-    // *Re-fetch failures as I need them for the prompt and I'm replacing the block*
-    // 1. Fetch Past Failures
-    const pastFailures = await fetchUserCriminalRecord(user.id);
-
-    // Regenerate prompt with correct local var
-    const fullSystemPrompt = generateSystemPrompt(
-      safeMode,
-      safeTopic,
-      safeLevel,
-      contextSummary,
-      {},
-      "hostile",
-      isMobile,
-      historyCount,
-      pastFailures,
-      profile?.efficiency_rank || "GENERADOR_DE_HUMO",
-      profile?.efficiency_points || 0,
-      profile?.active_focus || null
-    );
-
-    // Prepare User Content with Attachments
-    const userContent = await processAttachments(message, attachments);
-
-    // Filter valid history for OpenAI
-    const openAIHistory = (history || []).map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
-
-    const startTime = Date.now();
-    try {
-      const completion = await openai.chat.completions.create({
-        model: AI_MODEL,
-        messages: [
-          { role: "system", content: fullSystemPrompt },
-          ...openAIHistory,
-          { role: "user", content: userContent },
-        ],
-      });
-
-      const reply = completion.choices[0].message.content;
-      const duration = Date.now() - startTime;
-
-      // --- GAMIFICATION LOGIC ---
-      let pointChange = 0;
-      let currentActiveFocus = profile?.active_focus || null;
-
-      if (reply.includes("[FOCO_LIBERADO]")) {
-        pointChange += 20;
-        currentActiveFocus = null; // Clear focus logic
-      }
-      if (reply.includes("[FORCE_DECISION]")) {
-        pointChange -= 10;
-      }
-
-      let newPoints = (profile?.efficiency_points || 0) + pointChange;
-      let newRank = calculateRank(newPoints);
-      let systemDeath = false;
-
-      // CHECK DEATH CONDITION
-      if (newPoints <= -50) {
-        systemDeath = true;
-        newPoints = 0;
-        newRank = "GENERADOR_DE_HUMO";
-        currentActiveFocus = null;
-
-        // HARD RESET: Delete all messages
-        await supabase.from("messages").delete().eq("user_id", user.id);
-        // Delete Conversations (Optional, but cleaner)
-        await supabase.from("conversations").delete().eq("user_id", user.id);
-      }
-
-      // Update Profile
-      if (
-        pointChange !== 0 ||
-        systemDeath ||
-        currentActiveFocus !== profile?.active_focus
-      ) {
-        await supabase.from("profiles").upsert({
-          id: user.id,
-          efficiency_points: newPoints,
-          efficiency_rank: newRank,
-          active_focus: currentActiveFocus,
-          updated_at: new Date().toISOString(),
-        });
-      }
-      // --------------------------
-
-      console.log(
-        JSON.stringify(
-          {
-            type: "ADI_CEREBRO_AUDIT",
-            timestamp: new Date().toISOString(),
-            userId: user.id || "anon",
-            performance: {
-              durationMs: duration,
-              completionTokens: completion.usage?.completion_tokens,
-              promptTokens: completion.usage?.prompt_tokens,
-            },
-            gamification: {
-              pointChange,
-              newPoints,
-              newRank,
-              systemDeath,
-            },
-            status: "SUCCESS",
-          },
-          null,
-          2
-        )
-      );
-
-      if (!systemDeath) {
-        // E. Insert Assistant Message (Only if alive)
-        await supabase.from("messages").insert({
-          conversation_id: currentConversationId,
-          user_id: user.id,
-          role: "assistant",
-          content: reply,
-        });
-
-        // F. Update Conversation
-        const updates = { updated_at: new Date().toISOString() };
-        if (mode) updates.mode = mode;
-        if (explainLevel) updates.explain_level = explainLevel;
-
-        await supabase
-          .from("conversations")
-          .update(updates)
-          .eq("id", currentConversationId);
-      }
-
-      // G. Response
-      res.json({
-        conversationId: currentConversationId,
-        reply: systemDeath ? "SYSTEM FAILURE" : reply, // Override reply on death? Or send it? User said: "Enviar flag system_death".
-        mode: safeMode,
-        topic: safeTopic,
-        explainLevel: safeLevel,
-        activeFocus: currentActiveFocus,
-        efficiencyPoints: newPoints,
-        efficiencyRank: newRank,
-        systemDeath,
-      });
-    } catch (e) {
-      console.error("[CRITICAL API ERROR]:", e);
-      // Return JSON directly to prevent HTML fallback
-      res.status(500).json({
-        error: "ERROR DE SISTEMA - FRICCIÓN CRÍTICA",
-        details: e.message,
-      });
-    }
-  })
-);
-
-// ------------------------------------------------------------------
-// PROJECTS ROUTES
-// ------------------------------------------------------------------
-
-router.get(
-  "/projects",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-
-    const { data, error } = await supabase
-      .from("projects")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    res.json(data);
-  })
-);
-
-router.post(
-  "/projects",
-  validateProjectInput,
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-
-    const { name, description } = req.body;
-    const { data, error } = await supabase
-      .from("projects")
-      .insert([{ name, description, user_id: user.id }])
-      .select()
-      .single();
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    res.json(data);
-  })
-);
-
-router.delete(
-  "/projects/:id",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-
-    const { error } = await supabase
-      .from("projects")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", user.id);
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    res.json({ success: true, message: "Project deleted" });
-  })
-);
-
-router.get(
-  "/projects/:id/runs",
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-
-    const { data: project } = await supabase
-      .from("projects")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (!project)
-      throw new AuthError("Access denied or project not found", 403);
-
-    const { data, error } = await supabase
-      .from("runs")
-      .select("*")
-      .eq("project_id", id)
-      .order("created_at", { ascending: false });
-
-    if (error) throw new AppError("DB_ERROR", error.message);
-    res.json(data);
-  })
-);
-
-router.post(
-  "/projects/:id/runs",
-  validateRunInput,
-  asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
-    const { id } = req.params;
-    const { input } = req.body;
-
-    const { data: project } = await supabase
-      .from("projects")
-      .select("id, noise_count, total_items_audited")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (!project)
-      throw new AuthError("Access denied or project not found", 403);
-
-    // 1. Create Pending Run
-    const { data: run, error: runError } = await supabase
-      .from("runs")
-      .insert([{ project_id: id, input, user_id: user.id }])
-      .select()
-      .single();
-
-    if (runError) throw new AppError("DB_ERROR", runError.message);
-
-    // 2. Fetch Context (Previous Runs)
-    // We treat Runs as a conversation history for specific project context
-    const { data: previousRuns } = await supabase
-      .from("runs")
-      .select("input, output, created_at")
-      .eq("project_id", id)
-      .neq("id", run.id) // Exclude current
-      .order("created_at", { ascending: true })
-      .limit(10); // Context window
-
-    const contextMessages = [];
-    if (previousRuns) {
-      previousRuns.forEach((r) => {
-        if (r.input) contextMessages.push({ role: "user", content: r.input });
-        if (r.output)
-          contextMessages.push({ role: "assistant", content: r.output });
-      });
-    }
-
-    const contextSummary = formatContext(contextMessages);
-
-    // 3. Fetch Profile for System Prompt
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("efficiency_rank, efficiency_points, active_focus")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const pastFailures = await fetchUserCriminalRecord(user.id);
-
-    const systemPrompt = generateSystemPrompt(
-      "tech", // Project runs imply technical work
-      "audit", // Topic
-      "detailed", // Explain Level
-      contextSummary,
-      {}, // Memories
-      "hostile", // Mood
-      false, // IsMobile
-      contextMessages.length,
-      pastFailures,
-      profile?.efficiency_rank || "GENERADOR_DE_HUMO",
-      profile?.efficiency_points || 0,
-      profile?.active_focus || null
-    );
-
-    try {
-      const completion = await openai.chat.completions.create({
-        model: AI_MODEL,
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...contextMessages,
-          { role: "user", content: input },
-        ],
-      });
-      const output = completion.choices[0].message.content;
-
-      // 4. Calculate Smoke Index (Parse Deconstruction)
-      let noiseFound = 0;
-      let itemsFound = 0;
-
-      if (output.includes("[DECONSTRUCT_START]")) {
-        const lines = output.split("\n");
-        let inside = false;
-
-        for (const line of lines) {
-          if (line.includes("[DECONSTRUCT_START]")) {
-            inside = true;
-            continue;
-          }
-          if (line.includes("[DECONSTRUCT_END]")) {
-            inside = false;
-            break;
-          }
-          if (inside && line.trim().startsWith("|")) {
-            // Check if it's a separator line (e.g. |---|)
-            if (line.includes("---")) continue;
-            // Check if it's a header (usually first line of table)
-            if (
-              line.toLowerCase().includes("status") &&
-              line.toLowerCase().includes("action")
-            )
-              continue;
-
-            // Valid Item Row
-            itemsFound++;
-            if (line.includes("[RUIDO]")) {
-              noiseFound++;
-            }
-          }
-        }
-      }
-
-      // 5. Update Project Stats
-      if (itemsFound > 0) {
-        await supabase
-          .rpc("increment_project_stats", {
-            p_id: id,
-            p_noise: noiseFound,
-            p_total: itemsFound,
-          })
-          .catch(async (e) => {
-            // Fallback if RPC doesn't exist (manual update, race condition possible but OK for MVP)
-            const newNoise = (project.noise_count || 0) + noiseFound;
-            const newTotal = (project.total_items_audited || 0) + itemsFound;
-            await supabase
-              .from("projects")
-              .update({
-                noise_count: newNoise,
-                total_items_audited: newTotal,
-              })
-              .eq("id", id);
-          });
-      }
-
-      // 6. Update Run output
-      const { data: updatedRun, error: updateError } = await supabase
-        .from("runs")
-        .update({ output })
-        .eq("id", run.id)
-        .select()
-        .single();
-
-      if (updateError) throw new AppError("DB_ERROR", updateError.message);
-
-      res.json(updatedRun);
-    } catch (e) {
-      throw new ModelError(String(e));
-    }
-  })
-);
+router.delete("/conversations/:id", asyncHandler(async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  await supabase.from("conversations").delete().eq("id", req.params.id).eq("user_id", user.id);
+  res.json({ success: true });
+}));
 
 export default router;
