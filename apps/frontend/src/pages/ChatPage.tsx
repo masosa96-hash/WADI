@@ -23,10 +23,17 @@ export default function ChatPage() {
     conversationId: storeConversationId,
   } = useChatStore();
 
-  const [decisionBlockContent, setDecisionBlockContent] = useState<
-    string | null
-  >(null);
-  const [isDecisionBlocked, setIsDecisionBlocked] = useState(false);
+  const lastMessage = messages[messages.length - 1];
+  const isLastMessageUser = lastMessage?.role === "user";
+  const hasForceDecision = lastMessage?.content?.includes("[FORCE_DECISION]");
+
+  // Derived state - no need for useEffect/useState syncing
+  const isDecisionBlocked = !!(
+    lastMessage &&
+    !isLastMessageUser &&
+    hasForceDecision
+  );
+  const decisionBlockContent = isDecisionBlocked ? lastMessage.content : null;
 
   // Load conversation on mount/param change
   useEffect(() => {
@@ -74,23 +81,6 @@ export default function ChatPage() {
 
       if (isMyMessage || shouldAutoScroll) {
         scrollToBottom();
-      }
-
-      // Check for FORCE_DECISION to toggle UI blocking state locally for TerminalInput
-      if (!isMyMessage) {
-        const text = lastMsg.content || "";
-        if (text.includes("[FORCE_DECISION]")) {
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          setIsDecisionBlocked(true);
-          setDecisionBlockContent(text);
-        } else {
-          // If WADI continues without the tag, we assume normal flow.
-          // Ideally we untoggle when user replies.
-        }
-      } else {
-        // If I just sent a message, unblock
-        setIsDecisionBlocked(false);
-        setDecisionBlockContent(null);
       }
     }
     prevMessagesLength.current = newCount;

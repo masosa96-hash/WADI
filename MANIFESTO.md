@@ -32,4 +32,4 @@ La estética debe ser operativa, no decorativa.
 
 ---
 
-_“Del caos al plan. O mejor no digas nada.”_
+> “Del caos al plan. O mejor no digas nada.”
