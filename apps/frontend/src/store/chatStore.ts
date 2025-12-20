@@ -58,6 +58,7 @@ interface ChatState {
   mood: WadiMood;
   isSidebarOpen: boolean;
   isUploading: boolean;
+  activeFocus: string | null;
 
   // Criminal Record (Long Term Memory)
   criminalRecord: {
@@ -115,6 +116,7 @@ export const useChatStore = create<ChatState>()(
       isUploading: false,
 
       criminalRecord: { auditCount: 0, riskCount: 0 }, // Init
+      activeFocus: null as string | null,
 
       mode: "normal",
       topic: "general",
@@ -373,6 +375,7 @@ export const useChatStore = create<ChatState>()(
             messages: [...state.messages, aiMsg],
             isLoading: false,
             conversationId: data.conversationId, // Ensure state matches
+            activeFocus: data.activeFocus || null, // Update Focus Proof of Life
           }));
 
           // Refresh list

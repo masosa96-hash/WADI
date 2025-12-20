@@ -79,6 +79,56 @@ export function DataDeconstructor({ data }: DataDeconstructorProps) {
           })}
         </tbody>
       </table>
+
+      {visibleRows === data.length && (
+        <div className="p-3 border-t border-[var(--wadi-border)] bg-[var(--wadi-surface)]/50 flex justify-end">
+          <button
+            onClick={() => {
+              const timestamp = new Date()
+                .toISOString()
+                .replace(/T/, " ")
+                .replace(/\..+/, "");
+              const critical = data.filter((d) => d.category === "CRÍTICO");
+              const risks = data.filter((d) => d.category === "VULNERABILIDAD");
+              const noise = data.filter((d) => d.category === "RUIDO");
+
+              const content = `
+=== WADI OPERATIONAL REPORT ===
+AUDIT TIMESTAMP: ${timestamp}
+STATUS: PENDING EXECUTION
+
+>> 01. CRITICAL DIRECTIVES (PRIORITY A):
+${critical.map((i, idx) => `${idx + 1}. ${i.item.toUpperCase()}\n   Rationale: ${i.verdict}`).join("\n\n")}
+
+${
+  risks.length > 0
+    ? `
+>> 02. DETECTED VULNERABILITIES (RISK HIGH):
+${risks.map((r) => `[!] ${r.item} -> ${r.verdict}`).join("\n")}
+`
+    : ""
+}
+
+>> 03. FILTERED NOISE (IGNORED):
+${noise.map((n) => `- ${n.item}`).join("\n")}
+
+=== END OF REPORT ===
+              `.trim();
+
+              const blob = new Blob([content], { type: "text/plain" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `WADI_PLAN_${Date.now()}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="text-[var(--wadi-primary)] hover:text-white border border-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)] px-4 py-1.5 uppercase text-xs tracking-widest transition-all"
+          >
+            [EXPORT_PLAN]
+          </button>
+        </div>
+      )}
     </div>
   );
 }

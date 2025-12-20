@@ -22,6 +22,7 @@ export default function ChatPage() {
     loadConversation,
     hasStarted,
     conversationId: storeConversationId,
+    activeFocus,
   } = useChatStore();
 
   const lastMessage = messages[messages.length - 1];
@@ -99,7 +100,7 @@ export default function ChatPage() {
   return (
     <Layout>
       {/* ATOMIC COMPONENTS */}
-      <Scouter />
+      <Scouter isDecisionBlocked={isDecisionBlocked} />
       {isDecisionBlocked && (
         <DecisionWall messageContent={decisionBlockContent || undefined} />
       )}
@@ -276,6 +277,7 @@ export default function ChatPage() {
           onSendMessage={handleSendMessage}
           isLoading={isLoading}
           isDecisionBlocked={isDecisionBlocked}
+          activeFocus={activeFocus}
         />
       </div>
     </Layout>

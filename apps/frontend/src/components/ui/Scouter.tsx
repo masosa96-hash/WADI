@@ -2,10 +2,31 @@ import { useRef, useEffect } from "react";
 import { useChatStore } from "../../store/chatStore";
 import { useScouter } from "../../hooks/useScouter";
 
-export function Scouter() {
+interface ScouterProps {
+  isDecisionBlocked?: boolean;
+}
+
+export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
   const messages = useChatStore((state) => state.messages);
-  const { playAlertSound, playScanSound } = useScouter();
+  const { playAlertSound, playScanSound, initAmbientHum, setAmbientIntensity } =
+    useScouter();
   const prevMessagesLength = useRef(messages.length);
+
+  // Initialize Ambient Hum on Mount (will technically wait for user interaction to be audible)
+  useEffect(() => {
+    const handleInteraction = () => initAmbientHum();
+    window.addEventListener("click", handleInteraction, { once: true });
+    window.addEventListener("keydown", handleInteraction, { once: true });
+    return () => {
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("keydown", handleInteraction);
+    };
+  }, [initAmbientHum]);
+
+  // Adjust Ambient Intensity based on Decision Block
+  useEffect(() => {
+    setAmbientIntensity(isDecisionBlocked ? "high" : "normal");
+  }, [isDecisionBlocked, setAmbientIntensity]);
 
   useEffect(() => {
     const newCount = messages.length;

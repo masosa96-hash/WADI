@@ -7,6 +7,7 @@ interface TerminalInputProps {
   onSendMessage: (text: string, attachments: Attachment[]) => Promise<void>;
   isLoading: boolean;
   isDecisionBlocked?: boolean;
+  activeFocus?: string | null;
 }
 
 const PLACEHOLDERS_NORMAL = [
@@ -23,6 +24,7 @@ export function TerminalInput({
   onSendMessage,
   isLoading,
   isDecisionBlocked = false,
+  activeFocus,
 }: TerminalInputProps) {
   const [input, setInput] = useState("");
   // Local state for selected files (not yet uploaded/processed)
@@ -33,19 +35,27 @@ export function TerminalInput({
   const { playScanSound } = useScouter();
 
   // Dynamic Placeholder Logic
-  const [placeholder, setPlaceholder] = useState(PLACEHOLDERS_NORMAL[0]);
+  const [dynamicPlaceholder, setDynamicPlaceholder] = useState(
+    PLACEHOLDERS_NORMAL[0]
+  );
 
   useEffect(() => {
+    if (activeFocus) return;
+
     const targetPlaceholders = isDecisionBlocked
       ? PLACEHOLDERS_BLOCKED
       : PLACEHOLDERS_NORMAL;
     let i = 0;
     const interval = setInterval(() => {
-      setPlaceholder(targetPlaceholders[i]);
+      setDynamicPlaceholder(targetPlaceholders[i]);
       i = (i + 1) % targetPlaceholders.length;
     }, 3000);
     return () => clearInterval(interval);
-  }, [isDecisionBlocked]);
+  }, [isDecisionBlocked, activeFocus]);
+
+  const displayedPlaceholder = activeFocus
+    ? `[PRUEBA DE VIDA]: SUBÍ EVIDENCIA DE "${activeFocus}"`
+    : dynamicPlaceholder;
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -178,8 +188,8 @@ export function TerminalInput({
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={placeholder}
-            disabled={isLoading}
+            placeholder={displayedPlaceholder}
+            disabled={isLoading || !!activeFocus}
             className={`
                 w-full bg-transparent border-b text-base py-2 px-2 font-mono-wadi focus:outline-none transition-all
                 ${

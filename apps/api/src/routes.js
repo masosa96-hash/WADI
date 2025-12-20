@@ -553,8 +553,12 @@ router.post(
     const safeLevel = explainLevel || conversation.explain_level || "normal";
     const historyCount = history ? history.length : 0;
 
-    // 1. Fetch Past Failures
-    const pastFailures = await fetchUserCriminalRecord(user.id);
+    // 2. Fetch Profile for Gamification & Proof of Life
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("efficiency_rank, efficiency_points, active_focus")
+      .eq("id", user.id)
+      .maybeSingle();
 
     const systemPrompt = generateSystemPrompt(
       safeMode,
@@ -565,7 +569,10 @@ router.post(
       "hostile",
       isMobile,
       historyCount,
-      pastFailures // INJECTED MEMORY
+      pastFailures, // INJECTED MEMORY
+      profile?.efficiency_rank || "GENERADOR_DE_HUMO",
+      profile?.efficiency_points || 0,
+      profile?.active_focus || null
     );
 
     // Prepare User Content with Attachments
@@ -636,6 +643,16 @@ router.post(
         .update(updates)
         .eq("id", currentConversationId);
 
+      // F.5 Handle Focus Logic
+      let currentActiveFocus = profile?.active_focus || null;
+      if (reply.includes("[FOCO_LIBERADO]")) {
+        await supabase
+          .from("profiles")
+          .update({ active_focus: null })
+          .eq("id", user.id);
+        currentActiveFocus = null;
+      }
+
       // G. Response
       res.json({
         conversationId: currentConversationId,
@@ -643,6 +660,7 @@ router.post(
         mode: safeMode,
         topic: safeTopic,
         explainLevel: safeLevel,
+        activeFocus: currentActiveFocus,
       });
     } catch (e) {
       console.error("[CRITICAL API ERROR]:", e);

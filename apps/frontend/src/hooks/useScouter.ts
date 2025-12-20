@@ -1,28 +1,70 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
+
+// Singleton AudioContext to prevent mulitple instances
+let globalAudioCtx: AudioContext | null = null;
+let ambientOsc: OscillatorNode | null = null;
+let ambientGain: GainNode | null = null;
+
+const getAudioContext = () => {
+  if (!globalAudioCtx) {
+    const Win = window as unknown as Window & {
+      webkitAudioContext?: typeof AudioContext;
+    };
+    const Ctx = window.AudioContext || Win.webkitAudioContext;
+    if (Ctx) {
+      globalAudioCtx = new Ctx();
+    }
+  }
+  return globalAudioCtx;
+};
 
 export function useScouter() {
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const initAmbientHum = useCallback(() => {
+    const ctx = getAudioContext();
+    if (!ctx || ambientOsc) return; // Already running or no context
 
-  // Lazy initialize audio context
-  const getAudioContext = () => {
-    if (!audioContextRef.current) {
-      // Use standard AudioContext (Safari requires webkit prefix but modern React/Vite targets modern browsers mostly; keep simple)
-      const Win = window as unknown as Window & {
-        webkitAudioContext?: typeof AudioContext;
-      };
-      const Ctx = window.AudioContext || Win.webkitAudioContext;
-      if (Ctx) {
-        audioContextRef.current = new Ctx();
-      }
+    // Resume context if suspended (browser policy)
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
     }
-    return audioContextRef.current;
-  };
+
+    try {
+      // Brown/Low frequency hum
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      // 60Hz hum with some modulation ideally, but simple sine/triangle low freq works
+      osc.type = "sine";
+      osc.frequency.value = 50; // Low rumble
+
+      // Very low volume
+      gain.gain.value = 0.02;
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+
+      ambientOsc = osc;
+      ambientGain = gain;
+    } catch (e) {
+      console.error("Ambient Audio Init Failed", e);
+    }
+  }, []);
+
+  const setAmbientIntensity = useCallback((level: "normal" | "high") => {
+    if (!ambientGain || !globalAudioCtx) return;
+    const ctx = globalAudioCtx;
+    const targetGain = level === "high" ? 0.02 * 1.5 : 0.02; // +50% (approx 20-50%)
+
+    ambientGain.gain.cancelScheduledValues(ctx.currentTime);
+    ambientGain.gain.linearRampToValueAtTime(targetGain, ctx.currentTime + 1); // Smooth transition
+  }, []);
 
   const playScanSound = useCallback(() => {
     const ctx = getAudioContext();
     if (!ctx) return;
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
 
-    // Create oscillator for the "Scouter" scanning sound (high pitch electronic chirps)
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
@@ -31,7 +73,6 @@ export function useScouter() {
     osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
     osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.2);
 
-    // Add volume envelope
     gainNode.gain.setValueAtTime(0.05, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
 
@@ -45,8 +86,8 @@ export function useScouter() {
   const playAlertSound = useCallback(() => {
     const ctx = getAudioContext();
     if (!ctx) return;
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
 
-    // Create a more aggressive "Error/Alert" buzzer (2500Hz, 80ms)
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
@@ -63,5 +104,5 @@ export function useScouter() {
     osc.stop(ctx.currentTime + 0.08);
   }, []);
 
-  return { playScanSound, playAlertSound };
+  return { playScanSound, playAlertSound, initAmbientHum, setAmbientIntensity };
 }
