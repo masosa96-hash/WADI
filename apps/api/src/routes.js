@@ -499,14 +499,13 @@ router.post(
     const newRank = calculateRank(newPoints);
 
     // 2. Update Profile: Clear focus, penalize points
-    await supabase
-      .from("profiles")
-      .update({
-        active_focus: null,
-        efficiency_points: newPoints,
-        efficiency_rank: newRank,
-      })
-      .eq("id", user.id);
+    await supabase.from("profiles").upsert({
+      id: user.id,
+      active_focus: null,
+      efficiency_points: newPoints,
+      efficiency_rank: newRank,
+      updated_at: new Date().toISOString(),
+    });
 
     // 3. Force Monday Response
     const reply =
@@ -685,14 +684,13 @@ router.post(
         systemDeath ||
         currentActiveFocus !== profile?.active_focus
       ) {
-        await supabase
-          .from("profiles")
-          .update({
-            efficiency_points: newPoints,
-            efficiency_rank: newRank,
-            active_focus: currentActiveFocus,
-          })
-          .eq("id", user.id);
+        await supabase.from("profiles").upsert({
+          id: user.id,
+          efficiency_points: newPoints,
+          efficiency_rank: newRank,
+          active_focus: currentActiveFocus,
+          updated_at: new Date().toISOString(),
+        });
       }
       // --------------------------
 
