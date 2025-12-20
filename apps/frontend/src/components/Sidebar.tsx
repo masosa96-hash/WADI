@@ -106,7 +106,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             title={
               criminalRecord.auditCount === 0
                 ? "[EXPEDIENTE_LIMPIO: OK]"
-                : `[AUDITORÍAS_PASADAS: ${criminalRecord.auditCount}] | [RIESGOS_CRÍTICOS: ${criminalRecord.riskCount}]`
+                : `[ANTECEDENTES_REGISTRADOS: ${criminalRecord.auditCount}] | [RIESGOS_CRÍTICOS: ${criminalRecord.riskCount}]`
             }
           >
             <ShieldAlert size={12} />

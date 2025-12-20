@@ -44,7 +44,10 @@ export function Scouter() {
               isForcedDecision ? 800 : 200
             );
           }
-        } else if (isNormalAnalysis) {
+        } else if (
+          isNormalAnalysis ||
+          text.toLowerCase().includes("antecedente")
+        ) {
           playScanSound();
         }
       }
