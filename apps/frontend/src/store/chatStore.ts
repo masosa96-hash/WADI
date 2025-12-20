@@ -60,6 +60,11 @@ interface ChatState {
   isUploading: boolean;
   activeFocus: string | null;
 
+  // Gamification
+  rank: string;
+  points: number;
+  systemDeath: boolean;
+
   // Criminal Record (Long Term Memory)
   criminalRecord: {
     auditCount: number;
@@ -81,7 +86,7 @@ interface ChatState {
   setExplainLevel: (level: "short" | "normal" | "detailed") => void;
 
   fetchConversations: () => Promise<void>;
-  fetchCriminalSummary: () => Promise<void>; // New Action
+  fetchCriminalSummary: () => Promise<void>;
   startNewConversation: (initialTitle?: string) => Promise<string | null>;
   loadConversations: () => Promise<void>;
   openConversation: (id: string) => Promise<void>;
@@ -93,6 +98,7 @@ interface ChatState {
   ) => Promise<string | null>;
   deleteConversation: (id: string) => Promise<void>;
   resetChat: () => void;
+  admitFailure: () => Promise<void>;
 }
 
 // Helper to get token
@@ -104,6 +110,7 @@ const getToken = async () => {
 export const useChatStore = create<ChatState>()(
   persist(
     (set, get) => ({
+      // Default State
       messages: [],
       conversations: [],
       conversationId: null,
@@ -114,10 +121,11 @@ export const useChatStore = create<ChatState>()(
       mood: "hostile",
       isSidebarOpen: false,
       isUploading: false,
-
-      criminalRecord: { auditCount: 0, riskCount: 0 }, // Init
-      activeFocus: null as string | null,
-
+      activeFocus: null,
+      rank: "GENERADOR_DE_HUMO",
+      points: 0,
+      systemDeath: false,
+      criminalRecord: { auditCount: 0, riskCount: 0 },
       mode: "normal",
       topic: "general",
       explainLevel: "normal",
@@ -183,7 +191,6 @@ export const useChatStore = create<ChatState>()(
         }),
 
       startNewConversation: async (initialTitle?: string) => {
-        // Just reset local state. Actual creation happens on first message.
         set({
           conversationId: null,
           conversationTitle: initialTitle || null,
@@ -203,9 +210,6 @@ export const useChatStore = create<ChatState>()(
             headers: { Authorization: `Bearer ${token}` },
           });
           if (!res.ok) throw new Error("Failed to fetch conversations");
-          if (res.headers.get("content-type")?.includes("text/html")) {
-            throw new Error("Servidor retornó HTML en lugar de JSON");
-          }
           const data = await res.json();
           set({ conversations: data });
         } catch (err) {
@@ -249,13 +253,11 @@ export const useChatStore = create<ChatState>()(
           const token = await getToken();
           if (!token) return;
 
-          // 1. Get Details
           const res = await fetch(`${API_URL}/api/conversations/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
           if (!res.ok) {
-            if (res.status === 404) throw new Error("Conversation not found");
             throw new Error("Failed to load conversation");
           }
 
@@ -270,14 +272,11 @@ export const useChatStore = create<ChatState>()(
           });
         } catch (err: unknown) {
           console.error(err);
-          const errorMessage =
-            err instanceof Error ? err.message : "An error occurred";
-          set({ isLoading: false, error: errorMessage, hasStarted: false });
+          set({ isLoading: false, hasStarted: false });
         }
       },
 
       loadConversation: async (id: string) => {
-        // Alias to openConversation
         return get().openConversation(id);
       },
 
@@ -312,6 +311,41 @@ export const useChatStore = create<ChatState>()(
         }
       },
 
+      admitFailure: async () => {
+        try {
+          const token = await getToken();
+          if (!token) return;
+
+          set({ isLoading: true });
+
+          const res = await fetch(`${API_URL}/api/user/admit-failure`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const data = await res.json();
+
+          // Inject Monday's crushing response
+          const aiMsg: Message = {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: data.reply,
+            created_at: new Date().toISOString(),
+          };
+
+          set((state) => ({
+            messages: [...state.messages, aiMsg],
+            isLoading: false,
+            activeFocus: null, // Cleared
+            points: data.efficiencyPoints,
+            rank: data.efficiencyRank,
+          }));
+        } catch (e) {
+          console.error(e);
+          set({ isLoading: false });
+        }
+      },
+
       sendMessage: async (text: string, attachments: Attachment[] = []) => {
         if (!text.trim() && attachments.length === 0) return null;
 
@@ -330,7 +364,14 @@ export const useChatStore = create<ChatState>()(
 
         try {
           const token = await getToken();
-          const { conversationId, mode, topic, explainLevel, mood } = get();
+          const {
+            conversationId,
+            mode,
+            topic,
+            explainLevel,
+            mood,
+            rank: oldRank,
+          } = get();
 
           // 2. Call Unified /api/chat
           const res = await fetch(`${API_URL}/api/chat`, {
@@ -346,22 +387,35 @@ export const useChatStore = create<ChatState>()(
               topic,
               explainLevel,
               mood,
-              attachments, // Sends full object array now
+              attachments,
               isMobile: window.innerWidth < 1024,
             }),
           });
 
           if (!res.ok) throw new Error("Failed to send message");
 
-          // Verify we got JSON, not an HTML error page (common with 404s/500s)
+          // Verify we got JSON
           const contentType = res.headers.get("content-type");
           if (contentType && contentType.includes("text/html")) {
-            throw new Error(
-              "Servidor retornó HTML en lugar de datos JSON (Posible 404/500)"
-            );
+            throw new Error("Servidor retornó HTML en lugar de JSON");
           }
 
           const data = await res.json();
+
+          // Handle System Death
+          if (data.systemDeath) {
+            set({
+              systemDeath: true,
+              messages: [], // Wiped on client
+              points: 0,
+              rank: "GENERADOR_DE_HUMO",
+              activeFocus: null,
+              isLoading: false,
+              conversationId: null,
+            });
+            // Redirect will be handled by UI listening to systemDeath
+            return null;
+          }
 
           // 3. Update State
           const aiMsg: Message = {
@@ -371,16 +425,35 @@ export const useChatStore = create<ChatState>()(
             created_at: new Date().toISOString(),
           };
 
+          const newRank =
+            data.efficiencyRank !== undefined ? data.efficiencyRank : oldRank;
+
           set((state) => ({
             messages: [...state.messages, aiMsg],
             isLoading: false,
-            conversationId: data.conversationId, // Ensure state matches
-            activeFocus: data.activeFocus || null, // Update Focus Proof of Life
+            conversationId: data.conversationId,
+            activeFocus: data.activeFocus || null,
+            points:
+              data.efficiencyPoints !== undefined
+                ? data.efficiencyPoints
+                : state.points,
+            rank: newRank,
           }));
+
+          // Rank Change Notification
+          if (newRank !== oldRank && newRank !== "GENERADOR_DE_HUMO") {
+            const rankMsg: Message = {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content: `[SISTEMA]: ASCENSO A RANGO **${newRank}**. NO TE ACOSTUMBRES.`,
+              created_at: new Date().toISOString(),
+            };
+            set((state) => ({ messages: [...state.messages, rankMsg] }));
+          }
 
           // Refresh list
           get().loadConversations();
-          return data.conversationId; // Return ID explicitly for navigation
+          return data.conversationId;
         } catch (err: unknown) {
           const errorMessage =
             err instanceof Error ? err.message : "An error occurred";
@@ -426,7 +499,7 @@ export const useChatStore = create<ChatState>()(
         conversationId: state.conversationId,
         messages: state.messages,
         hasStarted: state.hasStarted,
-        // Don't persist isUploading
+        // Don't persist isUploading or blocked states if they are ephemeral
       }),
       onRehydrateStorage: () => (state) => {
         if (state && state.messages && state.messages.length > 0) {

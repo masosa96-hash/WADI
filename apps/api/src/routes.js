@@ -472,7 +472,54 @@ router.post(
   })
 );
 
-// ...
+// Helper: Calculate Rank based on points
+const calculateRank = (points) => {
+  if (points >= 801) return "ENTIDAD_DE_ORDEN";
+  if (points >= 401) return "ESTRATEGA_JUNIOR";
+  if (points >= 101) return "CIVIL_PROMEDIO";
+  return "GENERADOR_DE_HUMO";
+};
+
+// 1.10 Admit Failure (Expiation)
+router.post(
+  "/user/admit-failure",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+
+    // 1. Fetch current points
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("efficiency_points")
+      .eq("id", user.id)
+      .single();
+
+    const currentPoints = profile?.efficiency_points || 0;
+    const newPoints = currentPoints - 50;
+    const newRank = calculateRank(newPoints);
+
+    // 2. Update Profile: Clear focus, penalize points
+    await supabase
+      .from("profiles")
+      .update({
+        active_focus: null,
+        efficiency_points: newPoints,
+        efficiency_rank: newRank,
+      })
+      .eq("id", user.id);
+
+    // 3. Force Monday Response
+    const reply =
+      "Al menos tuviste la decencia de admitir que no servís para esto. Empezamos de cero, inútil.";
+
+    res.json({
+      reply,
+      efficiencyPoints: newPoints,
+      efficiencyRank: newRank,
+      activeFocus: null,
+    });
+  })
+);
 
 // UNIFIED SMART CHAT ENDPOINT
 router.post(
@@ -560,7 +607,12 @@ router.post(
       .eq("id", user.id)
       .maybeSingle();
 
-    const systemPrompt = generateSystemPrompt(
+    // *Re-fetch failures as I need them for the prompt and I'm replacing the block*
+    // 1. Fetch Past Failures
+    const pastFailures = await fetchUserCriminalRecord(user.id);
+
+    // Regenerate prompt with correct local var
+    const fullSystemPrompt = generateSystemPrompt(
       safeMode,
       safeTopic,
       safeLevel,
@@ -569,7 +621,7 @@ router.post(
       "hostile",
       isMobile,
       historyCount,
-      pastFailures, // INJECTED MEMORY
+      pastFailures,
       profile?.efficiency_rank || "GENERADOR_DE_HUMO",
       profile?.efficiency_points || 0,
       profile?.active_focus || null
@@ -589,7 +641,7 @@ router.post(
       const completion = await openai.chat.completions.create({
         model: AI_MODEL,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: fullSystemPrompt },
           ...openAIHistory,
           { role: "user", content: userContent },
         ],
@@ -598,25 +650,68 @@ router.post(
       const reply = completion.choices[0].message.content;
       const duration = Date.now() - startTime;
 
+      // --- GAMIFICATION LOGIC ---
+      let pointChange = 0;
+      let currentActiveFocus = profile?.active_focus || null;
+
+      if (reply.includes("[FOCO_LIBERADO]")) {
+        pointChange += 20;
+        currentActiveFocus = null; // Clear focus logic
+      }
+      if (reply.includes("[FORCE_DECISION]")) {
+        pointChange -= 10;
+      }
+
+      let newPoints = (profile?.efficiency_points || 0) + pointChange;
+      let newRank = calculateRank(newPoints);
+      let systemDeath = false;
+
+      // CHECK DEATH CONDITION
+      if (newPoints <= -50) {
+        systemDeath = true;
+        newPoints = 0;
+        newRank = "GENERADOR_DE_HUMO";
+        currentActiveFocus = null;
+
+        // HARD RESET: Delete all messages
+        await supabase.from("messages").delete().eq("user_id", user.id);
+        // Delete Conversations (Optional, but cleaner)
+        await supabase.from("conversations").delete().eq("user_id", user.id);
+      }
+
+      // Update Profile
+      if (
+        pointChange !== 0 ||
+        systemDeath ||
+        currentActiveFocus !== profile?.active_focus
+      ) {
+        await supabase
+          .from("profiles")
+          .update({
+            efficiency_points: newPoints,
+            efficiency_rank: newRank,
+            active_focus: currentActiveFocus,
+          })
+          .eq("id", user.id);
+      }
+      // --------------------------
+
       console.log(
         JSON.stringify(
           {
             type: "ADI_CEREBRO_AUDIT",
             timestamp: new Date().toISOString(),
             userId: user.id || "anon",
-            workflow: {
-              mode: safeMode,
-              explainLevel: safeLevel,
-              topic: safeTopic,
-            },
             performance: {
               durationMs: duration,
               completionTokens: completion.usage?.completion_tokens,
               promptTokens: completion.usage?.prompt_tokens,
             },
-            contentSample: {
-              input: message.substring(0, 50),
-              output: reply.substring(0, 50) + "...",
+            gamification: {
+              pointChange,
+              newPoints,
+              newRank,
+              systemDeath,
             },
             status: "SUCCESS",
           },
@@ -625,42 +720,37 @@ router.post(
         )
       );
 
-      // E. Insert Assistant Message
-      await supabase.from("messages").insert({
-        conversation_id: currentConversationId,
-        user_id: user.id,
-        role: "assistant",
-        content: reply,
-      });
+      if (!systemDeath) {
+        // E. Insert Assistant Message (Only if alive)
+        await supabase.from("messages").insert({
+          conversation_id: currentConversationId,
+          user_id: user.id,
+          role: "assistant",
+          content: reply,
+        });
 
-      // F. Update Conversation
-      const updates = { updated_at: new Date().toISOString() };
-      if (mode) updates.mode = mode;
-      if (explainLevel) updates.explain_level = explainLevel;
+        // F. Update Conversation
+        const updates = { updated_at: new Date().toISOString() };
+        if (mode) updates.mode = mode;
+        if (explainLevel) updates.explain_level = explainLevel;
 
-      await supabase
-        .from("conversations")
-        .update(updates)
-        .eq("id", currentConversationId);
-
-      // F.5 Handle Focus Logic
-      let currentActiveFocus = profile?.active_focus || null;
-      if (reply.includes("[FOCO_LIBERADO]")) {
         await supabase
-          .from("profiles")
-          .update({ active_focus: null })
-          .eq("id", user.id);
-        currentActiveFocus = null;
+          .from("conversations")
+          .update(updates)
+          .eq("id", currentConversationId);
       }
 
       // G. Response
       res.json({
         conversationId: currentConversationId,
-        reply,
+        reply: systemDeath ? "SYSTEM FAILURE" : reply, // Override reply on death? Or send it? User said: "Enviar flag system_death".
         mode: safeMode,
         topic: safeTopic,
         explainLevel: safeLevel,
         activeFocus: currentActiveFocus,
+        efficiencyPoints: newPoints,
+        efficiencyRank: newRank,
+        systemDeath,
       });
     } catch (e) {
       console.error("[CRITICAL API ERROR]:", e);

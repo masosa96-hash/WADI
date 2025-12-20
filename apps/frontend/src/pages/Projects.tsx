@@ -307,6 +307,19 @@ export default function Projects() {
                   >
                     {new Date(p.created_at).toLocaleDateString()}
                   </span>
+                  <span
+                    style={{
+                      fontSize: "var(--text-xs)",
+                      color: "var(--color-text-soft)",
+                      background: "var(--color-surface-soft)",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      fontFamily: "var(--font-mono)",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    [ÍNDICE_DE_HUMO: 0%]
+                  </span>
                 </Card>
               </Link>
             ))}

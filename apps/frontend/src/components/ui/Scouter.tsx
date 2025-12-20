@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useChatStore } from "../../store/chatStore";
 import { useScouter } from "../../hooks/useScouter";
 
@@ -8,9 +9,15 @@ interface ScouterProps {
 
 export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
   const messages = useChatStore((state) => state.messages);
+  const rank = useChatStore((state) => state.rank);
+  const systemDeath = useChatStore((state) => state.systemDeath);
+  const resetChat = useChatStore((state) => state.resetChat);
+  const navigate = useNavigate();
+
   const { playAlertSound, playScanSound, initAmbientHum, setAmbientIntensity } =
     useScouter();
   const prevMessagesLength = useRef(messages.length);
+  const prevRank = useRef(rank);
 
   // Initialize Ambient Hum on Mount (will technically wait for user interaction to be audible)
   useEffect(() => {
@@ -23,10 +30,68 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
     };
   }, [initAmbientHum]);
 
-  // Adjust Ambient Intensity based on Decision Block
+  // Adjust Ambient Intensity based on Decision Block or System Death
   useEffect(() => {
+    if (systemDeath) {
+      setAmbientIntensity("high"); // Max tension
+      return;
+    }
     setAmbientIntensity(isDecisionBlocked ? "high" : "normal");
-  }, [isDecisionBlocked, setAmbientIntensity]);
+  }, [isDecisionBlocked, systemDeath, setAmbientIntensity]);
+
+  // System Death Visual Loop & Redirect
+  useEffect(() => {
+    if (systemDeath) {
+      const overlay = document.getElementById("scouter-flash-overlay");
+      let active = true;
+      const loop = () => {
+        if (!active || !overlay) return;
+        overlay.style.opacity = Math.random() > 0.5 ? "0.8" : "0.2";
+        setTimeout(loop, 100);
+      };
+      loop();
+
+      // Redirect after 10s
+      const timer = setTimeout(() => {
+        resetChat(); // Clear state completely
+        // Also need to clear systemDeath flag so we don't loop forever if we come back?
+        // Actually resetChat clears conversationId etc, but maybe not systemDeath.
+        // We should ensure systemDeath is false after reset.
+        useChatStore.setState({
+          systemDeath: false,
+          rank: "GENERADOR_DE_HUMO",
+          points: 0,
+        });
+        navigate("/");
+      }, 10000);
+
+      return () => {
+        active = false;
+        clearTimeout(timer);
+        if (overlay) overlay.style.opacity = "0";
+      };
+    }
+  }, [systemDeath, navigate, resetChat]);
+
+  // Rank Change Logic
+  useEffect(() => {
+    if (prevRank.current !== rank) {
+      // Rank Updated
+      // Play harmonic scan sound (re-use scan sound or create new one if needed)
+      playScanSound();
+      // Lavender Flash
+      const overlay = document.getElementById("scouter-flash-overlay");
+      if (overlay) {
+        overlay.style.backgroundColor = "var(--wadi-primary)";
+        overlay.style.opacity = "0.5";
+        setTimeout(() => {
+          overlay.style.opacity = "0";
+          overlay.style.backgroundColor = "var(--wadi-alert)"; // Reset to red for alerts
+        }, 1000);
+      }
+    }
+    prevRank.current = rank;
+  }, [rank, playScanSound]);
 
   useEffect(() => {
     const newCount = messages.length;
@@ -49,13 +114,6 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
 
         if (isChaotic || isRejected || isForcedDecision) {
           playAlertSound();
-          // Visual flash is handled by Global Flash component or similar if needed,
-          // but technically Scouter is the 'sensor'.
-          // If we want a FULL visual scouter here, we could overlay a div.
-          // However, keeping visual feedback separate (DecisionWall) is cleaner.
-          // BUT, Scouter usually implies the "red tinted glasses" effect.
-          // Let's implement the FLASH EFFECT here using DOM directly for maximum speed/independence
-
           const flashOverlay = document.getElementById("scouter-flash-overlay");
           if (flashOverlay) {
             flashOverlay.style.opacity = "1";
@@ -78,10 +136,28 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
   }, [messages, playAlertSound, playScanSound]);
 
   return (
-    <div
-      id="scouter-flash-overlay"
-      className="fixed inset-0 pointer-events-none z-[9999] bg-[var(--wadi-alert)] opacity-0 transition-opacity duration-75 mix-blend-overlay"
-      aria-hidden="true"
-    />
+    <>
+      <div
+        id="scouter-flash-overlay"
+        className="fixed inset-0 pointer-events-none z-[9999] bg-[var(--wadi-alert)] opacity-0 transition-opacity duration-75 mix-blend-overlay"
+        aria-hidden="true"
+      />
+
+      {/* GLITCH OVERLAY FOR SYSTEM DEATH */}
+      {systemDeath && (
+        <div className="fixed inset-0 z-[10000] pointer-events-auto bg-black/50 flex items-center justify-center overflow-hidden">
+          <div className="text-[var(--wadi-alert)] font-bold text-4xl animate-pulse font-mono-wadi tracking-widest text-center">
+            SYSTEM FAILURE
+            <br />
+            PROTOCOL_DEATH_INITIATED
+            <br />
+            <span className="text-sm text-white mt-4 block">
+              Reiniciando núcleos...
+            </span>
+          </div>
+          {/* CSS Glitch lines would go here, simulated by flash loop above for now */}
+        </div>
+      )}
+    </>
   );
 }
