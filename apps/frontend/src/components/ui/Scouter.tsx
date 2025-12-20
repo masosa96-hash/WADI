@@ -23,7 +23,8 @@ export function Scouter() {
         const isRejected = text.toLowerCase().includes("tostadora");
         const isNormalAnalysis =
           text.includes("Analizar inconsistencias") ||
-          text.includes("Diagnóstico");
+          text.includes("Diagnóstico") ||
+          text.includes("[DECONSTRUCT_START]");
 
         if (isChaotic || isRejected || isForcedDecision) {
           playAlertSound();

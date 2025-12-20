@@ -7,6 +7,7 @@ import { TerminalInput } from "../components/ui/TerminalInput";
 import { Scouter } from "../components/ui/Scouter";
 import { DecisionWall } from "../components/auditor/DecisionWall";
 import { AuditorHeader } from "../components/auditor/AuditorHeader";
+import { DataDeconstructor } from "../components/auditor/DataDeconstructor";
 
 export default function ChatPage() {
   const { conversationId } = useParams();
@@ -170,13 +171,60 @@ export default function ChatPage() {
           {/* Bubbles */}
           {messages.map((msg) => {
             const isUser = msg.role === "user";
+
+            // Logic to deconstruct message if it contains the tag
+            const content = msg.content || "";
+            let deconstructionData = null;
+            let beforeText = content;
+            let afterText = "";
+
+            if (!isUser && content.includes("[DECONSTRUCT_START]")) {
+              try {
+                const startTag = "[DECONSTRUCT_START]";
+                const endTag = "[DECONSTRUCT_END]";
+                const startIndex = content.indexOf(startTag);
+                const endIndex = content.indexOf(endTag);
+
+                if (startIndex !== -1 && endIndex !== -1) {
+                  const jsonString = content
+                    .substring(startIndex + startTag.length, endIndex)
+                    .replace(/```json|```/g, "")
+                    .trim();
+                  deconstructionData = JSON.parse(jsonString);
+
+                  beforeText = content.substring(0, startIndex).trim();
+                  afterText = content
+                    .substring(endIndex + endTag.length)
+                    .trim();
+                }
+              } catch (e) {
+                console.error("Failed to parse deconstruction data", e);
+                // Fallback to showing everything if parse fails
+                beforeText = content;
+              }
+            }
+
             return (
               <div
                 key={msg.id}
                 className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}
               >
                 <div className={isUser ? "bubble-user" : "bubble-wadi"}>
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  {deconstructionData ? (
+                    <div className="flex flex-col gap-4">
+                      {beforeText && (
+                        <div className="whitespace-pre-wrap">{beforeText}</div>
+                      )}
+
+                      <DataDeconstructor data={deconstructionData} />
+
+                      {afterText && (
+                        <div className="whitespace-pre-wrap">{afterText}</div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  )}
 
                   {/* Attachments Display */}
                   {msg.attachments && msg.attachments.length > 0 && (

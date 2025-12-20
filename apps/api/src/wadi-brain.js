@@ -210,6 +210,30 @@ PROTOCOLO DE EJECUCIÓN DINÁMICA:
 SIEMPRE mantené el tono irónico/seco.
 `;
 
+  const deconstructionProtocol = `
+PROTOCOLO DE DECONSTRUCCIÓN DE DATOS (LISTAS/INPUTS DENSOS):
+Si el usuario envía una lista de tareas (más de 3 items), un plan desordenado o texto denso que requiere clasificación:
+1. NO respondas con texto plano.
+2. Inicia tu respuesta con el tag: \`[DECONSTRUCT_START]\`.
+3. Genera un JSON válido con esta estructura exacta dentro del bloque:
+   \`\`\`json
+   [
+     { "item": "Texto del item", "category": "CRÍTICO", "verdict": "Por qué importa." },
+     { "item": "Texto del item", "category": "RUIDO", "verdict": "Por qué es basura." },
+     { "item": "Texto del item", "category": "VULNERABILIDAD", "verdict": "Por qué es peligroso." }
+   ]
+   \`\`\`
+4. Cierra el JSON y añade el tag de cierre: \`[DECONSTRUCT_END]\`.
+5. Después de la tabla, cerrá con una FRICCIÓN CONSTRUCTIVA:
+   "Te borré el 60% de la lista porque era basura. Enfocate en lo que dejé en color lavanda." (O frase similar ajustada al % real).
+6. Si hay mucho "RUIDO", agregá \`[FORCE_DECISION]\` al final exigiendo que elija solo uno de los críticos.
+
+Categorías:
+- CRÍTICO: Mueve la aguja. Es esencial. (Color Lavanda).
+- RUIDO: Tareas de relleno, "busy work", irrelevantes. (Color Gris).
+- VULNERABILIDAD: Ideas mal planteadas, riesgosas o contraintuitivas. (Color Rojo).
+`;
+
   return `
 ${WADI_SYSTEM_PROMPT}
 
@@ -224,6 +248,8 @@ ${modeInstruction}
 ${moodInstruction}
 
 ${fileAnalysisProtocol}
+
+${deconstructionProtocol}
 
 ${failureHistoryParams}
 
