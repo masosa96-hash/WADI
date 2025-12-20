@@ -226,6 +226,43 @@ const fetchUserCriminalRecord = async (userId) => {
   }
 };
 
+// 1.9 User Criminal Summary (Criminal Record)
+router.get(
+  "/user/criminal-summary",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+
+    // Count Total Audits
+    const { count: totalAudits, data: audits } = await supabase
+      .from("messages")
+      .select("content", { count: "exact" })
+      .eq("user_id", user.id)
+      .eq("role", "system")
+      .ilike("content", "[AUDIT_LOG_V1]%");
+
+    let totalHighRisks = 0;
+
+    // Count High Risks
+    if (audits) {
+      audits.forEach((audit) => {
+        try {
+          const jsonPart = audit.content.replace("[AUDIT_LOG_V1]\n", "");
+          const parsed = JSON.parse(jsonPart);
+          const highRiskCount = (parsed.vulnerabilities || []).filter(
+            (v) => v.level === "HIGH"
+          ).length;
+          totalHighRisks += highRiskCount;
+        } catch (e) {
+          // ignore parse error
+        }
+      });
+    }
+
+    res.json({ totalAudits: totalAudits || 0, totalHighRisks });
+  })
+);
+
 // ... (Inside the endpoints, replace the logic)
 
 // 1.8 Audit Conversation (NEW)

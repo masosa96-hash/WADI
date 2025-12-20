@@ -57,7 +57,13 @@ interface ChatState {
   hasStarted: boolean;
   mood: WadiMood;
   isSidebarOpen: boolean;
-  isUploading: boolean; // New: Uploading state
+  isUploading: boolean;
+
+  // Criminal Record (Long Term Memory)
+  criminalRecord: {
+    auditCount: number;
+    riskCount: number;
+  };
 
   // Settings for NEW conversation
   mode: ChatMode;
@@ -74,15 +80,16 @@ interface ChatState {
   setExplainLevel: (level: "short" | "normal" | "detailed") => void;
 
   fetchConversations: () => Promise<void>;
+  fetchCriminalRecord: () => Promise<void>; // New Action
   startNewConversation: (initialTitle?: string) => Promise<string | null>;
   loadConversations: () => Promise<void>;
   openConversation: (id: string) => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
-  uploadFile: (file: File) => Promise<Attachment | null>; // Return full object
+  uploadFile: (file: File) => Promise<Attachment | null>;
   sendMessage: (
     text: string,
     attachments?: Attachment[]
-  ) => Promise<string | null>; // Updated signature
+  ) => Promise<string | null>;
   deleteConversation: (id: string) => Promise<void>;
   resetChat: () => void;
 }
@@ -106,6 +113,8 @@ export const useChatStore = create<ChatState>()(
       mood: "hostile",
       isSidebarOpen: false,
       isUploading: false,
+
+      criminalRecord: { auditCount: 0, riskCount: 0 }, // Init
 
       mode: "normal",
       topic: "general",
@@ -204,6 +213,27 @@ export const useChatStore = create<ChatState>()(
 
       loadConversations: async () => {
         return get().fetchConversations();
+      },
+
+      fetchCriminalRecord: async () => {
+        try {
+          const token = await getToken();
+          if (!token) return;
+          const res = await fetch(`${API_URL}/api/user/criminal-summary`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            set({
+              criminalRecord: {
+                auditCount: data.totalAudits,
+                riskCount: data.totalHighRisks,
+              },
+            });
+          }
+        } catch (e) {
+          console.warn("Failed to fetch criminal record", e);
+        }
       },
 
       openConversation: async (id: string) => {
