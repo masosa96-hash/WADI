@@ -80,7 +80,7 @@ interface ChatState {
   setExplainLevel: (level: "short" | "normal" | "detailed") => void;
 
   fetchConversations: () => Promise<void>;
-  fetchCriminalRecord: () => Promise<void>; // New Action
+  fetchCriminalSummary: () => Promise<void>; // New Action
   startNewConversation: (initialTitle?: string) => Promise<string | null>;
   loadConversations: () => Promise<void>;
   openConversation: (id: string) => Promise<void>;
@@ -215,7 +215,7 @@ export const useChatStore = create<ChatState>()(
         return get().fetchConversations();
       },
 
-      fetchCriminalRecord: async () => {
+      fetchCriminalSummary: async () => {
         try {
           const token = await getToken();
           if (!token) return;

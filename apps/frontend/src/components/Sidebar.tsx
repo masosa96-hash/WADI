@@ -25,15 +25,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     setSidebarOpen,
     deleteConversation,
     criminalRecord,
-    fetchCriminalRecord,
+    fetchCriminalSummary,
   } = useChatStore();
 
   useEffect(() => {
     if (user) {
       fetchConversations();
-      fetchCriminalRecord();
+      fetchCriminalSummary();
     }
-  }, [user, fetchConversations, fetchCriminalRecord]);
+  }, [user, fetchConversations, fetchCriminalSummary]);
 
   const handleNewChat = () => {
     resetChat();
