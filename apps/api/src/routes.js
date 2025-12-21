@@ -168,13 +168,16 @@ router.post(
   })
 );
 
+// In-memory store for guest sessions (Volatile)
+const guestSessions = new Map();
+
 router.post(
   "/chat",
   validateChatInput,
   asyncHandler(async (req, res) => {
-    const user = await getAuthenticatedUser(req);
-    if (!user) throw new AuthError("Authentication required");
+    let user = await getAuthenticatedUser(req);
 
+    // Guest Mode: If no user, user stays null, but we proceed carefully.
     const {
       message,
       conversationId,
@@ -184,47 +187,81 @@ router.post(
       attachments,
       isMobile,
     } = req.body;
-    let currentConversationId = conversationId;
 
-    // A. Conversation Resolution
-    if (!currentConversationId) {
-      const { data: newConv } = await supabase
-        .from("conversations")
-        .insert([
-          {
-            user_id: user.id,
-            title: message.substring(0, 60),
-            mode: mode || "normal",
-            explain_level: explainLevel || "normal",
-          },
-        ])
-        .select()
-        .single();
-      currentConversationId = newConv.id;
+    let currentConversationId = conversationId;
+    let history = [];
+    let profile = {
+      efficiency_rank: "VISITANTE",
+      efficiency_points: 0,
+      active_focus: null,
+    };
+    let pastFailures = [];
+
+    // --- CASE A: AUTHENTICATED USER ---
+    if (user) {
+      if (!currentConversationId) {
+        const { data: newConv } = await supabase
+          .from("conversations")
+          .insert([
+            {
+              user_id: user.id,
+              title: message.substring(0, 60),
+              mode: mode || "normal",
+              explain_level: explainLevel || "normal",
+            },
+          ])
+          .select()
+          .single();
+        currentConversationId = newConv.id;
+      }
+
+      await supabase.from("messages").insert({
+        conversation_id: currentConversationId,
+        user_id: user.id,
+        role: "user",
+        content: message,
+        attachments: attachments || [],
+      });
+
+      const { data: dbHistory } = await supabase
+        .from("messages")
+        .select("role, content")
+        .eq("conversation_id", currentConversationId)
+        .order("created_at", { ascending: true });
+      history = dbHistory || [];
+
+      const { data: dbProfile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (dbProfile) profile = dbProfile;
+
+      pastFailures = await fetchUserCriminalRecord(user.id);
+    }
+    // --- CASE B: GUEST MODE (IN-MEMORY) ---
+    else {
+      if (!currentConversationId) {
+        currentConversationId = `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        guestSessions.set(currentConversationId, []);
+      }
+
+      if (!guestSessions.has(currentConversationId)) {
+        guestSessions.set(currentConversationId, []);
+      }
+      history = guestSessions.get(currentConversationId);
+
+      // Add User Message to Memory
+      history.push({ role: "user", content: message });
+
+      profile = {
+        efficiency_rank: "VISITANTE_CURIOSO",
+        efficiency_points: 0,
+        active_focus: null,
+      };
     }
 
-    // B. Store User Message
-    await supabase.from("messages").insert({
-      conversation_id: currentConversationId,
-      user_id: user.id,
-      role: "user",
-      content: message,
-      attachments: attachments || [],
-    });
-
-    // C. Generate AI Response
-    const { data: history } = await supabase
-      .from("messages")
-      .select("role, content")
-      .eq("conversation_id", currentConversationId)
-      .order("created_at", { ascending: true });
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-    const pastFailures = await fetchUserCriminalRecord(user.id);
-
+    // --- COMMON: GENERATE AI RESPONSE ---
     const fullSystemPrompt = generateSystemPrompt(
       mode || "normal",
       topic || "general",
@@ -233,15 +270,18 @@ router.post(
       {},
       "hostile",
       isMobile,
-      history?.length || 0,
+      history.length,
       pastFailures,
-      profile?.efficiency_rank || "GENERADOR_DE_HUMO",
-      profile?.efficiency_points || 0,
-      profile?.active_focus || null
+      profile.efficiency_rank,
+      profile.efficiency_points,
+      profile.active_focus
     );
 
     const userContent = await processAttachments(message, attachments);
-    const openAIHistory = (history || []).map((m) => ({
+
+    // Safety: Remove the last message (which is the current user message)
+    // from history to avoid duplication when we append 'userContent'.
+    const openAIHistorySafe = history.slice(0, -1).map((m) => ({
       role: m.role,
       content: m.content,
     }));
@@ -251,52 +291,66 @@ router.post(
         model: AI_MODEL,
         messages: [
           { role: "system", content: fullSystemPrompt },
-          ...openAIHistory,
+          ...openAIHistorySafe,
           { role: "user", content: userContent },
         ],
       });
 
       const reply = completion.choices[0].message.content;
 
-      // D. Gamification Logic
-      let pointChange = reply.includes("[FOCO_LIBERADO]")
-        ? 20
-        : reply.includes("[FORCE_DECISION]")
-          ? -10
-          : 0;
-      let newPoints = (profile?.efficiency_points || 0) + pointChange;
-      let systemDeath = newPoints <= -50;
+      let newPoints = profile.efficiency_points;
+      let newRank = profile.efficiency_rank;
+      let systemDeath = false;
 
-      if (systemDeath) {
-        await supabase.from("messages").delete().eq("user_id", user.id);
-        await supabase.from("conversations").delete().eq("user_id", user.id);
-        newPoints = 0;
-      }
+      // Persistence Update
+      if (user) {
+        let pointChange = reply.includes("[FOCO_LIBERADO]")
+          ? 20
+          : reply.includes("[FORCE_DECISION]")
+            ? -10
+            : 0;
+        newPoints += pointChange;
+        systemDeath = newPoints <= -50;
 
-      await supabase.from("profiles").upsert({
-        id: user.id,
-        efficiency_points: newPoints,
-        efficiency_rank: calculateRank(newPoints),
-        active_focus: reply.includes("[FOCO_LIBERADO]")
-          ? null
-          : profile?.active_focus,
-        updated_at: new Date().toISOString(),
-      });
+        if (systemDeath) {
+          await supabase.from("messages").delete().eq("user_id", user.id);
+          await supabase.from("conversations").delete().eq("user_id", user.id);
+          newPoints = 0;
+        }
 
-      if (!systemDeath) {
-        await supabase.from("messages").insert({
-          conversation_id: currentConversationId,
-          user_id: user.id,
-          role: "assistant",
-          content: reply,
+        newRank = calculateRank(newPoints);
+
+        await supabase.from("profiles").upsert({
+          id: user.id,
+          efficiency_points: newPoints,
+          efficiency_rank: newRank,
+          active_focus: reply.includes("[FOCO_LIBERADO]")
+            ? null
+            : profile.active_focus,
+          updated_at: new Date().toISOString(),
         });
+
+        if (!systemDeath) {
+          await supabase.from("messages").insert({
+            conversation_id: currentConversationId,
+            user_id: user.id,
+            role: "assistant",
+            content: reply,
+          });
+        }
+      } else {
+        guestSessions
+          .get(currentConversationId)
+          .push({ role: "assistant", content: reply });
       }
 
       res.json({
         reply: systemDeath ? "SYSTEM FAILURE" : reply,
         conversationId: currentConversationId,
         efficiencyPoints: newPoints,
+        efficiencyRank: newRank,
         systemDeath,
+        isGuest: !user,
       });
     } catch (e) {
       res.status(500).json({ error: "ERROR DE SISTEMA", details: e.message });

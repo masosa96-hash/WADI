@@ -173,6 +173,25 @@ export default function ChatPage() {
                 <p className="text-[var(--wadi-primary)] font-mono-wadi text-sm tracking-[0.2em] uppercase">
                   AUDITORÍA DE CAOS ACTIVA
                 </p>
+                <button
+                  onClick={() => {
+                    useChatStore.setState((state) => ({
+                      messages: [
+                        ...state.messages,
+                        {
+                          id: crypto.randomUUID(),
+                          role: "assistant",
+                          content:
+                            "¿Encontraste una grieta en el búnker? Reportala rápido antes de que se inunde todo.\n\n[REPORTE_AUTOMÁTICO]: mailto:masos@example.com?subject=WADI_BUG_REPORT\n(Copiá y pegá si no abre el cliente de correo)",
+                          created_at: new Date().toISOString(),
+                        },
+                      ],
+                    }));
+                  }}
+                  className="mt-4 text-[10px] text-[var(--wadi-text-muted)] hover:text-[var(--wadi-alert)] uppercase tracking-widest border border-transparent hover:border-[var(--wadi-alert)]/30 px-2 py-1 transition-all"
+                >
+                  [REPORTE_DE_FALLO]
+                </button>
               </div>
 
               <button
