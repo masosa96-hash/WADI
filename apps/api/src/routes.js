@@ -161,7 +161,7 @@ router.post(
 
     res.json({
       reply:
-        "Bueno, tuviste los huevos de admitirlo. Se valora. Reseteamos y arrancamos de nuevo, pero hacelo valer esta vez.",
+        "Está bien, a veces el plan se cae. No pasa nada. Soltemos esto, perdemos el progreso pero recuperamos la claridad. ¿Empezamos de cero?",
       efficiencyPoints: newPoints,
       efficiencyRank: newRank,
     });

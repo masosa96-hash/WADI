@@ -216,7 +216,7 @@ export function TerminalInput({
             onClick={() => useChatStore.getState().admitFailure()}
             className="text-[10px] text-red-500/50 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 px-2 py-1 transition-all uppercase tracking-widest"
           >
-            [ADMITIR_FRACASO_Y_PERDER_50_PTS]
+            [SOLTAR_Y_RECALIBRAR]
           </button>
         </div>
       )}
