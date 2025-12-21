@@ -28,7 +28,7 @@ export function useScouter() {
       updateState();
       ctx.addEventListener("statechange", updateState);
 
-      // Global click listener to unlock audio on first interaction
+      // Global interaction listener to unlock audio on first interaction
       const unlockAudio = () => {
         if (ctx.state === "suspended") {
           ctx
@@ -58,23 +58,28 @@ export function useScouter() {
 
               console.log("[WADI_AUDIO]: Audio Sub-systems Unlocked.");
             })
-            .catch((e) => console.error("Audio unlock failed", e));
+            .catch(() => {
+              // Silent fail if unlock fails, don't spam console.
+            });
         }
         // Remove listener after first interaction
         window.removeEventListener("click", unlockAudio);
         window.removeEventListener("keydown", unlockAudio);
         window.removeEventListener("touchstart", unlockAudio);
+        window.removeEventListener("mousedown", unlockAudio);
       };
 
       window.addEventListener("click", unlockAudio);
       window.addEventListener("keydown", unlockAudio);
       window.addEventListener("touchstart", unlockAudio);
+      window.addEventListener("mousedown", unlockAudio);
 
       return () => {
         ctx.removeEventListener("statechange", updateState);
         window.removeEventListener("click", unlockAudio);
         window.removeEventListener("keydown", unlockAudio);
         window.removeEventListener("touchstart", unlockAudio);
+        window.removeEventListener("mousedown", unlockAudio);
       };
     }
   }, []);
@@ -84,8 +89,10 @@ export function useScouter() {
     if (!ctx || ambientOsc) return; // Already running or no context
 
     // Resume context if suspended (browser policy)
+    // NOTE: If suspended, simple resume might fail without user gesture.
+    // relying on global unlockAudio to handle the resume properly.
     if (ctx.state === "suspended") {
-      ctx.resume().catch(() => {});
+      return; // Wait for user interaction to unlock properly.
     }
 
     try {
