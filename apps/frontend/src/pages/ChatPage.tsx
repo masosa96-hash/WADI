@@ -314,6 +314,15 @@ export default function ChatPage() {
           activeFocus={activeFocus}
         />
       </div>
+      {/* GLOBAL FOOTER STATUS - AUDIO CHECK */}
+      {audioState === "suspended" && (
+        <div
+          onClick={() => document.body.click()}
+          className="fixed bottom-1 right-1 z-[100] text-[9px] font-mono-wadi text-[var(--wadi-text-secondary)] opacity-50 hover:opacity-100 cursor-pointer select-none bg-black/50 px-2 rounded-tl-md border-t border-l border-[var(--wadi-border)]"
+        >
+          [SISTEMAS_SENSORIALES_OFF: CLIC PARA ACTIVAR]
+        </div>
+      )}
     </Layout>
   );
 }

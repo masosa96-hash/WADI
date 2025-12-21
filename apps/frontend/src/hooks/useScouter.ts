@@ -27,7 +27,55 @@ export function useScouter() {
       const updateState = () => setAudioState(ctx.state);
       updateState();
       ctx.addEventListener("statechange", updateState);
-      return () => ctx.removeEventListener("statechange", updateState);
+
+      // Global click listener to unlock audio on first interaction
+      const unlockAudio = () => {
+        if (ctx.state === "suspended") {
+          ctx
+            .resume()
+            .then(() => {
+              // Play "Systems Initiated" sound (Ascending Beep)
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = "sine";
+              osc.frequency.setValueAtTime(220, ctx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(
+                880,
+                ctx.currentTime + 0.3
+              );
+
+              gain.gain.setValueAtTime(0.01, ctx.currentTime);
+              gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.1);
+              gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                ctx.currentTime + 0.3
+              );
+
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start();
+              osc.stop(ctx.currentTime + 0.35);
+
+              console.log("[WADI_AUDIO]: Audio Sub-systems Unlocked.");
+            })
+            .catch((e) => console.error("Audio unlock failed", e));
+        }
+        // Remove listener after first interaction
+        window.removeEventListener("click", unlockAudio);
+        window.removeEventListener("keydown", unlockAudio);
+        window.removeEventListener("touchstart", unlockAudio);
+      };
+
+      window.addEventListener("click", unlockAudio);
+      window.addEventListener("keydown", unlockAudio);
+      window.addEventListener("touchstart", unlockAudio);
+
+      return () => {
+        ctx.removeEventListener("statechange", updateState);
+        window.removeEventListener("click", unlockAudio);
+        window.removeEventListener("keydown", unlockAudio);
+        window.removeEventListener("touchstart", unlockAudio);
+      };
     }
   }, []);
 
@@ -45,14 +93,20 @@ export function useScouter() {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
+      // Filter to cut ultra-lows and add some "air"
+      const filter = ctx.createBiquadFilter();
+      filter.type = "highpass";
+      filter.frequency.value = 60; // Cut sub-rumble below 60Hz
+
       // 60Hz hum with some modulation ideally, but simple sine/triangle low freq works
       osc.type = "sine";
       osc.frequency.value = 50; // Low rumble
 
-      // Very low volume
-      gain.gain.value = 0.02;
+      // Increased base volume (+20% from 0.02 -> 0.024)
+      gain.gain.value = 0.024;
 
-      osc.connect(gain);
+      osc.connect(filter);
+      filter.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
 
@@ -66,11 +120,29 @@ export function useScouter() {
   const setAmbientIntensity = useCallback((level: "normal" | "high") => {
     if (!ambientGain || !globalAudioCtx) return;
     const ctx = globalAudioCtx;
-    const targetGain = level === "high" ? 0.02 * 1.5 : 0.02; // +50% (approx 20-50%)
+    const targetGain = level === "high" ? 0.024 * 1.5 : 0.024; // +50%
 
     ambientGain.gain.cancelScheduledValues(ctx.currentTime);
     ambientGain.gain.linearRampToValueAtTime(targetGain, ctx.currentTime + 1); // Smooth transition
   }, []);
+
+  const createReverbNode = (ctx: AudioContext, duration: number = 2) => {
+    const convolver = ctx.createConvolver();
+    const rate = ctx.sampleRate;
+    const length = rate * duration;
+    const impulse = ctx.createBuffer(2, length, rate);
+    const left = impulse.getChannelData(0);
+    const right = impulse.getChannelData(1);
+
+    for (let i = 0; i < length; i++) {
+      // Simple noise impulse decay
+      const decay = Math.pow(1 - i / length, 2);
+      left[i] = (Math.random() * 2 - 1) * decay;
+      right[i] = (Math.random() * 2 - 1) * decay;
+    }
+    convolver.buffer = impulse;
+    return convolver;
+  };
 
   const playScanSound = useCallback(() => {
     const ctx = getAudioContext();
@@ -81,6 +153,11 @@ export function useScouter() {
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
+    // Add Reverb for "Spatial" feel
+    const reverb = createReverbNode(ctx, 0.5); // Short reverb 0.5s
+    const reverbGain = ctx.createGain();
+    reverbGain.gain.value = 0.4; // Wet mix
+
     osc.type = "sine";
     osc.frequency.setValueAtTime(400, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
@@ -90,6 +167,11 @@ export function useScouter() {
 
     osc.connect(gainNode);
     gainNode.connect(ctx.destination);
+
+    // Send to reverb also
+    gainNode.connect(reverb);
+    reverb.connect(reverbGain);
+    reverbGain.connect(ctx.destination);
 
     osc.start();
     osc.stop(ctx.currentTime + 0.35);
