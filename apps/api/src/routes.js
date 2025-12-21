@@ -161,7 +161,7 @@ router.post(
 
     res.json({
       reply:
-        "Está bien, a veces el plan se cae. No pasa nada. Soltemos esto, perdemos el progreso pero recuperamos la claridad. ¿Empezamos de cero?",
+        "Está bien. A veces el plan se rompe y lo más inteligente es soltarlo antes de que nos hunda a los dos. Perdimos un poco de impulso, pero recuperamos la claridad. Borrón y cuenta nueva. ¿Qué tenemos en la cabeza ahora?",
       efficiencyPoints: newPoints,
       efficiencyRank: newRank,
     });

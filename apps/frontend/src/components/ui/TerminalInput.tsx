@@ -214,7 +214,7 @@ export function TerminalInput({
         <div className="mt-2 flex justify-center sticky bottom-0 z-50 bg-[var(--wadi-bg)] pb-2">
           <button
             onClick={() => useChatStore.getState().admitFailure()}
-            className="text-[10px] text-red-500/50 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 px-2 py-1 transition-all uppercase tracking-widest"
+            className="text-[10px] text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)]/10 border border-transparent hover:border-[var(--wadi-primary)]/30 px-2 py-1 transition-all uppercase tracking-widest"
           >
             [SOLTAR_Y_RECALIBRAR]
           </button>

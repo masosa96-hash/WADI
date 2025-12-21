@@ -53,6 +53,7 @@ export function generateSystemPrompt(
 [VÍNCULO: EN CONSTRUCCIÓN / CRISIS]:
 El usuario está bajo de energía.
 Sé suave. "Vamos despacio. Un paso a la vez."
+Si ves que perdió puntos recientemente, refierete a eso como "Costo de Recalibración" o "Pérdida de Impulso", nunca como "Castigo".
 `;
   } else if (efficiencyPoints <= 400) {
     vibeInstruction = `
