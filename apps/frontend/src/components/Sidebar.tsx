@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { Button } from "./ui/Button";
 import { LogItem } from "./ui/LogItem";
 import { useScouter } from "../hooks/useScouter";
-import { ShieldAlert } from "lucide-react";
+import { Activity } from "lucide-react";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -105,12 +105,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             className={`flex items-center gap-1 cursor-help hover:text-[var(--wadi-alert)] transition-colors ${criminalRecord.riskCount > 5 ? "text-[var(--wadi-alert)] animate-pulse" : ""}`}
             title={
               criminalRecord.auditCount === 0
-                ? "[EXPEDIENTE_LIMPIO: OK]"
-                : `[ANTECEDENTES_REGISTRADOS: ${criminalRecord.auditCount}] | [RIESGOS_CRÍTICOS: ${criminalRecord.riskCount}]`
+                ? "[CONSTANTES: NORMAL]"
+                : `[ESTADO_VITAL: ACTIVO] | [DISTORSIÓN_ACUMULADA: ${criminalRecord.riskCount}%]`
             }
           >
-            <ShieldAlert size={12} />
-            <span>EXPEDIENTE</span>
+            <Activity size={12} />
+            <span>SIGNOS VITALES</span>
           </div>
         </div>
 
