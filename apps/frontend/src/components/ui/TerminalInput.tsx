@@ -11,13 +11,13 @@ interface TerminalInputProps {
 }
 
 const PLACEHOLDERS_NORMAL = [
-  "> Ingrese comando...",
-  "> Reporte situación...",
-  "> Defina objetivo...",
+  "> Ingrese realidad...",
+  "> Compartir estado...",
+  "> ¿En qué pensás?...",
 ];
 const PLACEHOLDERS_BLOCKED = [
-  "BLOQUEO ACTIVO // ELEGÍ UNA OPCIÓN",
-  "DECISIÓN REQUERIDA IMMEDIATA",
+  "[PAUSA DE LUCIDEZ: ENFOCATE EN UNA OPCIÓN]",
+  "ESPERANDO SELECCIÓN (A/B) PARA AVANZAR...",
 ];
 
 export function TerminalInput({

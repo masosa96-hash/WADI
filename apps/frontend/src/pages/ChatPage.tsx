@@ -27,7 +27,9 @@ export default function ChatPage() {
 
   const lastMessage = messages[messages.length - 1];
   const isLastMessageUser = lastMessage?.role === "user";
-  const hasForceDecision = lastMessage?.content?.includes("[FORCE_DECISION]");
+  const hasForceDecision =
+    lastMessage?.content?.includes("[FORCE_DECISION]") ||
+    lastMessage?.content?.includes("[CHECK_DE_LUCIDEZ]");
 
   // Derived state - no need for useEffect/useState syncing
   const isDecisionBlocked = !!(

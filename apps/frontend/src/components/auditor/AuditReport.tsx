@@ -43,14 +43,9 @@ export function AuditReport() {
 
         const jsonData = await res.json();
         setVulnerabilities(jsonData.vulnerabilities || []);
-
-        // Auto-Block Check logic would go here via ChatStore in future steps
-        // For now, we just display.
       } catch (err) {
         console.error(err);
-        setError(
-          "ERROR CRÍTICO: El auditor se niega a procesar este desastre."
-        );
+        setError("ERROR DE CONEXIÓN VITAL: No pude sincronizar con tu estado.");
         playAlertSound();
       } finally {
         setIsLoading(false);
@@ -62,13 +57,12 @@ export function AuditReport() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 bg-[var(--wadi-bg)] flex flex-col items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 bg-[#0f111a] flex flex-col items-center justify-center p-4">
         <div className="animate-pulse text-[var(--wadi-primary)] font-mono-wadi text-xl tracking-[0.3em] uppercase">
-          [ESCANEANDO_INCONSISTENCIAS...]
+          [SINCRONIZANDO REALIDAD...]
         </div>
-        {/* Detailed loader effect */}
-        <div className="mt-4 w-64 h-1 bg-[var(--wadi-surface)] overflow-hidden">
-          <div className="h-full bg-[var(--wadi-primary)] animate-[shimmer_1s_infinite] w-1/3"></div>
+        <div className="mt-4 w-64 h-1 bg-[var(--wadi-surface)] overflow-hidden rounded-full">
+          <div className="h-full bg-[var(--wadi-primary)] animate-[shimmer_1s_infinite] w-1/3 rounded-full"></div>
         </div>
       </div>
     );
@@ -76,16 +70,16 @@ export function AuditReport() {
 
   if (error) {
     return (
-      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-4 border-4 border-[var(--wadi-alert)]">
-        <h1 className="text-[var(--wadi-alert)] text-4xl font-bold font-mono-wadi mb-4">
-          SYSTEM_FAILURE
+      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-4">
+        <h1 className="text-[var(--wadi-text-muted)] text-xl font-bold font-mono-wadi mb-4">
+          DESCONEXIÓN
         </h1>
-        <p className="text-white font-mono-wadi">{error}</p>
+        <p className="text-white font-mono-wadi text-sm">{error}</p>
         <Button
           onClick={() => navigate(-1)}
-          className="mt-8 bg-[var(--wadi-alert)] text-black hover:bg-white"
+          className="mt-8 bg-[var(--wadi-surface)] text-white hover:bg-[var(--wadi-surface)]/80"
         >
-          [RETIRADA TÁCTICA]
+          [VOLVER AL REFUGIO]
         </Button>
       </div>
     );
@@ -100,26 +94,24 @@ export function AuditReport() {
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-[var(--wadi-bg)] flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 bg-[#0f111a] flex flex-col items-center justify-center p-4 animate-in fade-in duration-500">
       {/* HEADER */}
-      <div className="w-full max-w-2xl border-b border-[var(--wadi-alert)] pb-4 mb-8 flex justify-between items-end">
+      <div className="w-full max-w-2xl border-b border-[var(--wadi-primary)]/30 pb-4 mb-8 flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-mono-wadi font-bold text-[var(--wadi-alert)] tracking-widest">
-            REPORTE DE AUDITORÍA
+          <h1 className="text-3xl font-light font-['Outfit'] text-[var(--wadi-primary)] tracking-widest uppercase">
+            Mapa de Distorsión
           </h1>
           <p className="text-[var(--wadi-text-muted)] mt-2 font-mono-wadi text-xs uppercase">
             REF: {conversationId?.split("-")[0]} // ESTADO:{" "}
-            {highRiskCount > 0 ? "CRÍTICO" : "ESTABLE"}
+            {highRiskCount > 0 ? "DISTORSIÓN ACTIVA" : "LÚCIDO"}
           </p>
         </div>
         <div className="text-right">
-          {highRiskCount > 2 && (
-            <div className="text-[var(--wadi-alert)] font-mono-wadi text-xs uppercase animate-pulse mb-1">
-              [RIESGO DE COLAPSO]
-            </div>
-          )}
           <div className="text-4xl font-bold text-white font-['Outfit']">
             {riskPercentage}%
+          </div>
+          <div className="text-[var(--wadi-text-muted)] text-[10px] uppercase tracking-widest mt-1">
+            NIVEL DE AUTOENGAÑO
           </div>
         </div>
       </div>
@@ -127,37 +119,34 @@ export function AuditReport() {
       {/* VULNERABILITIES LIST */}
       <div className="w-full max-w-2xl space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
         {vulnerabilities.length === 0 ? (
-          <div className="text-center py-12 text-[var(--wadi-text-muted)] font-mono-wadi border border-dashed border-[var(--wadi-border)]">
-            [NO SE DETECTARON FALLOS ESTRUCTURALES... POR AHORA]
+          <div className="text-center py-12 text-[var(--wadi-text-muted)] font-mono-wadi border border-dashed border-[var(--wadi-border)] bg-[var(--wadi-surface)]/20 rounded-sm">
+            [TODO CLARO. ESTÁS SIENDO HONESTO CON VOS MISMO.]
           </div>
         ) : (
           vulnerabilities.map((vuln, idx) => (
             <div
               key={idx}
               className={`
-                        border-l-4 p-4 bg-[var(--wadi-surface)] relative overflow-hidden group
-                        ${vuln.level === "HIGH" ? "border-[var(--wadi-alert)]" : vuln.level === "MEDIUM" ? "border-orange-500" : "border-yellow-500"}
+                        border-l-2 p-6 bg-[var(--wadi-surface)]/30 relative overflow-hidden group rounded-r-sm hover:bg-[var(--wadi-surface)]/50 transition-colors
+                        ${vuln.level === "HIGH" ? "border-[var(--wadi-alert)]" : "border-[var(--wadi-primary)]"}
                     `}
             >
-              <div className="flex justify-between items-start mb-2">
+              <div className="flex justify-between items-start mb-3">
                 <span
                   className={`
-                            font-mono-wadi text-xs px-2 py-0.5 text-black font-bold
-                            ${vuln.level === "HIGH" ? "bg-[var(--wadi-alert)]" : vuln.level === "MEDIUM" ? "bg-orange-500" : "bg-yellow-500"}
+                            font-mono-wadi text-[10px] px-2 py-0.5 font-bold tracking-wider uppercase
+                            ${vuln.level === "HIGH" ? "text-[var(--wadi-alert)] bg-[var(--wadi-alert)]/10" : "text-[var(--wadi-primary)] bg-[var(--wadi-primary)]/10"}
                         `}
                 >
-                  {vuln.level}_RISK
+                  {vuln.level === "HIGH" ? "ZONA CIEGA CRÍTICA" : "DISTORSIÓN"}
                 </span>
               </div>
-              <h3 className="font-mono-wadi text-lg font-bold text-white mb-2 tracking-tight">
+              <h3 className="font-['Outfit'] text-lg font-medium text-white mb-2">
                 {vuln.title}
               </h3>
               <p className="text-[var(--wadi-text-muted)] text-sm font-light leading-relaxed">
                 {vuln.description}
               </p>
-
-              {/* Scanline Effect on Hover */}
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]" />
             </div>
           ))
         )}
@@ -169,16 +158,7 @@ export function AuditReport() {
           className="border border-[var(--wadi-text-muted)] text-[var(--wadi-text-muted)] hover:text-white"
           onClick={() => navigate(-1)}
         >
-          [IGNORAR REALIDAD]
-        </Button>
-        <Button
-          className="bg-[var(--wadi-alert)] text-black hover:bg-[var(--wadi-alert)]/90 hover:shadow-[0_0_20px_var(--wadi-alert-glow)]"
-          onClick={() => {
-            // In future: Trigger FORCE_DECISION in chat
-            navigate(-1);
-          }}
-        >
-          [ACEPTAR FALLOS]
+          [CERRAR MAPA]
         </Button>
       </div>
     </div>

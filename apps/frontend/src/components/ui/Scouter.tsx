@@ -24,7 +24,7 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
   const prevMessagesLength = useRef(messages.length);
   const prevRank = useRef(rank);
 
-  // Initialize Ambient Hum on Mount (will technically wait for user interaction to be audible)
+  // Initialize Ambient Hum on Mount
   useEffect(() => {
     const handleInteraction = () => initAmbientHum();
     window.addEventListener("click", handleInteraction, { once: true });
@@ -35,19 +35,19 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
     };
   }, [initAmbientHum]);
 
-  // Adjust Ambient Intensity based on Decision Block or System Death
   useEffect(() => {
     if (systemDeath) {
-      setAmbientIntensity("high"); // Max tension
+      setAmbientIntensity("high");
       return;
     }
+    // Si hay check de lucidez, el ambiente sube pero no es hostil
     setAmbientIntensity(isDecisionBlocked ? "high" : "normal");
   }, [isDecisionBlocked, systemDeath, setAmbientIntensity]);
 
-  // System Death Visual Loop & Redirect
+  // System Death Logic (Keep as fail-safe)
   useEffect(() => {
     if (systemDeath) {
-      playDeathSound(); // Trigger sound immediately
+      playDeathSound();
       const overlay = document.getElementById("scouter-flash-overlay");
       let active = true;
       const loop = () => {
@@ -57,12 +57,8 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
       };
       loop();
 
-      // Redirect after 10s
       const timer = setTimeout(() => {
-        resetChat(); // Clear state completely
-        // Also need to clear systemDeath flag so we don't loop forever if we come back?
-        // Actually resetChat clears conversationId etc, but maybe not systemDeath.
-        // We should ensure systemDeath is false after reset.
+        resetChat();
         useChatStore.setState({
           systemDeath: false,
           rank: "GENERADOR_DE_HUMO",
@@ -79,21 +75,18 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
     }
   }, [systemDeath, navigate, resetChat, playDeathSound]);
 
-  // Rank Change Logic
+  // Rank Change Logic (Visual pulse)
   useEffect(() => {
     if (prevRank.current !== rank) {
-      // Rank Updated
-      // Play harmonic scan sound (re-use scan sound or create new one if needed)
       playScanSound();
-      // Lavender Flash
       const overlay = document.getElementById("scouter-flash-overlay");
       if (overlay) {
         overlay.style.backgroundColor = "var(--wadi-primary)";
-        overlay.style.opacity = "0.5";
+        overlay.style.opacity = "0.3"; // Más suave
         setTimeout(() => {
           overlay.style.opacity = "0";
-          overlay.style.backgroundColor = "var(--wadi-alert)"; // Reset to red for alerts
-        }, 1000);
+          overlay.style.backgroundColor = "var(--wadi-alert)";
+        }, 1500);
       }
     }
     prevRank.current = rank;
@@ -107,33 +100,33 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
       const lastMsg = messages[newCount - 1];
       const isMyMessage = lastMsg.role === "user";
 
-      // SCOUTER LOGIC: Check for alerts in Assistant messages
+      // SCOUTER LOGIC
       if (!isMyMessage) {
         const text = lastMsg.content || "";
         const isChaotic = text.includes("[ALERTA DE CAOS DETECTADA]");
-        const isForcedDecision = text.includes("[FORCE_DECISION]");
-        const isRejected = text.toLowerCase().includes("tostadora");
-        const isNormalAnalysis =
-          text.includes("Analizar inconsistencias") ||
-          text.includes("Diagnóstico") ||
-          text.includes("[DECONSTRUCT_START]");
+        const isLucidityCheck =
+          text.includes("[CHECK_DE_LUCIDEZ]") ||
+          text.includes("[FORCE_DECISION]"); // Backwards compat
+        const isAnalysis =
+          text.includes("Analizar") || text.includes("[DECONSTRUCT_START]");
 
-        if (isChaotic || isRejected || isForcedDecision) {
+        if (isChaotic || isLucidityCheck) {
           playAlertSound();
           const flashOverlay = document.getElementById("scouter-flash-overlay");
           if (flashOverlay) {
-            flashOverlay.style.opacity = "1";
-            setTimeout(
-              () => {
-                flashOverlay.style.opacity = "0";
-              },
-              isForcedDecision ? 800 : 200
-            );
+            // Si es Lucidez, color lavanda suave, no rojo
+            if (isLucidityCheck) {
+              flashOverlay.style.background = "var(--wadi-primary)";
+            } else {
+              flashOverlay.style.background = "var(--wadi-alert)";
+            }
+            flashOverlay.style.opacity = "0.4"; // Suave
+            setTimeout(() => {
+              flashOverlay.style.opacity = "0";
+              flashOverlay.style.background = "var(--wadi-alert)"; // reset
+            }, 1000);
           }
-        } else if (
-          isNormalAnalysis ||
-          text.toLowerCase().includes("antecedente")
-        ) {
+        } else if (isAnalysis) {
           playScanSound();
         }
       }
@@ -145,23 +138,21 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
     <>
       <div
         id="scouter-flash-overlay"
-        className="fixed inset-0 pointer-events-none z-[9999] bg-[var(--wadi-alert)] opacity-0 transition-opacity duration-75 mix-blend-overlay"
+        className="fixed inset-0 pointer-events-none z-[9999] bg-[var(--wadi-alert)] opacity-0 transition-opacity duration-1000 mix-blend-screen" // blend screen is softer
         aria-hidden="true"
       />
 
-      {/* GLITCH OVERLAY FOR SYSTEM DEATH */}
       {systemDeath && (
-        <div className="fixed inset-0 z-[10000] pointer-events-auto bg-black/50 flex items-center justify-center overflow-hidden">
+        <div className="fixed inset-0 z-[10000] pointer-events-auto bg-black/80 flex items-center justify-center overflow-hidden">
           <div className="text-[var(--wadi-alert)] font-bold text-4xl animate-pulse font-mono-wadi tracking-widest text-center">
-            SYSTEM FAILURE
+            DESCONEXIÓN VITAL
             <br />
-            PROTOCOL_DEATH_INITIATED
+            PROTOCOL_RESET
             <br />
             <span className="text-sm text-white mt-4 block">
-              Reiniciando núcleos...
+              Reiniciando búnker...
             </span>
           </div>
-          {/* CSS Glitch lines would go here, simulated by flash loop above for now */}
         </div>
       )}
     </>
