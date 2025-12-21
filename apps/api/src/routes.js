@@ -161,7 +161,7 @@ router.post(
 
     res.json({
       reply:
-        "Al menos tuviste la decencia de admitir que no servís para esto. Empezamos de cero.",
+        "Bueno, tuviste los huevos de admitirlo. Se valora. Reseteamos y arrancamos de nuevo, pero hacelo valer esta vez.",
       efficiencyPoints: newPoints,
       efficiencyRank: newRank,
     });
@@ -284,14 +284,12 @@ router.post(
       });
 
       if (!systemDeath) {
-        await supabase
-          .from("messages")
-          .insert({
-            conversation_id: currentConversationId,
-            user_id: user.id,
-            role: "assistant",
-            content: reply,
-          });
+        await supabase.from("messages").insert({
+          conversation_id: currentConversationId,
+          user_id: user.id,
+          role: "assistant",
+          content: reply,
+        });
       }
 
       res.json({
