@@ -136,22 +136,24 @@ app.get("/system/debug-files", (req, res) => {
 // --------------------------------------------------
 // PRIORITY 1: API & System Routes (MOVED TO TOP)
 // --------------------------------------------------
+// --------------------------------------------------
+// PRIORITY 1: API & System Routes
+// --------------------------------------------------
 app.use("/api", rateLimiter);
 app.use("/api", routes); // Main API
 app.use("/api/kivo", kivoRoutes); // Legacy/Module
 app.use("/system", monitoringRoutes);
 
 // Explicit 404 for API to prevent falling through to SPA
-// Explicit 404 for API to prevent falling through to SPA
 app.all(/\/api\/.*/, (req, res) => {
   res.status(404).json({ error: "API_ROUTE_NOT_FOUND" });
 });
 
 // --------------------------------------------------
-// PRIORITY 2: Assets (Explicit & No-Cache for Stability)
+// PRIORITY 2: Static Assets (Correctly Ordered)
 // --------------------------------------------------
 
-// PWA: Service Worker & Manifest (Explicit MIME Types)
+// Serve specialized files first
 app.get("/sw.js", (req, res) => {
   res.sendFile(path.join(frontendPath, "sw.js"), {
     headers: { "Content-Type": "application/javascript" },
@@ -159,66 +161,47 @@ app.get("/sw.js", (req, res) => {
 });
 
 app.get("/manifest.webmanifest", (req, res) => {
-  const manifestPath = path.join(frontendPath, "manifest.webmanifest");
-  if (fs.existsSync(manifestPath)) {
-    res.sendFile(manifestPath, {
-      headers: { "Content-Type": "application/manifest+json" },
-    });
-  } else {
-    console.warn(
-      "[PWA_SABOTAGE]: Los archivos de sistema han sido interceptados o no existen."
-    );
-    res.status(404).send("Manifest Not Found");
-  }
+  res.sendFile(path.join(frontendPath, "manifest.webmanifest"), {
+    headers: { "Content-Type": "application/manifest+json" },
+  });
 });
 
+// Serve assets with strict MIME types and NO fallback to index.html
+// This ensures that if a CSS/JS file is missing, it 404s instead of returning HTML
 app.use(
   "/assets",
-  express.static(path.join(__dirname, "../../frontend/dist/assets"), {
-    fallthrough: false, // Force 404 if asset missing
-    etag: false,
-    lastModified: false,
-    setHeaders: (res) => {
-      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  express.static(path.join(frontendPath, "assets"), {
+    fallthrough: false, // CRITICAL: Do not pass to next middleware if file missing
+    etag: true, // Let browser cache logic work
+    lastModified: true,
+    setHeaders: (res, path) => {
+      // Versioned assets (Vite uses hashes) can be cached forever-ish
+      if (path.match(/\.[0-9a-f]{8,}\./)) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      } else {
+        res.setHeader("Cache-Control", "no-cache");
+      }
     },
   })
 );
 
-// --------------------------------------------------
-// REDIRECT LEGACY KIVO
-// --------------------------------------------------
-app.get(/^\/kivo(\/.*)?$/, (req, res) => res.redirect("/"));
+// Fallback for strict strict asset 404s (double safety)
+app.use("/assets/*", (req, res) => {
+  res.status(404).send("Asset Not Found");
+});
+
+// Serve the rest of the static files (favicon, etc) from root
+app.use(express.static(frontendPath));
 
 // --------------------------------------------------
-// Debug: Log directory contents on startup to verify build on Render
-try {
-  console.log("----- DEBUG FILES START -----");
-  if (fs.existsSync(frontendPath)) {
-    console.log("Detected frontendPath:", frontendPath);
-    // Use recursive ls to see everything
-    const { execSync } = await import("child_process");
-    try {
-      const output = execSync(`ls -R ${frontendPath}`, { encoding: "utf-8" });
-      console.log("ls -R output:\n", output);
-    } catch (e) {
-      console.log("ls -R failed:", e.message);
-      // Fallback
-      console.log("Root contents:", fs.readdirSync(frontendPath));
-    }
-  } else {
-    console.log("⚠️ Frontend dist missing at:", frontendPath);
+// PRIORITY 3: SPA Fallback
+// --------------------------------------------------
+app.get("*", (req, res) => {
+  // Don't serve index.html for API calls or obviously wrong paths that slipped through
+  if (req.path.startsWith("/api") || req.path.startsWith("/assets")) {
+    return res.status(404).send("Not Found");
   }
-  console.log("----- DEBUG FILES END -----");
-} catch (err) {
-  console.error("Debug Log Error:", err);
-}
-
-// 3. API - Moved to top priority
-
-// 4. SPA fallback (Catch-all)
-// Any request not handled by previous routes serves index.html
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 // Error Handler
