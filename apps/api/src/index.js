@@ -186,7 +186,7 @@ app.use(
 );
 
 // Fallback for strict strict asset 404s (double safety)
-app.use("/assets/*", (req, res) => {
+app.use(/\/assets\/.*/, (req, res) => {
   res.status(404).send("Asset Not Found");
 });
 
