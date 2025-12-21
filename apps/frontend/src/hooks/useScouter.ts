@@ -30,6 +30,16 @@ export function useScouter() {
 
       // Global interaction listener to unlock audio on first interaction
       const unlockAudio = () => {
+        // Prevent multiple calls/logs if multiple events trigger quickly
+        if (ctx.state === "running") {
+          // Already unlocked, just cleanup and return
+          window.removeEventListener("click", unlockAudio);
+          window.removeEventListener("keydown", unlockAudio);
+          window.removeEventListener("touchstart", unlockAudio);
+          window.removeEventListener("mousedown", unlockAudio);
+          return;
+        }
+
         if (ctx.state === "suspended") {
           ctx
             .resume()
@@ -60,13 +70,15 @@ export function useScouter() {
             })
             .catch(() => {
               // Silent fail if unlock fails, don't spam console.
+            })
+            .finally(() => {
+              // Ensure removal happens after attempt, successful or not
+              window.removeEventListener("click", unlockAudio);
+              window.removeEventListener("keydown", unlockAudio);
+              window.removeEventListener("touchstart", unlockAudio);
+              window.removeEventListener("mousedown", unlockAudio);
             });
         }
-        // Remove listener after first interaction
-        window.removeEventListener("click", unlockAudio);
-        window.removeEventListener("keydown", unlockAudio);
-        window.removeEventListener("touchstart", unlockAudio);
-        window.removeEventListener("mousedown", unlockAudio);
       };
 
       window.addEventListener("click", unlockAudio);
