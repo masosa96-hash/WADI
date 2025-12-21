@@ -262,15 +262,22 @@ router.post(
     }
 
     // --- COMMON: GENERATE AI RESPONSE ---
+
+    // [FIX]: Ensure history sent to context formatting DOES NOT include the current message.
+    // The history fetched from DB (Case A) or Memory (Case B) already includes the current user message at the end.
+    // We want the AI to see 'Previous Context' + 'Current Prompt'.
+    const previousHistory = history.slice(0, -1);
+    const messageCount = previousHistory.length;
+
     const fullSystemPrompt = generateSystemPrompt(
       mode || "normal",
       topic || "general",
       explainLevel || "normal",
-      formatContext(history),
+      formatContext(previousHistory), // Only format PREVIOUS messages for context
       {},
       "hostile",
       isMobile,
-      Math.max(0, history.length - 1), // Pass *previous* context count. 0 = Start.
+      messageCount, // Pass count of PREVIOUS messages. 0 = Start.
       pastFailures,
       profile.efficiency_rank,
       profile.efficiency_points,
@@ -279,9 +286,8 @@ router.post(
 
     const userContent = await processAttachments(message, attachments);
 
-    // Safety: Remove the last message (which is the current user message)
-    // from history to avoid duplication when we append 'userContent'.
-    const openAIHistorySafe = history.slice(0, -1).map((m) => ({
+    // Prepare OpenAI Messages: System + Previous History + Current User Message
+    const openAIHistory = previousHistory.map((m) => ({
       role: m.role,
       content: m.content,
     }));
@@ -291,7 +297,7 @@ router.post(
         model: AI_MODEL,
         messages: [
           { role: "system", content: fullSystemPrompt },
-          ...openAIHistorySafe,
+          ...openAIHistory,
           { role: "user", content: userContent },
         ],
       });

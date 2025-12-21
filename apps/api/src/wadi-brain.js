@@ -140,11 +140,14 @@ ${visualAuditRaw}
 ${chaosProtocol}
 ${deconstructHuman}
 
-CONTEXTO:
-${sessionContext || "Sesión nueva."}
+
+CONTEXTO (Historial Previo):
+${sessionContext || "NO HAY MENSAJES PREVIOS. (Esta es la primera interacción)."}
 
 INSTRUCCIÓN RT:
 Sé humano. Respirá antes de responder.
+NO te disculpes por "olvidos" si el historial es corto; simplemente respondé al mensaje actual.
+Si messageCount > 0, RECORDÁ que ya estamos hablando. Prohibido saludar de nuevo.
 `;
 }
 
