@@ -33,6 +33,13 @@ export function TerminalInput({
 
   const { playScanSound } = useScouter();
 
+  // FOCUS LAW: Keep input focused always
+  useEffect(() => {
+    if (!isLoading && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isLoading, input, selectedFile]); // Re-focus on any change/loading end
+
   const [dynamicPlaceholder, setDynamicPlaceholder] = useState(
     PLACEHOLDERS_NORMAL[0]
   );
@@ -61,6 +68,15 @@ export function TerminalInput({
 
     let finalPrompt = input;
     const finalAttachments: Attachment[] = [];
+
+    // OPTIMISTIC UPDATE: Clear UI immediately
+    const prevInput = input; // backup in case of error (optional, but good practice)
+    setInput("");
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    // Force focus back immediately
+    if (inputRef.current) inputRef.current.focus();
 
     if (selectedFile) {
       const isText =
@@ -97,11 +113,13 @@ export function TerminalInput({
       }
     }
 
-    await onSendMessage(finalPrompt, finalAttachments);
-
-    setInput("");
-    setSelectedFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    try {
+      await onSendMessage(finalPrompt, finalAttachments);
+    } catch (err) {
+      // Restore if failed (optional, but clean)
+      console.error("Send failed", err);
+      setInput(prevInput);
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

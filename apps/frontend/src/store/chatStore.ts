@@ -355,9 +355,7 @@ export const useChatStore = create<ChatState>()(
       sendMessage: async (text: string, attachments: Attachment[] = []) => {
         if (!text.trim() && attachments.length === 0) return null;
 
-        set({ isLoading: true, error: null, hasStarted: true });
-
-        // 1. Optimistic User Message
+        // OPTIMISTIC UPDATE START
         const tempId = crypto.randomUUID();
         const userMsg: Message = {
           id: tempId,
@@ -366,7 +364,14 @@ export const useChatStore = create<ChatState>()(
           attachments: attachments,
           created_at: new Date().toISOString(),
         };
-        set((state) => ({ messages: [...state.messages, userMsg] }));
+
+        set((state) => ({
+          messages: [...state.messages, userMsg],
+          isLoading: true,
+          error: null,
+          hasStarted: true,
+        }));
+        // OPTIMISTIC UPDATE END
 
         try {
           const token = await getToken();
