@@ -132,74 +132,32 @@ export default function ChatPage() {
           {/* EMPTY STATE - WADI OS */}
           {!hasStarted && (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 text-center px-4 animate-in fade-in zoom-in-95 duration-500">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-[var(--wadi-primary)] blur-[50px] opacity-20 rounded-full"></div>
-                {/* BIG EYE LOGO */}
-                <svg
-                  width="80"
-                  height="80"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-[var(--wadi-primary)] relative z-10 drop-shadow-2xl"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                  />
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="3"
-                    fill="currentColor"
-                    className="animate-pulse"
-                  />
-                  <path
-                    d="M12 2V4M12 20V22M2 12H4M20 12H22"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                  />
-                </svg>
-              </div>
+              <h1 className="text-3xl font-regular font-['Outfit'] text-[var(--wadi-text)] mb-2">
+                ¿En qué puedo ayudarte hoy?
+              </h1>
 
-              <div className="space-y-4 max-w-md">
-                <h1 className="text-4xl font-bold font-['Outfit'] tracking-tight text-white mb-0">
-                  WADI
-                </h1>
-                <div className="h-px w-24 bg-gradient-to-r from-transparent via-[var(--wadi-primary)] to-transparent mx-auto"></div>
-                <p className="text-[var(--wadi-primary)] font-mono-wadi text-sm tracking-[0.2em] uppercase">
-                  AUDITORÍA DE CAOS ACTIVA
-                </p>
-                <button
-                  onClick={() => {
-                    useChatStore.setState((state) => ({
-                      messages: [
-                        ...state.messages,
-                        {
-                          id: crypto.randomUUID(),
-                          role: "assistant",
-                          content:
-                            "¿Encontraste una grieta en el búnker? Reportala rápido antes de que se inunde todo.\n\n[REPORTE_AUTOMÁTICO]: mailto:masos@example.com?subject=WADI_BUG_REPORT\n(Copiá y pegá si no abre el cliente de correo)",
-                          created_at: new Date().toISOString(),
-                        },
-                      ],
-                    }));
-                  }}
-                  className="mt-4 text-[10px] text-[var(--wadi-text-muted)] hover:text-[var(--wadi-alert)] uppercase tracking-widest border border-transparent hover:border-[var(--wadi-alert)]/30 px-2 py-1 transition-all"
-                >
-                  [REPORTE_DE_FALLO]
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-lg mt-4">
+                {[
+                  "Ayúdame con mi proyecto",
+                  "Planificar mi semana",
+                  "Analizar una idea",
+                  "Explicame un concepto",
+                ].map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      // Optimistically populate input or just send it?
+                      // Standard behavior is usually sending it or populating.
+                      // Since we don't have easy access to setInput from here without prop drilling or store,
+                      // we will send it directly via sendMessage logic available in ChatPage.
+                      handleSendMessage(suggestion, []);
+                    }}
+                    className="px-4 py-3 bg-[var(--wadi-surface)] border border-[var(--wadi-border)] hover:border-[var(--wadi-primary)] text-[var(--wadi-text)] rounded-lg text-sm text-left transition-colors hover:bg-[var(--wadi-surface)]/80"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
               </div>
-
-              <button
-                onClick={() => document.querySelector("input")?.focus()}
-                className="mt-8 px-8 py-3 bg-[var(--wadi-surface)] border border-[var(--wadi-primary)]/30 text-[var(--wadi-primary)] font-mono-wadi text-xs tracking-[0.2em] hover:bg-[var(--wadi-primary)] hover:text-white transition-all duration-300 uppercase shadow-[0_0_20px_rgba(139,92,246,0.1)] hover:shadow-[0_0_30px_rgba(139,92,246,0.4)]"
-              >
-                [ABRIR CANAL]
-              </button>
             </div>
           )}
 

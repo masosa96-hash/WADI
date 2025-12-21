@@ -30,7 +30,7 @@ export function AuditorHeader() {
         </svg>
         <div className="flex flex-col">
           <span className="font-mono-wadi text-xs font-bold leading-none tracking-wider text-white">
-            WADI::AUDITOR
+            WADI
           </span>
           <span className="text-[9px] text-[var(--wadi-success)] font-mono-wadi leading-none mt-1 tracking-widest">
             ESTADO: {isOnline ? "CONECTADO" : "OFFLINE"}

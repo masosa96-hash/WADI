@@ -93,14 +93,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           variant="default"
           className="w-full justify-start gap-2 font-mono-wadi tracking-widest text-xs"
         >
-          <span className="text-lg leading-none">+</span> INICIAR PROTOCOLO
+          <span className="text-lg leading-none">+</span> Nuevo Chat
         </Button>
       </div>
 
       {/* 2. Historial de Conversaciones (LOGS) */}
       <div className="flex-1 overflow-y-auto px-2 space-y-1">
         <div className="px-4 py-2 flex justify-between items-center text-[10px] uppercase tracking-[0.2em] text-[var(--wadi-text-muted)] font-mono-wadi opacity-70">
-          <span>Log de Evidencias</span>
+          <span>Chats recientes</span>
           <div
             className={`flex items-center gap-1 cursor-help hover:text-[var(--wadi-alert)] transition-colors ${criminalRecord.riskCount > 5 ? "text-[var(--wadi-alert)] animate-pulse" : ""}`}
             title={
@@ -110,7 +110,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             }
           >
             <Activity size={12} />
-            <span>SIGNOS VITALES</span>
+            <span>Estado</span>
           </div>
         </div>
 

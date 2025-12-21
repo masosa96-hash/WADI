@@ -10,11 +10,7 @@ interface TerminalInputProps {
   activeFocus?: string | null;
 }
 
-const PLACEHOLDERS_NORMAL = [
-  "> Ingrese realidad...",
-  "> Compartir estado...",
-  "> ¿En qué pensás?...",
-];
+const PLACEHOLDERS_NORMAL = ["Escribe un mensaje..."];
 const PLACEHOLDERS_BLOCKED = [
   "[PAUSA DE LUCIDEZ: ENFOCATE EN UNA OPCIÓN]",
   "ESPERANDO SELECCIÓN (A/B) PARA AVANZAR...",
@@ -233,7 +229,20 @@ export function TerminalInput({
             disabled={(!input.trim() && !selectedFile) || isLoading}
             className="rounded-none text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)] hover:text-white mb-1 px-4 font-mono-wadi"
           >
-            EXE
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m5 12 7-7 7 7" />
+              <path d="M12 19V5" />
+            </svg>
           </Button>
         </div>
       </form>
