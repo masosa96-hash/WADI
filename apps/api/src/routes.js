@@ -270,7 +270,7 @@ router.post(
       {},
       "hostile",
       isMobile,
-      history.length,
+      Math.max(0, history.length - 1), // Pass *previous* context count. 0 = Start.
       pastFailures,
       profile.efficiency_rank,
       profile.efficiency_points,
