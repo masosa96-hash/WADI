@@ -150,6 +150,28 @@ app.all(/\/api\/.*/, (req, res) => {
 // --------------------------------------------------
 // PRIORITY 2: Assets (Explicit & No-Cache for Stability)
 // --------------------------------------------------
+
+// PWA: Service Worker & Manifest (Explicit MIME Types)
+app.get("/sw.js", (req, res) => {
+  res.sendFile(path.join(frontendPath, "sw.js"), {
+    headers: { "Content-Type": "application/javascript" },
+  });
+});
+
+app.get("/manifest.webmanifest", (req, res) => {
+  const manifestPath = path.join(frontendPath, "manifest.webmanifest");
+  if (fs.existsSync(manifestPath)) {
+    res.sendFile(manifestPath, {
+      headers: { "Content-Type": "application/manifest+json" },
+    });
+  } else {
+    console.warn(
+      "[PWA_SABOTAGE]: Los archivos de sistema han sido interceptados o no existen."
+    );
+    res.status(404).send("Manifest Not Found");
+  }
+});
+
 app.use(
   "/assets",
   express.static(path.join(__dirname, "../../frontend/dist/assets"), {

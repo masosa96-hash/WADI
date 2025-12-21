@@ -24,8 +24,8 @@ export function useScouter() {
   useEffect(() => {
     const ctx = getAudioContext();
     if (ctx) {
-      setAudioState(ctx.state);
       const updateState = () => setAudioState(ctx.state);
+      updateState();
       ctx.addEventListener("statechange", updateState);
       return () => ctx.removeEventListener("statechange", updateState);
     }
