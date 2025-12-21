@@ -244,7 +244,49 @@ export default function ChatPage() {
                 key={msg.id}
                 className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}
               >
-                <div className={isUser ? "bubble-user" : "bubble-wadi"}>
+                <div
+                  className={
+                    isUser ? "bubble-user" : "bubble-wadi group relative"
+                  }
+                >
+                  {/* COPY BUTTON FOR MESSAGES - HOVER ONLY */}
+                  {!isUser && (
+                    <button
+                      onClick={() => {
+                        if (msg.content) {
+                          navigator.clipboard.writeText(msg.content);
+                          // Optional visual feedback could be handled with local state,
+                          // but for simplicity and speed (per user request for tactical feel),
+                          // we can just rely on the action working.
+                          // Or adding a tiny temporary state if needed.
+                        }
+                      }}
+                      className="absolute -top-3 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--wadi-surface)] border border-[var(--wadi-primary)] text-[var(--wadi-primary)] p-1 hover:bg-[var(--wadi-primary)] hover:text-white"
+                      title="Copiar Mensaje"
+                    >
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect
+                          x="9"
+                          y="9"
+                          width="13"
+                          height="13"
+                          rx="2"
+                          ry="2"
+                        ></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                    </button>
+                  )}
+
                   {deconstructionData ? (
                     <div className="flex flex-col gap-4">
                       {beforeText && (
