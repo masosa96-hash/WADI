@@ -1,0 +1,21 @@
+{
+  "name": "WADI OS :: Auditor",
+  "short_name": "WADI",
+  "description": "Sistema Operativo de Auditoría de Caos.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050816",
+  "theme_color": "#8B5CF6",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ]
+}
