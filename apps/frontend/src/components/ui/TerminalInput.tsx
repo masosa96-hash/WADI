@@ -107,6 +107,16 @@ export function TerminalInput({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validación de tamaño (4MB)
+    if (file.size > 4 * 1024 * 1024) {
+      useChatStore.getState().triggerVisualAlert();
+      // Opcional: Feedback visual temporal en el placeholder
+      setDynamicPlaceholder("[ERROR: ARCHIVO EXCEDE 4MB]");
+      setTimeout(() => setDynamicPlaceholder(PLACEHOLDERS_NORMAL[0]), 3000);
+      return;
+    }
+
     playScanSound();
     setSelectedFile(file);
   };

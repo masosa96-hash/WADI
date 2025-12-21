@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 
 // Singleton AudioContext to prevent mulitple instances
 let globalAudioCtx: AudioContext | null = null;
@@ -19,6 +19,18 @@ const getAudioContext = () => {
 };
 
 export function useScouter() {
+  const [audioState, setAudioState] = useState<AudioContextState>("suspended");
+
+  useEffect(() => {
+    const ctx = getAudioContext();
+    if (ctx) {
+      setAudioState(ctx.state);
+      const updateState = () => setAudioState(ctx.state);
+      ctx.addEventListener("statechange", updateState);
+      return () => ctx.removeEventListener("statechange", updateState);
+    }
+  }, []);
+
   const initAmbientHum = useCallback(() => {
     const ctx = getAudioContext();
     if (!ctx || ambientOsc) return; // Already running or no context
@@ -148,5 +160,6 @@ export function useScouter() {
     initAmbientHum,
     setAmbientIntensity,
     playDeathSound,
+    audioState, // Expose audio state for UI indicators
   };
 }

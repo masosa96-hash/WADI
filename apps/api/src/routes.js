@@ -37,7 +37,7 @@ const formatContext = (messages) => {
   const validRoles = ["user", "assistant", "system"];
   const recent = messages
     .filter((m) => m && m.content && validRoles.includes(m.role))
-    .slice(-10);
+    .slice(-15);
 
   return recent
     .map(

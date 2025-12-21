@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore, type Attachment } from "../store/chatStore";
+import { useScouter } from "../hooks/useScouter";
 
 import { TerminalInput } from "../components/ui/TerminalInput";
 import { Scouter } from "../components/ui/Scouter";
@@ -24,6 +25,8 @@ export default function ChatPage() {
     conversationId: storeConversationId,
     activeFocus,
   } = useChatStore();
+
+  const { initAmbientHum, audioState } = useScouter();
 
   const lastMessage = messages[messages.length - 1];
   const isLastMessageUser = lastMessage?.role === "user";
@@ -109,6 +112,16 @@ export default function ChatPage() {
 
       <div className="flex flex-col h-full max-w-[1000px] mx-auto relative bg-[var(--wadi-bg)] overflow-hidden">
         <AuditorHeader />
+
+        {/* Audio Suspended Check */}
+        {audioState === "suspended" && (
+          <button
+            onClick={initAmbientHum}
+            className="absolute top-4 right-4 z-50 px-3 py-1 bg-[var(--wadi-alert)]/10 border border-[var(--wadi-alert)]/50 text-[var(--wadi-alert)] text-[10px] font-mono-wadi uppercase tracking-widest hover:bg-[var(--wadi-alert)]/20 transition-colors animate-pulse"
+          >
+            [ACTIVAR AUDIO]
+          </button>
+        )}
 
         {/* Messages */}
         <div

@@ -24,6 +24,28 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
   const prevMessagesLength = useRef(messages.length);
   const prevRank = useRef(rank);
 
+  const visualAlertTimestamp = useChatStore(
+    (state) => state.visualAlertTimestamp
+  );
+  const prevVisualAlertTimestamp = useRef(visualAlertTimestamp);
+
+  // Trigger Visual Alert on Timestamp Change
+  useEffect(() => {
+    if (visualAlertTimestamp !== prevVisualAlertTimestamp.current) {
+      playAlertSound();
+      const flashOverlay = document.getElementById("scouter-flash-overlay");
+      if (flashOverlay) {
+        // Alerta roja explícita para errores de validación
+        flashOverlay.style.background = "var(--wadi-alert)";
+        flashOverlay.style.opacity = "0.6";
+        setTimeout(() => {
+          flashOverlay.style.opacity = "0";
+        }, 800);
+      }
+      prevVisualAlertTimestamp.current = visualAlertTimestamp;
+    }
+  }, [visualAlertTimestamp, playAlertSound]);
+
   // Initialize Ambient Hum on Mount
   useEffect(() => {
     const handleInteraction = () => initAmbientHum();

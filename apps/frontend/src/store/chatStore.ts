@@ -99,6 +99,9 @@ interface ChatState {
   deleteConversation: (id: string) => Promise<void>;
   resetChat: () => void;
   admitFailure: () => Promise<void>;
+  // Action to trigger visual alert
+  triggerVisualAlert: () => void;
+  visualAlertTimestamp: number;
 }
 
 // Helper to get token
@@ -129,6 +132,9 @@ export const useChatStore = create<ChatState>()(
       mode: "normal",
       topic: "general",
       explainLevel: "normal",
+      visualAlertTimestamp: 0,
+
+      triggerVisualAlert: () => set({ visualAlertTimestamp: Date.now() }),
 
       setPreset: (preset) =>
         set((state) => {
