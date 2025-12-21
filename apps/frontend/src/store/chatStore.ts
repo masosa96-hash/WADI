@@ -507,21 +507,9 @@ export const useChatStore = create<ChatState>()(
         hasStarted: state.hasStarted,
         // Don't persist isUploading or blocked states if they are ephemeral
       }),
-      onRehydrateStorage: () => (state) => {
-        if (state && state.messages && state.messages.length > 0) {
-          const lastMsg = state.messages[state.messages.length - 1];
-          const welcomeBackText =
-            "Volviste. El desorden sigue donde lo dejaste.";
-
-          if (lastMsg.content !== welcomeBackText) {
-            state.messages.push({
-              id: "welcome-back-" + Date.now(),
-              role: "assistant",
-              content: welcomeBackText,
-              created_at: new Date().toISOString(),
-            });
-          }
-        }
+      onRehydrateStorage: () => () => {
+        // [FIX]: Removed automatic "Volviste" greeting on rehydration to prevent repetitive messages.
+        // The persistence should just restore state as is.
       },
     }
   )
