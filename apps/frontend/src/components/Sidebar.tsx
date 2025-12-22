@@ -5,7 +5,9 @@ import { useEffect } from "react";
 import { Button } from "./ui/Button";
 import { LogItem } from "./ui/LogItem";
 import { useScouter } from "../hooks/useScouter";
-import { Activity } from "lucide-react";
+import { Activity, Settings, User as UserIcon } from "lucide-react";
+import { SettingsModal } from "./SettingsModal";
+import { useState } from "react";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -57,6 +59,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     navigate(`/chat/${id}/audit`);
     onClose?.();
   };
+
+  const [showSettings, setShowSettings] = useState(false);
 
   // ... existing handleDelete ...
 
@@ -141,18 +145,43 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
       </div>
 
-      {/* Footer Minimalista (Auth) */}
-      <div className="p-4 border-t border-[var(--wadi-border)] bg-[var(--wadi-bg)]">
-        <div className="flex items-center justify-between text-xs text-[var(--wadi-text-muted)] font-mono-wadi">
-          <span className="truncate max-w-[150px]">{user?.email}</span>
+      {/* Footer Minimalista (Auth + Settings) */}
+      <div className="p-4 border-t border-[var(--wadi-border)] bg-[var(--wadi-bg)] space-y-3">
+        {/* User Profile */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-[var(--wadi-surface)] border border-[var(--wadi-border)] flex items-center justify-center text-[var(--wadi-text-muted)]">
+              {user?.email ? (
+                user.email[0].toUpperCase()
+              ) : (
+                <UserIcon size={14} />
+              )}
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span
+                className="text-xs font-mono-wadi text-[var(--wadi-text)] truncate max-w-[120px]"
+                title={user?.email}
+              >
+                {user?.email?.split("@")[0]}
+              </span>
+              <span className="text-[10px] text-[var(--wadi-text-muted)] font-mono-wadi uppercase tracking-wider">
+                {/* Could show rank here if available in store */}
+                OPERADOR
+              </span>
+            </div>
+          </div>
+
           <button
-            onClick={() => signOut()}
-            className="hover:text-[var(--wadi-alert)] transition-colors uppercase tracking-wider"
+            onClick={() => setShowSettings(true)}
+            className="p-2 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)]/10 rounded-md transition-all"
+            title="Configuración del Sistema"
           >
-            [SALIR]
+            <Settings size={16} />
           </button>
         </div>
       </div>
+
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </aside>
   );
 }

@@ -99,6 +99,20 @@ interface ChatState {
   deleteConversation: (id: string) => Promise<void>;
   resetChat: () => void;
   admitFailure: () => Promise<void>;
+  // Settings
+  settings: {
+    sarcasmLevel: number; // 0 (Soft) to 100 (Nuclear)
+    theme: "light" | "dark" | "system";
+    language: "es" | "en";
+    defaultMode: ChatMode;
+  };
+  aiModel: "fast" | "deep";
+
+  updateSettings: (settings: Partial<ChatState["settings"]>) => void;
+  setAiModel: (model: "fast" | "deep") => void;
+  exportData: () => Promise<void>;
+  clearAllChats: () => Promise<void>;
+
   crystallizeProject: (name: string, description: string) => Promise<boolean>;
   // Action to trigger visual alert
   triggerVisualAlert: () => void;
@@ -135,7 +149,57 @@ export const useChatStore = create<ChatState>()(
       explainLevel: "normal",
       visualAlertTimestamp: 0,
 
+      // Settings Defaults
+      aiModel: "fast",
+      settings: {
+        sarcasmLevel: 50,
+        theme: "dark",
+        language: "es",
+        defaultMode: "normal",
+      },
+
       triggerVisualAlert: () => set({ visualAlertTimestamp: Date.now() }),
+
+      updateSettings: (newSettings) =>
+        set((state) => ({ settings: { ...state.settings, ...newSettings } })),
+      setAiModel: (model) => set({ aiModel: model }),
+
+      exportData: async () => {
+        const state = get();
+        const data = {
+          conversations: state.conversations,
+          profile: { rank: state.rank, points: state.points },
+          settings: state.settings,
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `wadi_export_${new Date().toISOString().split("T")[0]}.json`;
+        a.click();
+      },
+
+      clearAllChats: async () => {
+        try {
+          const token = await getToken();
+          if (!token) return;
+          // We'll iterate and delete for now, or assume backend has a bulk delete (it doesn't yet, so careful)
+          // Ideally we create a bulk delete endpoint, but for this step we will iterate locally or clear local state.
+          const convs = get().conversations;
+          for (const c of convs) {
+            await fetch(`${API_URL}/api/conversations/${c.id}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+          }
+          get().resetChat();
+          set({ conversations: [] });
+        } catch (e) {
+          console.error("Failed to clear chats", e);
+        }
+      },
 
       setPreset: (preset) =>
         set((state) => {
