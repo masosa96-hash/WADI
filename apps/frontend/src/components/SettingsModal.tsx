@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useChatStore, ChatMode } from "../store/chatStore";
+import { useChatStore, type ChatMode } from "../store/chatStore";
 
 interface SettingsModalProps {
   onClose: () => void;

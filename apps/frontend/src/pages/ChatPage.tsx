@@ -234,19 +234,87 @@ export default function ChatPage() {
                     isUser ? "bubble-user" : "bubble-wadi group relative"
                   }
                 >
-                  {/* COPY BUTTON FOR MESSAGES - HOVER ONLY */}
+                  {/* ACTION BAR (WADI ONLY) */}
                   {!isUser && (
+                    <div className="absolute -top-5 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                      {/* Copy */}
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(msg.content);
+                        }}
+                        className="text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] p-1 hover:bg-[var(--wadi-surface)] rounded"
+                        title="Copiar"
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <rect
+                            x="9"
+                            y="9"
+                            width="13"
+                            height="13"
+                            rx="2"
+                            ry="2"
+                          ></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                      </button>
+                      {/* Regenerate (Fake for now, just sends 'regenerate' intent or we could impl real logic later) */}
+                      <button
+                        onClick={() => {
+                          /* Logic to regenerate would go here, maybe delete last msg and resend prev user msg? For now just visual */
+                        }}
+                        className="text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] p-1 hover:bg-[var(--wadi-surface)] rounded"
+                        title="Regenerar (WIP)"
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                          <path d="M21 3v5h-5"></path>
+                          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                          <path d="M8 16H3v5"></path>
+                        </svg>
+                      </button>
+                      {/* Thumbs Up/Down (Visual) */}
+                      <button
+                        className="text-[var(--wadi-text-muted)] hover:text-[var(--wadi-success)] p-1"
+                        title="Buen dato"
+                      >
+                        👍
+                      </button>
+                      <button
+                        className="text-[var(--wadi-text-muted)] hover:text-[var(--wadi-alert)] p-1"
+                        title="Cualquiera"
+                      >
+                        👎
+                      </button>
+                    </div>
+                  )}
+
+                  {/* COPY BUTTON FOR MESSAGES - HOVER ONLY (USER) */}
+                  {isUser && (
                     <button
                       onClick={() => {
                         if (msg.content) {
                           navigator.clipboard.writeText(msg.content);
-                          // Optional visual feedback could be handled with local state,
-                          // but for simplicity and speed (per user request for tactical feel),
-                          // we can just rely on the action working.
-                          // Or adding a tiny temporary state if needed.
                         }
                       }}
-                      className="absolute -top-3 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--wadi-surface)] border border-[var(--wadi-primary)] text-[var(--wadi-primary)] p-1 hover:bg-[var(--wadi-primary)] hover:text-white"
+                      className="absolute -top-3 -left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--wadi-surface)] border border-[var(--wadi-primary)] text-[var(--wadi-primary)] p-1 hover:bg-[var(--wadi-primary)] hover:text-white"
                       title="Copiar Mensaje"
                     >
                       <svg

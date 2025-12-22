@@ -1,5 +1,7 @@
+import { useChatStore } from "../../store/chatStore";
+
 export function AuditorHeader() {
-  // Fake status, or derive from connection
+  const { aiModel, setAiModel } = useChatStore();
   const isOnline = true;
 
   return (
@@ -38,7 +40,21 @@ export function AuditorHeader() {
         </div>
       </div>
 
-      {/* Optional: Current Context/Project Info could go here */}
+      {/* Model Selector */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-[var(--wadi-text-muted)] font-mono-wadi uppercase hidden sm:inline">
+          MOTOR:
+        </span>
+        <select
+          value={aiModel}
+          onChange={(e) => setAiModel(e.target.value as "fast" | "deep")}
+          className="bg-[black] border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] font-mono-wadi p-1 px-2 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none text-center min-w-[80px]"
+          style={{ textAlignLast: "center" }}
+        >
+          <option value="fast">RÁPIDO</option>
+          <option value="deep">PROFUNDO</option>
+        </select>
+      </div>
     </header>
   );
 }
