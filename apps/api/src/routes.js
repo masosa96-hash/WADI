@@ -230,6 +230,11 @@ router.post(
         .order("created_at", { ascending: true });
       history = dbHistory || [];
 
+      // [SAFETY]: If DB read missed the insert (race condition), manually add current message
+      if (history.length === 0) {
+        history.push({ role: "user", content: message });
+      }
+
       const { data: dbProfile } = await supabase
         .from("profiles")
         .select("*")
