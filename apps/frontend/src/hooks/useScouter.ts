@@ -66,7 +66,7 @@ export function useScouter() {
               osc.start();
               osc.stop(ctx.currentTime + 0.35);
 
-              // console.log("[WADI_AUDIO]: Audio Sub-systems Unlocked.");
+              // Log removed as per request
             })
             .catch(() => {
               // Silent fail if unlock fails, don't spam console.

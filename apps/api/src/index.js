@@ -134,21 +134,6 @@ app.get("/system/debug-files", (req, res) => {
 });
 
 // --------------------------------------------------
-// PRIORITY 1: API & System Routes (MOVED TO TOP)
-// --------------------------------------------------
-// --------------------------------------------------
-// PRIORITY 1: API & System Routes
-// --------------------------------------------------
-app.use("/api", rateLimiter);
-app.use("/api", routes); // Main API
-app.use("/api/kivo", kivoRoutes); // Legacy/Module
-app.use("/system", monitoringRoutes);
-
-// Explicit 404 for API to prevent falling through to SPA
-app.all(/\/api\/.*/, (req, res) => {
-  res.status(404).json({ error: "API_ROUTE_NOT_FOUND" });
-});
-
 // --------------------------------------------------
 // PRIORITY 2: Static Assets (Correctly Ordered)
 // --------------------------------------------------
@@ -192,6 +177,19 @@ app.use(/\/assets\/.*/, (req, res) => {
 
 // Serve the rest of the static files (favicon, etc) from root
 app.use(express.static(frontendPath));
+
+// --------------------------------------------------
+// PRIORITY 1: API & System Routes
+// --------------------------------------------------
+app.use("/api", rateLimiter);
+app.use("/api", routes); // Main API
+app.use("/api/kivo", kivoRoutes); // Legacy/Module
+app.use("/system", monitoringRoutes);
+
+// Explicit 404 for API to prevent falling through to SPA
+app.all(/\/api\/.*/, (req, res) => {
+  res.status(404).json({ error: "API_ROUTE_NOT_FOUND" });
+});
 
 // --------------------------------------------------
 // PRIORITY 3: SPA Fallback
