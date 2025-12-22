@@ -99,6 +99,7 @@ interface ChatState {
   deleteConversation: (id: string) => Promise<void>;
   resetChat: () => void;
   admitFailure: () => Promise<void>;
+  crystallizeProject: (name: string, description: string) => Promise<boolean>;
   // Action to trigger visual alert
   triggerVisualAlert: () => void;
   visualAlertTimestamp: number;
@@ -314,6 +315,47 @@ export const useChatStore = create<ChatState>()(
           console.error("Error uploading file:", error);
           set({ isUploading: false, error: "Error al subir archivo." });
           return null;
+        }
+      },
+
+      crystallizeProject: async (name: string, description: string) => {
+        try {
+          const token = await getToken();
+          if (!token) return false;
+
+          set({ isLoading: true });
+
+          const res = await fetch(`${API_URL}/api/projects/crystallize`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ name, description }),
+          });
+
+          if (!res.ok) throw new Error("Failed to crystallize");
+
+          const data = await res.json();
+
+          // Add System Confirmation
+          const sysMsg: Message = {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: `[PROYECTO_CRISTALIZADO: ${data.name}]`,
+            created_at: new Date().toISOString(),
+          };
+
+          set((state) => ({
+            messages: [...state.messages, sysMsg],
+            isLoading: false,
+          }));
+
+          return true;
+        } catch (e) {
+          console.error(e);
+          set({ isLoading: false, error: "Fallo al cristalizar proyecto." });
+          return false;
         }
       },
 

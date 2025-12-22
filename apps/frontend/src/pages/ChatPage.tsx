@@ -24,9 +24,10 @@ export default function ChatPage() {
     hasStarted,
     conversationId: storeConversationId,
     activeFocus,
+    crystallizeProject, // New action
   } = useChatStore();
 
-  const { initAmbientHum, audioState } = useScouter();
+  const { initAmbientHum, audioState, playCrystallizeSound } = useScouter();
 
   const lastMessage = messages[messages.length - 1];
   const isLastMessageUser = lastMessage?.role === "user";
@@ -99,6 +100,32 @@ export default function ChatPage() {
       | null;
     if (!conversationId && newId) {
       navigate(`/chat/${newId}`, { replace: true });
+    }
+  };
+
+  // --- CRYSTALLIZE LOGIC ---
+  const [isCrystallizeOpen, setCrystallizeOpen] = useState(false);
+  const [crystallizeData, setCrystallizeData] = useState({
+    name: "",
+    description: "",
+  });
+  const [isCrystallizing, setIsCrystallizing] = useState(false);
+
+  const openCrystallizeModal = (content: string) => {
+    setCrystallizeData({ name: "", description: content });
+    setCrystallizeOpen(true);
+  };
+
+  const handleCrystallizeConfirm = async () => {
+    setIsCrystallizing(true);
+    const success = await crystallizeProject(
+      crystallizeData.name,
+      crystallizeData.description
+    );
+    setIsCrystallizing(false);
+    if (success) {
+      playCrystallizeSound();
+      setCrystallizeOpen(false);
     }
   };
 
@@ -299,6 +326,17 @@ export default function ChatPage() {
                       )}
                     </div>
                   )}
+                  {/* CRYSTALLIZE BUTTON (WADI ONLY) */}
+                  {!isUser && (
+                    <div className="absolute -bottom-5 left-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10">
+                      <button
+                        onClick={() => openCrystallizeModal(msg.content)}
+                        className="text-[10px] text-[#A78BFA] hover:text-white font-mono-wadi bg-[#A78BFA]/10 hover:bg-[#A78BFA]/20 px-2 py-0.5 rounded border border-[#A78BFA]/30 transition-colors backdrop-blur-sm"
+                      >
+                        [CRISTALIZAR]
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -321,6 +359,63 @@ export default function ChatPage() {
           className="fixed bottom-1 right-1 z-[100] text-[9px] font-mono-wadi text-[var(--wadi-text-secondary)] opacity-50 hover:opacity-100 cursor-pointer select-none bg-black/50 px-2 rounded-tl-md border-t border-l border-[var(--wadi-border)]"
         >
           [SISTEMAS_SENSORIALES_OFF: CLIC PARA ACTIVAR]
+        </div>
+      )}
+
+      {/* CRYSTALLIZE MODAL */}
+      {isCrystallizeOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-[90%] max-w-[500px] border border-[var(--wadi-primary)] bg-[var(--wadi-bg)] p-6 shadow-[0_0_30px_rgba(var(--wadi-primary-rgb),0.2)]">
+            <h2 className="text-[var(--wadi-primary)] font-mono-wadi text-lg mb-4">
+              [CRISTALIZAR_IDEA]
+            </h2>
+            <div className="text-[var(--wadi-text-secondary)] text-xs mb-4 font-mono-wadi">
+              ¿Pasamos esto a limpio? WADI generará un nombre técnico si lo
+              dejás vacío.
+            </div>
+
+            <label className="block text-[var(--wadi-text)] text-xs font-mono-wadi mb-2">
+              NOMBRE DEL PROYECTO
+            </label>
+            <input
+              value={crystallizeData.name}
+              onChange={(e) =>
+                setCrystallizeData({ ...crystallizeData, name: e.target.value })
+              }
+              placeholder="E.j: SISTEMA_LOGÍSTICA_V1 (Opcional)"
+              className="w-full bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)] p-3 mb-4 font-mono-wadi text-sm focus:border-[var(--wadi-primary)] outline-none placeholder:text-gray-700"
+            />
+
+            <label className="block text-[var(--wadi-text)] text-xs font-mono-wadi mb-2">
+              DESCRIPCIÓN / REQUERIMIENTOS
+            </label>
+            <textarea
+              value={crystallizeData.description}
+              onChange={(e) =>
+                setCrystallizeData({
+                  ...crystallizeData,
+                  description: e.target.value,
+                })
+              }
+              className="w-full h-32 bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)] p-3 mb-6 font-mono-wadi text-xs resize-none focus:border-[var(--wadi-primary)] outline-none custom-scrollbar"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setCrystallizeOpen(false)}
+                className="text-[var(--wadi-text-secondary)] hover:text-[var(--wadi-text)] text-xs font-mono-wadi uppercase px-3 py-2"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCrystallizeConfirm}
+                disabled={isCrystallizing}
+                className="bg-[var(--wadi-primary)] text-black px-4 py-2 text-xs font-bold font-mono-wadi uppercase hover:bg-white transition-colors disabled:opacity-50 hover:shadow-[0_0_15px_rgba(var(--wadi-primary-rgb),0.6)]"
+              >
+                {isCrystallizing ? "CRISTALIZANDO..." : "CONFIRMAR"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </Layout>

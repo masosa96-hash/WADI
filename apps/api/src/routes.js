@@ -397,6 +397,66 @@ router.post(
   })
 );
 
+// Helper: Generate Technical Project Name
+const generateProjectName = async (description) => {
+  try {
+    const completion = await openai.chat.completions.create({
+      model: AI_MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Generá un NOMBRE TÉCNICO ÚNICO (Max 35 chars) para este proyecto. Uppercase, snake_case. Sin extensión de archivo. EJ: SISTEMA_LOGISTICA_V1, RED_NEURONAL_BASE.",
+        },
+        { role: "user", content: description.substring(0, 500) },
+      ],
+      max_tokens: 20,
+    });
+    let name = completion.choices[0].message.content.trim();
+    // Sanitize
+    name = name.replace(/[^A-Z0-9_]/g, "_").replace(/_{2,}/g, "_");
+    return name;
+  } catch (e) {
+    return `PROYECTO_${Date.now()}`;
+  }
+};
+
+router.post(
+  "/projects/crystallize",
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) throw new AuthError("Authentication required");
+
+    let { name, description } = req.body;
+
+    if (!description || description.trim().length === 0) {
+      throw new AppError("INVALID_INPUT", "Description is required");
+    }
+
+    // Auto-generate name if missing
+    if (!name || name.trim().length === 0) {
+      name = await generateProjectName(description);
+    }
+
+    const { data, error } = await supabase
+      .from("projects")
+      .insert([
+        {
+          user_id: user.id,
+          name: name,
+          description: description,
+          status: "PLANNING",
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw new AppError("DB_ERROR", error.message);
+
+    res.json(data);
+  })
+);
+
 router.delete(
   "/projects/:id",
   asyncHandler(async (req, res) => {

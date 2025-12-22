@@ -255,12 +255,41 @@ export function useScouter() {
     osc.start();
   }, []);
 
+  const playCrystallizeSound = useCallback(() => {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+
+    // Metallic Ping (Glass/Metal)
+    // 2 high sine waves slightly detuned
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.frequency.value = 2000;
+    osc2.frequency.value = 3500; // Harmony
+
+    // Quick envelope
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start();
+    osc2.start();
+    osc1.stop(ctx.currentTime + 1.5);
+    osc2.stop(ctx.currentTime + 1.5);
+  }, []);
+
   return {
     playScanSound,
     playAlertSound,
     initAmbientHum,
     setAmbientIntensity,
     playDeathSound,
+    playCrystallizeSound,
     audioState, // Expose audio state for UI indicators
   };
 }
