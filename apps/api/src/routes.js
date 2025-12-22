@@ -31,22 +31,6 @@ const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// Helper: Format messages for AI context
-const formatContext = (messages) => {
-  if (!messages || messages.length === 0) return "";
-  const validRoles = ["user", "assistant", "system"];
-  const recent = messages
-    .filter((m) => m && m.content && validRoles.includes(m.role))
-    .slice(-15);
-
-  return recent
-    .map(
-      (m) =>
-        `${m.role === "user" ? "Usuario" : "WADI"}: ${m.content.substring(0, 500)}`
-    )
-    .join("\n");
-};
-
 // Helper: Process attachments for OpenAI
 const processAttachments = async (message, attachments) => {
   if (!attachments || attachments.length === 0) return message;
@@ -268,21 +252,18 @@ router.post(
 
     // --- COMMON: GENERATE AI RESPONSE ---
 
-    // [FIX]: Ensure history sent to context formatting DOES NOT include the current message.
-    // The history fetched from DB (Case A) or Memory (Case B) already includes the current user message at the end.
-    // We want the AI to see 'Previous Context' + 'Current Prompt'.
-    const previousHistory = history.slice(0, -1);
-    const messageCount = previousHistory.length;
+    // [FIX]: Remove current msg from history for prompt context, and limit to recent history
+    const previousHistory = history.slice(0, -1).slice(-20);
+    const messageCount = history.length - 1; // Correct count of previous messages
 
     const fullSystemPrompt = generateSystemPrompt(
       mode || "normal",
       topic || "general",
       explainLevel || "normal",
-      formatContext(previousHistory), // Only format PREVIOUS messages for context
-      {},
+      {}, // sessionPrefs
       "hostile",
       isMobile,
-      messageCount, // Pass count of PREVIOUS messages. 0 = Start.
+      messageCount,
       pastFailures,
       profile.efficiency_rank,
       profile.efficiency_points,
