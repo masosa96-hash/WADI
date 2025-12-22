@@ -196,7 +196,7 @@ app.use(express.static(frontendPath));
 // --------------------------------------------------
 // PRIORITY 3: SPA Fallback
 // --------------------------------------------------
-app.get("*", (req, res) => {
+app.get(/.*/, (req, res) => {
   // Don't serve index.html for API calls or obviously wrong paths that slipped through
   if (req.path.startsWith("/api") || req.path.startsWith("/assets")) {
     return res.status(404).send("Not Found");
