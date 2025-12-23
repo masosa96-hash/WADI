@@ -113,7 +113,8 @@ export default function ChatPage() {
       text !== "/forget" &&
       !text.startsWith("/read") &&
       text !== "/summarize" &&
-      !text.startsWith("/compare")
+      !text.startsWith("/compare") &&
+      text !== "/backup"
     ) {
       return false;
     }
@@ -161,6 +162,7 @@ export default function ChatPage() {
 /read [ARCHIVO]     → WADI lee lo que tengas cargado (simulado o subido).
 /summarize          → Resumen brutalmente honesto del documento activo.
 /compare [A vs B]   → Compara dos textos (si tenés suerte y coherencia).
+/backup             → Genera una copia de seguridad completa (chats, memoria, docs).
 \`\`\`
 
 🧠 Sugerencia: usalos sabiamente. Si me hacés romper, no pienso ayudarte a reiniciarme.
@@ -229,6 +231,68 @@ export default function ChatPage() {
         ],
       }));
       return true;
+      return true;
+    }
+
+    // 0.6 BACKUP HANDLER
+    if (text === "/backup") {
+      const chatState = useChatStore.getState();
+      const docState = useDocumentStore.getState();
+
+      const backupData = {
+        timestamp: new Date().toISOString(),
+        version: "1.0.0",
+        chats: {
+          conversations: chatState.conversations,
+          currentMessages: chatState.messages,
+        },
+        memory: chatState.memory,
+        workspaces: chatState.workspaces,
+        documents: docState.documents, // Includes content, size, tokens
+        settings: chatState.settings,
+        profile: {
+          points: chatState.points,
+          rank: chatState.rank,
+        },
+      };
+
+      try {
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `wadi_full_backup_${
+          new Date().toISOString().split("T")[0]
+        }.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        const tempId = crypto.randomUUID();
+        useChatStore.setState((state) => ({
+          messages: [
+            ...state.messages,
+            {
+              id: tempId,
+              role: "user",
+              content: text,
+              created_at: new Date().toISOString(),
+            },
+            {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content:
+                "💾 **[SISTEMA DE RESPALDO]**: Copia de seguridad generada con éxito. Contiene tu historial, tu desorden y mis observaciones. Guárdala bien, no pienso repetirlo.",
+              created_at: new Date().toISOString(),
+            },
+          ],
+        }));
+      } catch (e) {
+        console.error("Backup failed", e);
+      }
       return true;
     }
 
