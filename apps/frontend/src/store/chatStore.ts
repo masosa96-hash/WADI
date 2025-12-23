@@ -80,6 +80,12 @@ interface ChatState {
     riskCount: number;
   };
 
+  // Memory
+  memory: Record<string, string>;
+  remember: (key: string, value: string) => void;
+  recall: () => Record<string, string>;
+  forget: () => void;
+
   // Workspaces
   workspaces: Workspace[];
   activeWorkspaceId: string | null;
@@ -167,6 +173,16 @@ export const useChatStore = create<ChatState>()(
       points: 0,
       systemDeath: false,
       criminalRecord: { auditCount: 0, riskCount: 0 },
+
+      // Memory Init
+      memory: {},
+      remember: (key, value) =>
+        set((state) => ({
+          memory: { ...state.memory, [key]: value },
+        })),
+      recall: () => get().memory,
+      forget: () => set({ memory: {} }),
+
       mode: "normal",
       topic: "general",
       explainLevel: "normal",
@@ -797,6 +813,7 @@ export const useChatStore = create<ChatState>()(
         customSystemPrompt: state.customSystemPrompt,
         workspaces: state.workspaces,
         activeWorkspaceId: state.activeWorkspaceId,
+        memory: state.memory,
         // Don't persist isUploading or blocked states if they are ephemeral
       }),
       onRehydrateStorage: () => () => {
