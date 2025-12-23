@@ -99,10 +99,49 @@ export default function ChatPage() {
 
   /*
    * SYSTEM EXECUTION PROTOCOL
-   * Handles /system, /whoami, /system reset, /system export
+   * Handles /system, /whoami, /system reset, /system export, /help
    */
   const handleSystemCommand = async (text: string): Promise<boolean> => {
-    if (!text.startsWith("/system") && text !== "/whoami") return false;
+    if (!text.startsWith("/system") && text !== "/whoami" && text !== "/help") {
+      return false;
+    }
+
+    // 0. HELP HANDLER
+    if (text === "/help") {
+      const tempId = crypto.randomUUID();
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: tempId,
+            role: "user",
+            content: text,
+            created_at: new Date().toISOString(),
+            attachments: [],
+          },
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: `
+📚 *WADI: Guía de comandos para humanos confundidos*
+
+\`\`\`bash
+/system             → Muestra el systemPrompt actual (si estás curioso o paranoico).
+/system NUEVO TEXTO → Reemplaza la personalidad actual (cuidado con lo que deseás).
+/system reset       → Vuelve al prompt original, el del Bibliotecario Hartazgo™.
+/system export      → Exporta la identidad actual como JSON (ideal para terapia).
+/whoami             → Te muestra quién soy ahora mismo. Spoiler: no estoy bien.
+/help               → Esto mismo. Una tabla de comandos que estás leyendo ahora.
+\`\`\`
+
+🧠 Sugerencia: usalos sabiamente. Si me hacés romper, no pienso ayudarte a reiniciarme.
+            `.trim(),
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+      return true;
+    }
 
     // 1. WHOAMI / EXPORT HANDLERS
     if (text === "/whoami" || text === "/system export") {
