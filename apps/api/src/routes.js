@@ -8,6 +8,8 @@ import {
   validateProjectInput,
   validateRunInput,
 } from "./middleware/validation.js";
+import { upload } from "./middleware/upload.js";
+import pdf from "pdf-parse/lib/pdf-parse.js";
 
 const router = Router();
 
@@ -512,6 +514,54 @@ router.get(
     if (msgError) throw new AppError("DB_ERROR", msgError.message);
 
     res.json({ ...conversation, messages });
+  })
+);
+
+// ------------------------------------------------------------------
+// DOCUMENT INTAKE (Intake & RAG Phase 1)
+// ------------------------------------------------------------------
+router.post(
+  "/documents/upload",
+  upload.single("file"),
+  asyncHandler(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    // if (!user) throw new AuthError("Identifíquese antes de subir basura."); // Optional strict auth
+
+    if (!req.file) {
+      throw new AppError("No enviaste ningún archivo. ¿Es una broma?", 400);
+    }
+
+    let textContent = "";
+
+    try {
+      if (req.file.mimetype === "application/pdf") {
+        const data = await pdf(req.file.buffer);
+        textContent = data.text;
+      } else {
+        // Text / Markdown
+        textContent = req.file.buffer.toString("utf-8");
+      }
+    } catch (e) {
+      console.error("Error parsing document:", e);
+      throw new AppError(
+        "No pude leer ese archivo. Probablemente esté corrupto como tu moral.",
+        422
+      );
+    }
+
+    // Clean text lightly
+    textContent = textContent.replace(/\s+/g, " ").trim();
+
+    // Check token count estimation (rough)
+    const estimatedTokens = textContent.length / 4;
+
+    res.json({
+      filename: req.file.originalname,
+      content: textContent,
+      size: req.file.size,
+      tokens: Math.round(estimatedTokens),
+      message: "Archivo procesado. Si esperabas un premio, seguí esperando.",
+    });
   })
 );
 

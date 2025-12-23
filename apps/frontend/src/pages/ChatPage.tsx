@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore, type Attachment } from "../store/chatStore";
+import { useDocumentStore } from "../store/documentStore";
 import { useScouter } from "../hooks/useScouter";
 import { chatShortcuts } from "../config/chatShortcuts";
 
@@ -10,6 +11,7 @@ import { Scouter } from "../components/ui/Scouter";
 import { DecisionWall } from "../components/auditor/DecisionWall";
 import { AuditorHeader } from "../components/auditor/AuditorHeader";
 import { DataDeconstructor } from "../components/auditor/DataDeconstructor";
+import { Dropzone } from "../components/auditor/Dropzone";
 
 export default function ChatPage() {
   const { conversationId } = useParams();
@@ -108,7 +110,10 @@ export default function ChatPage() {
       text !== "/help" &&
       !text.startsWith("/remember") &&
       text !== "/recall" &&
-      text !== "/forget"
+      text !== "/forget" &&
+      !text.startsWith("/read") &&
+      text !== "/summarize" &&
+      !text.startsWith("/compare")
     ) {
       return false;
     }
@@ -153,6 +158,9 @@ export default function ChatPage() {
 /remember CLAVE VAL → WADI memoriza ese dato sin que tengas que repetirlo.
 /recall             → Lista todo lo que WADI recuerda hasta ahora.
 /forget             → Limpia la memoria como si nada hubiera pasado.
+/read [ARCHIVO]     → WADI lee lo que tengas cargado (simulado o subido).
+/summarize          → Resumen brutalmente honesto del documento activo.
+/compare [A vs B]   → Compara dos textos (si tenés suerte y coherencia).
 \`\`\`
 
 🧠 Sugerencia: usalos sabiamente. Si me hacés romper, no pienso ayudarte a reiniciarme.
@@ -212,6 +220,79 @@ export default function ChatPage() {
             created_at: new Date().toISOString(),
             attachments: [],
           },
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: response,
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+      return true;
+      return true;
+    }
+
+    // 0.6 DOCUMENT HANDLERS (/read, /summarize)
+    // NOTE: For full functionality, we need a way to upload files via UI first,
+    // but here we handle the text commands assuming 'active document' in store.
+    if (text.startsWith("/read") || text === "/summarize") {
+      const { getDocumentContent, currentDocumentId, documents } =
+        useDocumentStore.getState();
+      const cmd = text.split(" ")[0];
+
+      let response = "";
+      const tempId = crypto.randomUUID();
+
+      // Add User Message
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: tempId,
+            role: "user",
+            content: text,
+            created_at: new Date().toISOString(),
+            attachments: [],
+          },
+        ],
+      }));
+
+      if (!currentDocumentId) {
+        response =
+          "📂 No hay ningún documento activo. WADI no es adivino. Subí algo primero.";
+      } else {
+        const content = getDocumentContent(currentDocumentId);
+        const docName = documents.find(
+          (d) => d.id === currentDocumentId
+        )?.filename;
+
+        if (cmd === "/read") {
+          // In a real scenario, we wouldn't dump the whole text potentially.
+          // We'll mimic "Reading..." and then maybe print snippet.
+          response = `📖 **Leyendo: ${docName}**\n\n\`\`\`\n${content?.slice(0, 500)}...\n\`\`\`\n*(Muestra truncada para no saturar tu mente)*`;
+        } else if (cmd === "/summarize") {
+          // We need to ASK the LLM to summarize. This requires sending a message to the backend with a system prompt override or specific instruction.
+          // For now, we simulate the "Instruction" by creating a message that LOOKS like a summary request to the `sendMessage` flow,
+          // OR we directly trigger `sendMessage` with hidden context.
+
+          response = `📑 **Documento Cargado: ${docName}**\n\nHe ingerido ${content?.length} caracteres de burocracia. Preguntame lo que quieras o escribí "Resumilo" para ver si entendí algo.`;
+
+          setTimeout(() => {
+            useChatStore
+              .getState()
+              .sendMessage(
+                `[CONTEXTO_DOCUMENTO_INICIO: ${docName}]\n${content}\n[CONTEXTO_DOCUMENTO_FIN]\n\nInstrucción: Genera un resumen ejecutivo sarcástico de este documento.`,
+                []
+              );
+          }, 500);
+
+          return true; // We handled the UI response via the timeout message trigger.
+        }
+      }
+
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
           {
             id: crypto.randomUUID(),
             role: "assistant",
@@ -524,6 +605,11 @@ export default function ChatPage() {
             [ACTIVAR AUDIO]
           </button>
         )}
+
+        {/* FILE DROPZONE (ALWAYS VISIBLE FOR INTAKE) */}
+        <div className="px-4 pt-4">
+          <Dropzone />
+        </div>
 
         {/* Messages */}
         <div
