@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore, type Attachment } from "../store/chatStore";
 import { useScouter } from "../hooks/useScouter";
+import { chatShortcuts } from "../config/chatShortcuts";
 
 import { TerminalInput } from "../components/ui/TerminalInput";
 import { Scouter } from "../components/ui/Scouter";
@@ -95,6 +96,33 @@ export default function ChatPage() {
   }, [messages, shouldAutoScroll]);
 
   const handleSendMessage = async (text: string, attachments: Attachment[]) => {
+    // 5. DEBUG MODE INTERCEPTION
+    if (text.startsWith("/system")) {
+      // const prompt = text.replace("/system", "").trim();
+      // Inject fake system response for now as backend doesn't support this yet
+      const tempId = crypto.randomUUID();
+      const userMsg = {
+        id: tempId,
+        role: "user" as const,
+        content: text,
+        created_at: new Date().toISOString(),
+      };
+
+      const systemReply = {
+        id: crypto.randomUUID(),
+        role: "assistant" as const,
+        content: `[SYSTEM_DEBUG]:\n\n> "You are WADI (Unified Neural Interface). A highly efficient, slightly abrasive, and brutally honest AI assistant."\n\n(Note: This is a simulated debug response. Full system prompt logic resides in 'wadi-brain.js' on server.)`,
+        created_at: new Date().toISOString(),
+      };
+
+      // We can use a direct state update here if we want to bypass backend,
+      // but 'sendMessage' in store is async. Let's just bypass store action for this debug:
+      useChatStore.setState((state) => ({
+        messages: [...state.messages, userMsg, systemReply],
+      }));
+      return;
+    }
+
     const newId = (await sendMessage(text, attachments)) as unknown as
       | string
       | null;
@@ -164,29 +192,20 @@ export default function ChatPage() {
               </h1>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md mx-auto mt-8">
-                <button
-                  className="bg-wadi-button hover:bg-wadi-button-hover text-white font-bold py-3 px-4 rounded-2xl shadow transition"
-                  onClick={() =>
-                    handleSendMessage(
-                      "Tengo una idea mediocre, hacela brillante",
-                      []
-                    )
-                  }
-                >
-                  🧠 Tengo una idea mediocre, hacela brillante
-                </button>
-
-                <button
-                  className="bg-wadi-button hover:bg-wadi-button-hover text-white font-bold py-3 px-4 rounded-2xl shadow transition"
-                  onClick={() =>
-                    handleSendMessage(
-                      "Organizá mi semana antes de que me ahogue en caos",
-                      []
-                    )
-                  }
-                >
-                  🗓️ Organizá mi semana antes de que me ahogue en caos
-                </button>
+                {chatShortcuts.map((shortcut, idx) => (
+                  <button
+                    key={idx}
+                    className="bg-wadi-button hover:bg-wadi-button-hover text-white font-bold py-3 px-4 rounded-2xl shadow transition text-xs sm:text-sm text-left flex items-start gap-2"
+                    onClick={() => handleSendMessage(shortcut.prompt, [])}
+                  >
+                    <span>{shortcut.label.split(" ")[0]}</span>
+                    <span>
+                      {shortcut.label.substring(
+                        shortcut.label.indexOf(" ") + 1
+                      )}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -425,12 +444,19 @@ export default function ChatPage() {
       </div>
       {/* GLOBAL FOOTER STATUS - AUDIO CHECK */}
       {audioState === "suspended" && (
-        <div
-          onClick={() => document.body.click()}
-          className="fixed bottom-1 right-1 z-[100] text-[9px] font-mono-wadi text-[var(--wadi-text-secondary)] opacity-50 hover:opacity-100 cursor-pointer select-none bg-black/50 px-2 rounded-tl-md border-t border-l border-[var(--wadi-border)]"
+        <button
+          onClick={() => {
+            initAmbientHum();
+            // Just in case click propagation is needed
+            document.body.click();
+          }}
+          className="fixed bottom-4 right-4 z-[100] group flex items-center gap-2 px-3 py-2 bg-black/80 border border-[var(--wadi-alert)] rounded shadow-[0_0_15px_rgba(255,50,50,0.2)] hover:bg-[var(--wadi-alert)]/10 hover:shadow-[0_0_25px_rgba(255,50,50,0.5)] transition-all cursor-pointer animate-pulse-soft"
         >
-          [SISTEMAS_SENSORIALES_OFF: CLIC PARA ACTIVAR]
-        </div>
+          <span className="w-2 h-2 rounded-full bg-[var(--wadi-alert)] animate-ping"></span>
+          <span className="text-[10px] font-mono-wadi text-[var(--wadi-alert)] tracking-widest uppercase">
+            [SISTEMAS_OFFLINE: TOCAR_PARA_INICIAR]
+          </span>
+        </button>
       )}
 
       {/* CRYSTALLIZE MODAL */}

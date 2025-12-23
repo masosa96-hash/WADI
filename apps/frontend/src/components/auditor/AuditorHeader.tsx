@@ -1,5 +1,6 @@
 import React from "react";
 import { useChatStore } from "../../store/chatStore";
+import { RefreshCw } from "lucide-react";
 
 export function AuditorHeader() {
   const { aiModel, setAiModel } = useChatStore();
@@ -41,8 +42,22 @@ export function AuditorHeader() {
         </div>
       </div>
 
-      {/* Model Selector */}
+      {/* Model Selector & Reset */}
       <div className="flex items-center gap-2">
+        <button
+          onClick={() => {
+            if (
+              confirm("¿Reiniciar sistemas y purgar memoria a corto plazo?")
+            ) {
+              window.location.reload(); // Simple hard reset for now or use resetChat()
+            }
+          }}
+          className="p-1.5 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:rotate-180 transition-all duration-500"
+          title="Reiniciar Sistema"
+        >
+          <RefreshCw size={14} />
+        </button>
+
         <span className="text-[10px] text-[var(--wadi-text-muted)] font-mono-wadi uppercase hidden sm:inline">
           MOTOR:
         </span>

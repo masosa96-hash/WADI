@@ -627,6 +627,7 @@ export const useChatStore = create<ChatState>()(
         conversationId: state.conversationId,
         messages: state.messages,
         hasStarted: state.hasStarted,
+        aiModel: state.aiModel,
         // Don't persist isUploading or blocked states if they are ephemeral
       }),
       onRehydrateStorage: () => () => {
