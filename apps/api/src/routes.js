@@ -170,6 +170,7 @@ router.post(
       topic,
       attachments,
       isMobile,
+      customSystemPrompt,
     } = req.body;
 
     let currentConversationId = conversationId;
@@ -270,6 +271,9 @@ router.post(
       profile.active_focus
     );
 
+    // [DEBUG OVERRIDE]
+    const finalSystemPrompt = customSystemPrompt || fullSystemPrompt;
+
     const userContent = await processAttachments(message, attachments);
 
     // Prepare OpenAI Messages: System + Previous History + Current User Message
@@ -282,7 +286,7 @@ router.post(
       const completion = await openai.chat.completions.create({
         model: AI_MODEL,
         messages: [
-          { role: "system", content: fullSystemPrompt },
+          { role: "system", content: finalSystemPrompt },
           ...openAIHistory,
           { role: "user", content: userContent },
         ],
@@ -508,6 +512,31 @@ router.get(
     if (msgError) throw new AppError("DB_ERROR", msgError.message);
 
     res.json({ ...conversation, messages });
+  })
+);
+
+// [DEBUG] Get Current System Prompt
+router.post(
+  "/debug/system-prompt",
+  asyncHandler(async (req, res) => {
+    const { mode, topic, explainLevel, isMobile, messageCount } = req.body;
+
+    // Generate prompt with mock or provided data
+    const prompt = generateSystemPrompt(
+      mode || "normal",
+      topic || "general",
+      explainLevel || "normal",
+      {},
+      "hostile",
+      isMobile || false,
+      messageCount || 0,
+      [], // pastFailures mocked
+      "GENERADOR_DE_HUMO", // rank mocked
+      0, // points mocked
+      null // active_focus mocked
+    );
+
+    res.json({ prompt });
   })
 );
 

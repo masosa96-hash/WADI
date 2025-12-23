@@ -25,7 +25,9 @@ export default function ChatPage() {
     hasStarted,
     conversationId: storeConversationId,
     activeFocus,
-    crystallizeProject, // New action
+    crystallizeProject,
+    setCustomSystemPrompt,
+    getSystemPrompt,
   } = useChatStore();
 
   const { initAmbientHum, audioState, playCrystallizeSound } = useScouter();
@@ -98,28 +100,54 @@ export default function ChatPage() {
   const handleSendMessage = async (text: string, attachments: Attachment[]) => {
     // 5. DEBUG MODE INTERCEPTION
     if (text.startsWith("/system")) {
-      // const prompt = text.replace("/system", "").trim();
-      // Inject fake system response for now as backend doesn't support this yet
+      const newPrompt = text.replace("/system", "").trim();
+
       const tempId = crypto.randomUUID();
-      const userMsg = {
-        id: tempId,
-        role: "user" as const,
-        content: text,
-        created_at: new Date().toISOString(),
-      };
-
-      const systemReply = {
-        id: crypto.randomUUID(),
-        role: "assistant" as const,
-        content: `[SYSTEM_DEBUG]:\n\n> "You are WADI (Unified Neural Interface). A highly efficient, slightly abrasive, and brutally honest AI assistant."\n\n(Note: This is a simulated debug response. Full system prompt logic resides in 'wadi-brain.js' on server.)`,
-        created_at: new Date().toISOString(),
-      };
-
-      // We can use a direct state update here if we want to bypass backend,
-      // but 'sendMessage' in store is async. Let's just bypass store action for this debug:
+      // Add user message to UI state manually since we are intercepting
       useChatStore.setState((state) => ({
-        messages: [...state.messages, userMsg, systemReply],
+        messages: [
+          ...state.messages,
+          {
+            id: tempId,
+            role: "user",
+            content: text,
+            created_at: new Date().toISOString(),
+            attachments: [],
+          },
+        ],
       }));
+
+      // Logic
+      if (!newPrompt) {
+        // GET CURRENT
+        const current = await getSystemPrompt();
+        useChatStore.setState((state) => ({
+          messages: [
+            ...state.messages,
+            {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content: `[SYSTEM_PROMPT_ACTUAL]:\n\n${current}`,
+              created_at: new Date().toISOString(),
+            },
+          ],
+        }));
+      } else {
+        // SET NEW
+        setCustomSystemPrompt(newPrompt);
+        useChatStore.setState((state) => ({
+          messages: [
+            ...state.messages,
+            {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content:
+                "🧠 Nueva identidad cargada. Que los dioses neuronales te acompañen.",
+              created_at: new Date().toISOString(),
+            },
+          ],
+        }));
+      }
       return;
     }
 

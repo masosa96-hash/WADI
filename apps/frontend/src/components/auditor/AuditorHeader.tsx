@@ -3,7 +3,7 @@ import { useChatStore } from "../../store/chatStore";
 import { RefreshCw } from "lucide-react";
 
 export function AuditorHeader() {
-  const { aiModel, setAiModel } = useChatStore();
+  const { aiModel, setAiModel, customSystemPrompt } = useChatStore();
   const isOnline = true;
 
   return (
@@ -39,6 +39,11 @@ export function AuditorHeader() {
           <span className="text-[9px] text-[var(--wadi-success)] font-mono-wadi leading-none mt-1 tracking-widest">
             ESTADO: {isOnline ? "CONECTADO" : "OFFLINE"}
           </span>
+          {customSystemPrompt && (
+            <span className="text-[9px] text-[var(--wadi-tension)] font-mono-wadi leading-none mt-0.5 tracking-widest animate-pulse">
+              [SYSTEM_OVERRIDE]
+            </span>
+          )}
         </div>
       </div>
 

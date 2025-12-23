@@ -107,9 +107,12 @@ interface ChatState {
     defaultMode: ChatMode;
   };
   aiModel: "fast" | "deep";
+  customSystemPrompt: string | null;
 
   updateSettings: (settings: Partial<ChatState["settings"]>) => void;
   setAiModel: (model: "fast" | "deep") => void;
+  setCustomSystemPrompt: (prompt: string | null) => void;
+  getSystemPrompt: () => Promise<string>;
   exportData: () => Promise<void>;
   clearAllChats: () => Promise<void>;
 
@@ -154,6 +157,7 @@ export const useChatStore = create<ChatState>()(
 
       // Settings Defaults
       aiModel: "fast",
+      customSystemPrompt: null,
       settings: {
         sarcasmLevel: 50,
         theme: "dark",
@@ -167,6 +171,36 @@ export const useChatStore = create<ChatState>()(
       updateSettings: (newSettings) =>
         set((state) => ({ settings: { ...state.settings, ...newSettings } })),
       setAiModel: (model) => set({ aiModel: model }),
+      setCustomSystemPrompt: (prompt) => set({ customSystemPrompt: prompt }),
+
+      getSystemPrompt: async () => {
+        const state = get();
+        // If we have a custom override, return that
+        if (state.customSystemPrompt) return state.customSystemPrompt;
+
+        try {
+          const token = await getToken();
+          // We call the debug endpoint
+          const res = await fetch(`${API_URL}/api/debug/system-prompt`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token ? `Bearer ${token}` : "",
+            },
+            body: JSON.stringify({
+              mode: state.mode,
+              topic: state.topic,
+              explainLevel: state.explainLevel,
+              isMobile: window.innerWidth < 1024,
+              messageCount: state.messages.length,
+            }),
+          });
+          const data = await res.json();
+          return data.prompt || "Error fetching prompt";
+        } catch (e) {
+          return "Error retrieving system prompt.";
+        }
+      },
 
       exportData: async () => {
         const state = get();
@@ -510,6 +544,7 @@ export const useChatStore = create<ChatState>()(
               mood,
               attachments,
               isMobile: window.innerWidth < 1024,
+              customSystemPrompt: get().customSystemPrompt, // Send override
             }),
           });
 
@@ -628,6 +663,7 @@ export const useChatStore = create<ChatState>()(
         messages: state.messages,
         hasStarted: state.hasStarted,
         aiModel: state.aiModel,
+        customSystemPrompt: state.customSystemPrompt,
         // Don't persist isUploading or blocked states if they are ephemeral
       }),
       onRehydrateStorage: () => () => {
