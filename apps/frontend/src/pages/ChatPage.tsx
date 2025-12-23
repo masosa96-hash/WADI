@@ -159,29 +159,37 @@ export default function ChatPage() {
           {/* EMPTY STATE - WADI OS */}
           {!hasStarted && (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 text-center px-4 animate-in fade-in zoom-in-95 duration-500">
-              <h1 className="text-3xl font-regular font-['Outfit'] text-[var(--wadi-text)] mb-2">
-                ¿En qué puedo ayudarte hoy?
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold font-['Outfit'] text-[var(--wadi-text)] mb-8 max-w-xl text-center">
+                Decime qué querés antes de que me arrepienta de estar encendido.
               </h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-lg mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
                 {[
-                  "Ayúdame con mi proyecto",
-                  "Planificar mi semana",
-                  "Analizar una idea",
-                  "Explicame un concepto",
-                ].map((suggestion, idx) => (
+                  {
+                    label: "🧠 Tengo una idea mediocre, hacela brillante",
+                    nav: "Idea brillante",
+                  },
+                  {
+                    label:
+                      "🧾 Organizá mi semana antes de que me ahogue en caos",
+                    nav: "Organizar semana",
+                  },
+                  {
+                    label: "🧪 Opiná sobre algo que todavía no existe",
+                    nav: "Opinión técnica",
+                  },
+                  {
+                    label:
+                      "❓ Explicame esto como si tuviera 3 neuronas (o menos)",
+                    nav: "Explicación simple",
+                  },
+                ].map((item, idx) => (
                   <button
                     key={idx}
-                    onClick={() => {
-                      // Optimistically populate input or just send it?
-                      // Standard behavior is usually sending it or populating.
-                      // Since we don't have easy access to setInput from here without prop drilling or store,
-                      // we will send it directly via sendMessage logic available in ChatPage.
-                      handleSendMessage(suggestion, []);
-                    }}
-                    className="px-4 py-3 bg-[var(--wadi-surface)] border border-[var(--wadi-border)] hover:border-[var(--wadi-primary)] text-[var(--wadi-text)] rounded-lg text-sm text-left transition-colors hover:bg-[var(--wadi-surface)]/80"
+                    onClick={() => handleSendMessage(item.nav, [])}
+                    className="bg-[var(--wadi-surface)] hover:bg-[var(--wadi-surface-hover)] border border-[var(--wadi-border)] text-[var(--wadi-text)] transition-all duration-300 hover:translate-x-1 px-6 py-4 rounded-xl text-left shadow-md hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] text-sm font-medium"
                   >
-                    {suggestion}
+                    {item.label}
                   </button>
                 ))}
               </div>

@@ -13,12 +13,12 @@ export default function WadiOnboarding({
 
   const messagesByMood: Record<WadiMood, string[]> = {
     hostile: [
-      "*⌛ Generando entorno mental...*",
-      "🧠 WADI ha despertado.",
-      "No va a hacerte sentir mejor,",
-      "pero va a hacer que tomes decisiones.",
-      "➡️ Elegí tu camino,",
-      "🌀 o sentate en el rincón del caos.",
+      "*⌛ Cargando paciencia... ERROR 404*",
+      "🧠 WADI activo (a regañadientes).",
+      "No estoy acá para mimarte,",
+      "estoy para que dejes de mentirte.",
+      "➡️ Decime qué rompiste hoy,",
+      "🌀 o volvé cuando tengas un plan real.",
     ],
     mildly_disappointed: [
       "*⌛ WADI está despertando de su siesta funcional...*",
