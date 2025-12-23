@@ -97,92 +97,14 @@ export default function ChatPage() {
     prevMessagesLength.current = newCount;
   }, [messages, shouldAutoScroll]);
 
-  const handleSendMessage = async (text: string, attachments: Attachment[]) => {
-    // 5. DEBUG MODE INTERCEPTION
-    if (text.startsWith("/system")) {
-      const newPrompt = text.replace("/system", "").trim();
+  /*
+   * SYSTEM EXECUTION PROTOCOL
+   * Handles /system, /whoami, /system reset, /system export
+   */
+  const handleSystemCommand = async (text: string): Promise<boolean> => {
+    if (!text.startsWith("/system") && text !== "/whoami") return false;
 
-      if (newPrompt.length > 3000) {
-        useChatStore.setState((state) => ({
-          messages: [
-            ...state.messages,
-            {
-              id: crypto.randomUUID(),
-              role: "assistant",
-              content:
-                "⚠️ [ERROR]: La nueva identidad es demasiado compleja (Max 3000 caracteres). Simplificá tus delirios.",
-              created_at: new Date().toISOString(),
-            },
-          ],
-        }));
-        return;
-      }
-
-      const tempId = crypto.randomUUID();
-      // Add user message to UI state manually since we are intercepting
-      useChatStore.setState((state) => ({
-        messages: [
-          ...state.messages,
-          {
-            id: tempId,
-            role: "user",
-            content: text,
-            created_at: new Date().toISOString(),
-            attachments: [],
-          },
-        ],
-      }));
-
-      // Logic
-      if (!newPrompt) {
-        // GET CURRENT
-        const current = await getSystemPrompt();
-        useChatStore.setState((state) => ({
-          messages: [
-            ...state.messages,
-            {
-              id: crypto.randomUUID(),
-              role: "assistant",
-              content: `[SYSTEM_PROMPT_ACTUAL]:\n\n${current}`,
-              created_at: new Date().toISOString(),
-            },
-          ],
-        }));
-      } else if (newPrompt === "reset") {
-        // RESET
-        setCustomSystemPrompt(null);
-        useChatStore.setState((state) => ({
-          messages: [
-            ...state.messages,
-            {
-              id: crypto.randomUUID(),
-              role: "assistant",
-              content:
-                "🧼 Reset completo. Vuelvo a ser el desastre original que tus decisiones provocaron.",
-              created_at: new Date().toISOString(),
-            },
-          ],
-        }));
-      } else {
-        // SET NEW
-        setCustomSystemPrompt(newPrompt);
-        useChatStore.setState((state) => ({
-          messages: [
-            ...state.messages,
-            {
-              id: crypto.randomUUID(),
-              role: "assistant",
-              content:
-                "🧠 Nueva identidad cargada. Que los dioses neuronales te acompañen.",
-              created_at: new Date().toISOString(),
-            },
-          ],
-        }));
-      }
-      return;
-    }
-
-    // 6. WHOAMI / EXPORT HANDLERS
+    // 1. WHOAMI / EXPORT HANDLERS
     if (text === "/whoami" || text === "/system export") {
       const isExport = text === "/system export";
       const { aiModel, customSystemPrompt, mood, settings } =
@@ -224,8 +146,95 @@ export default function ChatPage() {
           },
         ],
       }));
-      return;
+      return true;
     }
+
+    // 2. SYSTEM COMMANDS (/system ...)
+    const newPrompt = text.replace("/system", "").trim();
+
+    if (newPrompt.length > 3000) {
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content:
+              "⚠️ [ERROR]: La nueva identidad es demasiado compleja (Max 3000 caracteres). Simplificá tus delirios.",
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+      return true;
+    }
+
+    // Add user message manually since we are intercepting (and not sending to backend 'chat')
+    const tempId = crypto.randomUUID();
+    useChatStore.setState((state) => ({
+      messages: [
+        ...state.messages,
+        {
+          id: tempId,
+          role: "user",
+          content: text,
+          created_at: new Date().toISOString(),
+          attachments: [],
+        },
+      ],
+    }));
+
+    if (!newPrompt) {
+      // GET CURRENT
+      const current = await getSystemPrompt();
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: `[SYSTEM_PROMPT_ACTUAL]:\n\n${current}`,
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+    } else if (newPrompt === "reset") {
+      // RESET
+      setCustomSystemPrompt(null);
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content:
+              "🧼 Reset completo. Vuelvo a ser el desastre original que tus decisiones provocaron.",
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+    } else {
+      // SET NEW
+      setCustomSystemPrompt(newPrompt);
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content:
+              "🧠 Nueva identidad cargada. Que los dioses neuronales te acompañen.",
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+    }
+
+    return true;
+  };
+
+  const handleSendMessage = async (text: string, attachments: Attachment[]) => {
+    // 5. SYSTEM COMMANDS CHECK
+    if (await handleSystemCommand(text)) return;
 
     const newId = (await sendMessage(text, attachments)) as unknown as
       | string
