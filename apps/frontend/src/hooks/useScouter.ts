@@ -283,6 +283,30 @@ export function useScouter() {
     osc2.stop(ctx.currentTime + 1.5);
   }, []);
 
+  const playYawnSound = useCallback(() => {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+
+    // Electronic Yawn / Bostezo Digital
+    // Pitch drop oscillator
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(400, ctx.currentTime);
+    // Slow drop
+    osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 1.5);
+
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 1.5);
+  }, []);
+
   return {
     playScanSound,
     playAlertSound,
@@ -290,6 +314,7 @@ export function useScouter() {
     setAmbientIntensity,
     playDeathSound,
     playCrystallizeSound,
+    playYawnSound,
     audioState, // Expose audio state for UI indicators
   };
 }
