@@ -20,6 +20,7 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
     initAmbientHum,
     setAmbientIntensity,
     playDeathSound,
+    playYawnSound,
   } = useScouter();
   const prevMessagesLength = useRef(messages.length);
   const prevRank = useRef(rank);
@@ -49,10 +50,10 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
   const scornTimestamp = useChatStore((state) => state.scornTimestamp);
   const prevScornTimestamp = useRef(scornTimestamp);
 
-  // Trigger Scorn Alert (Lavender Flash)
+  // Trigger Scorn Alert (Lavender Flash + Yawn Sound)
   useEffect(() => {
     if (scornTimestamp !== prevScornTimestamp.current) {
-      playScanSound(); // Use scan sound for judgment
+      playYawnSound(); // Electronic Yawn
       const flashOverlay = document.getElementById("scouter-flash-overlay");
       if (flashOverlay) {
         flashOverlay.style.background = "#A78BFA"; // Lavender
@@ -63,7 +64,7 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
       }
       prevScornTimestamp.current = scornTimestamp;
     }
-  }, [scornTimestamp, playScanSound]);
+  }, [scornTimestamp, playYawnSound]);
 
   // Initialize Ambient Hum on Mount
   useEffect(() => {
