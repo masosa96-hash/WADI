@@ -102,6 +102,22 @@ export default function ChatPage() {
     if (text.startsWith("/system")) {
       const newPrompt = text.replace("/system", "").trim();
 
+      if (newPrompt.length > 3000) {
+        useChatStore.setState((state) => ({
+          messages: [
+            ...state.messages,
+            {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content:
+                "⚠️ [ERROR]: La nueva identidad es demasiado compleja (Max 3000 caracteres). Simplificá tus delirios.",
+              created_at: new Date().toISOString(),
+            },
+          ],
+        }));
+        return;
+      }
+
       const tempId = crypto.randomUUID();
       // Add user message to UI state manually since we are intercepting
       useChatStore.setState((state) => ({
