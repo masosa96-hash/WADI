@@ -132,6 +132,10 @@ export default function ChatPage() {
 /system export      → Exporta la identidad actual como JSON (ideal para terapia).
 /whoami             → Te muestra quién soy ahora mismo. Spoiler: no estoy bien.
 /help               → Esto mismo. Una tabla de comandos que estás leyendo ahora.
+/workspace new      → Crea un nuevo espacio de trabajo aislado.
+/workspace switch   → Cambia a otro espacio de trabajo.
+/workspace list     → Te lista todos tus intentos fallidos de organización.
+/workspace delete   → Elimina un espacio. Permanente. Como tus errores.
 \`\`\`
 
 🧠 Sugerencia: usalos sabiamente. Si me hacés romper, no pienso ayudarte a reiniciarme.
@@ -271,9 +275,124 @@ export default function ChatPage() {
     return true;
   };
 
+  /*
+   * WORKSPACE EXECUTION PROTOCOL
+   * Handles all /workspace commands
+   */
+  const handleWorkspaceCommand = async (text: string): Promise<boolean> => {
+    if (!text.startsWith("/workspace")) return false;
+
+    const args = text.replace("/workspace", "").trim().split(" ");
+    const subCommand = args[0];
+    const param = args.slice(1).join(" ");
+
+    const {
+      createWorkspace,
+      switchWorkspace,
+      deleteWorkspace,
+      listWorkspaces,
+      activeWorkspaceId,
+    } = useChatStore.getState();
+
+    const tempId = crypto.randomUUID();
+
+    // We manually add the user message
+    useChatStore.setState((state) => ({
+      messages: [
+        ...state.messages,
+        {
+          id: tempId,
+          role: "user",
+          content: text,
+          created_at: new Date().toISOString(),
+          attachments: [],
+        },
+      ],
+    }));
+
+    let responseContent = "";
+
+    switch (subCommand) {
+      case "new":
+        if (!param) {
+          responseContent =
+            "⚠️ [ERROR]: Necesito un nombre para el workspace. No soy adivino.";
+        } else {
+          createWorkspace(param);
+          responseContent = `🆕 Workspace **${param}** creado. Entorno virgen detectado.`;
+        }
+        break;
+
+      case "switch":
+        if (!param) {
+          responseContent = "⚠️ [ERROR]: ¿A dónde querés ir? Dame un nombre.";
+        } else {
+          const success = switchWorkspace(param);
+          if (success) {
+            responseContent = `🔀 Cambiando contexto a **${param}**. Cargando traumas asociados...`;
+          } else {
+            responseContent = `🚫 [ERROR]: El workspace **${param}** no existe. ¿Alucinaciones de nuevo?`;
+          }
+        }
+        break;
+
+      case "list": {
+        const list = listWorkspaces();
+        if (list.length === 0) {
+          responseContent =
+            "📂 No tenés workspaces. Tu vida es un plano único de caos.";
+        } else {
+          const formatted = list
+            .map(
+              (w) =>
+                `- **${w.name}** [${w.aiModel || "fast"}] ${w.id === activeWorkspaceId ? "*(ACTIVO)*" : ""}`
+            )
+            .join("\n");
+          responseContent = `📂 **WORKSPACES DETECTADOS:**\n\n${formatted}`;
+        }
+        break;
+      }
+
+      case "delete":
+        if (!param) {
+          responseContent =
+            "⚠️ [ERROR]: Dame un nombre para borrar. O borrate vos.";
+        } else {
+          const success = deleteWorkspace(param);
+          if (success) {
+            responseContent = `🗑️ Workspace **${param}** eliminado. Como si nunca hubiera importado.`;
+          } else {
+            responseContent = `🚫 [ERROR]: No encontré **${param}**. Quizás ya lo borraste en un ataque de ira.`;
+          }
+        }
+        break;
+
+      default:
+        responseContent =
+          "⚠️ [ERROR]: Subcomando desconocido. Probá con `new`, `switch`, `list`, o `delete`.";
+    }
+
+    useChatStore.setState((state) => ({
+      messages: [
+        ...state.messages,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: responseContent,
+          created_at: new Date().toISOString(),
+        },
+      ],
+    }));
+
+    return true;
+  };
+
   const handleSendMessage = async (text: string, attachments: Attachment[]) => {
     // 5. SYSTEM COMMANDS CHECK
     if (await handleSystemCommand(text)) return;
+
+    // 6. WORKSPACE COMMANDS
+    if (await handleWorkspaceCommand(text)) return;
 
     const newId = (await sendMessage(text, attachments)) as unknown as
       | string

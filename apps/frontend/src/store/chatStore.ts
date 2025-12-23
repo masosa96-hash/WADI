@@ -46,6 +46,15 @@ export interface Conversation {
 
 export type ChatMode = "normal" | "tech" | "biz" | "tutor";
 
+export interface Workspace {
+  id: string;
+  name: string;
+  createdAt: string;
+  customPrompt?: string | null;
+  aiModel?: "fast" | "deep";
+  messages: Message[];
+}
+
 interface ChatState {
   // State
   messages: Message[];
@@ -70,6 +79,15 @@ interface ChatState {
     auditCount: number;
     riskCount: number;
   };
+
+  // Workspaces
+  workspaces: Workspace[];
+  activeWorkspaceId: string | null;
+
+  createWorkspace: (name: string) => void;
+  switchWorkspace: (name: string) => boolean;
+  deleteWorkspace: (name: string) => boolean;
+  listWorkspaces: () => Workspace[];
 
   // Settings for NEW conversation
   mode: ChatMode;
@@ -165,6 +183,83 @@ export const useChatStore = create<ChatState>()(
         defaultMode: "normal",
       },
 
+      // Workspaces Init
+      workspaces: [],
+      activeWorkspaceId: null,
+
+      createWorkspace: (name) => {
+        const newWorkspace: Workspace = {
+          id: crypto.randomUUID(),
+          name,
+          createdAt: new Date().toISOString(),
+          customPrompt: get().customSystemPrompt,
+          aiModel: get().aiModel,
+          messages: get().messages,
+        };
+        set((state) => ({
+          workspaces: [...state.workspaces, newWorkspace],
+          activeWorkspaceId: newWorkspace.id,
+        }));
+      },
+
+      switchWorkspace: (name) => {
+        const state = get();
+        // 1. Save current state to active workspace before switching?
+        // Ideally we auto-save on change, but for now let's just find target.
+
+        const target = state.workspaces.find((w) => w.name === name);
+        if (!target) return false;
+
+        // If there was an active workspace, update it first
+        if (state.activeWorkspaceId) {
+          const updatedWorkspaces = state.workspaces.map((w) => {
+            if (w.id === state.activeWorkspaceId) {
+              return {
+                ...w,
+                messages: state.messages,
+                customPrompt: state.customSystemPrompt,
+                aiModel: state.aiModel,
+              };
+            }
+            return w;
+          });
+          set({ workspaces: updatedWorkspaces });
+        }
+
+        // Load target
+        set({
+          activeWorkspaceId: target.id,
+          messages: target.messages,
+          customSystemPrompt: target.customPrompt || null,
+          aiModel: target.aiModel || "fast",
+          // Reset conversation ID to avoid sync conflicts with backend for now
+          conversationId: null,
+        });
+        return true;
+      },
+
+      deleteWorkspace: (name) => {
+        const state = get();
+        const target = state.workspaces.find((w) => w.name === name);
+        if (!target) return false;
+
+        const remaining = state.workspaces.filter((w) => w.id !== target.id);
+
+        // If we deleted the active one, revert to default "no workspace" state
+        if (state.activeWorkspaceId === target.id) {
+          set({
+            activeWorkspaceId: null,
+            workspaces: remaining,
+            // Optional: clear messages or keep them as "detached"
+          });
+        } else {
+          set({ workspaces: remaining });
+        }
+        return true;
+      },
+
+      listWorkspaces: () => get().workspaces,
+
       triggerVisualAlert: () => set({ visualAlertTimestamp: Date.now() }),
       triggerScorn: () => set({ scornTimestamp: Date.now() }),
 
@@ -198,6 +293,7 @@ export const useChatStore = create<ChatState>()(
           const data = await res.json();
           return data.prompt || "Error fetching prompt";
         } catch (e) {
+          console.warn("Failed to fetch system prompt:", e);
           return "Error retrieving system prompt.";
         }
       },
@@ -497,6 +593,23 @@ export const useChatStore = create<ChatState>()(
       },
 
       sendMessage: async (text: string, attachments: Attachment[] = []) => {
+        // Auto-save workspace state if active
+        const currentStore = get();
+        if (currentStore.activeWorkspaceId) {
+          set((state) => ({
+            workspaces: state.workspaces.map((w) => {
+              if (w.id === state.activeWorkspaceId) {
+                return {
+                  ...w,
+                  messages: state.messages, // Note: this will be stale immediately, we need to update AFTER send or rely on effect.
+                  // Actually, let's update it with the CURRENT messages before optimistic update
+                };
+              }
+              return w;
+            }),
+          }));
+        }
+
         if (!text.trim() && attachments.length === 0) return null;
 
         // OPTIMISTIC UPDATE START
@@ -603,6 +716,24 @@ export const useChatStore = create<ChatState>()(
             rank: newRank,
           }));
 
+          // UPDATE WORKSPACE AFTER RECEIVING MESSAGE
+          const postState = get();
+          if (postState.activeWorkspaceId) {
+            set((state) => ({
+              workspaces: state.workspaces.map((w) => {
+                if (w.id === state.activeWorkspaceId) {
+                  return {
+                    ...w,
+                    messages: state.messages,
+                    customPrompt: state.customSystemPrompt,
+                    aiModel: state.aiModel,
+                  };
+                }
+                return w;
+              }),
+            }));
+          }
+
           // Rank Change Notification
           if (newRank !== oldRank && newRank !== "GENERADOR_DE_HUMO") {
             const rankMsg: Message = {
@@ -664,6 +795,8 @@ export const useChatStore = create<ChatState>()(
         hasStarted: state.hasStarted,
         aiModel: state.aiModel,
         customSystemPrompt: state.customSystemPrompt,
+        workspaces: state.workspaces,
+        activeWorkspaceId: state.activeWorkspaceId,
         // Don't persist isUploading or blocked states if they are ephemeral
       }),
       onRehydrateStorage: () => () => {
