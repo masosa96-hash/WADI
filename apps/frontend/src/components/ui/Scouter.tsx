@@ -46,6 +46,25 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
     }
   }, [visualAlertTimestamp, playAlertSound]);
 
+  const scornTimestamp = useChatStore((state) => state.scornTimestamp);
+  const prevScornTimestamp = useRef(scornTimestamp);
+
+  // Trigger Scorn Alert (Lavender Flash)
+  useEffect(() => {
+    if (scornTimestamp !== prevScornTimestamp.current) {
+      playScanSound(); // Use scan sound for judgment
+      const flashOverlay = document.getElementById("scouter-flash-overlay");
+      if (flashOverlay) {
+        flashOverlay.style.background = "#A78BFA"; // Lavender
+        flashOverlay.style.opacity = "0.5";
+        setTimeout(() => {
+          flashOverlay.style.opacity = "0";
+        }, 800);
+      }
+      prevScornTimestamp.current = scornTimestamp;
+    }
+  }, [scornTimestamp, playScanSound]);
+
   // Initialize Ambient Hum on Mount
   useEffect(() => {
     const handleInteraction = () => initAmbientHum();

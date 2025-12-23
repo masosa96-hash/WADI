@@ -117,6 +117,8 @@ interface ChatState {
   // Action to trigger visual alert
   triggerVisualAlert: () => void;
   visualAlertTimestamp: number;
+  triggerScorn: () => void;
+  scornTimestamp: number;
 }
 
 // Helper to get token
@@ -148,6 +150,7 @@ export const useChatStore = create<ChatState>()(
       topic: "general",
       explainLevel: "normal",
       visualAlertTimestamp: 0,
+      scornTimestamp: 0,
 
       // Settings Defaults
       aiModel: "fast",
@@ -159,6 +162,7 @@ export const useChatStore = create<ChatState>()(
       },
 
       triggerVisualAlert: () => set({ visualAlertTimestamp: Date.now() }),
+      triggerScorn: () => set({ scornTimestamp: Date.now() }),
 
       updateSettings: (newSettings) =>
         set((state) => ({ settings: { ...state.settings, ...newSettings } })),
@@ -535,10 +539,17 @@ export const useChatStore = create<ChatState>()(
           }
 
           // 3. Update State
+          let finalReply = data.reply;
+          // DETECT SCORN
+          if (finalReply.includes("[SCORN_DETECTED]")) {
+            get().triggerScorn();
+            finalReply = finalReply.replace("[SCORN_DETECTED]", "");
+          }
+
           const aiMsg: Message = {
             id: crypto.randomUUID(),
             role: "assistant",
-            content: data.reply,
+            content: finalReply,
             created_at: new Date().toISOString(),
           };
 
