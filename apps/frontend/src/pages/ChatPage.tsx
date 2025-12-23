@@ -148,6 +148,21 @@ export default function ChatPage() {
             },
           ],
         }));
+      } else if (newPrompt === "reset") {
+        // RESET
+        setCustomSystemPrompt(null);
+        useChatStore.setState((state) => ({
+          messages: [
+            ...state.messages,
+            {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content:
+                "🧼 Reset completo. Vuelvo a ser el desastre original que tus decisiones provocaron.",
+              created_at: new Date().toISOString(),
+            },
+          ],
+        }));
       } else {
         // SET NEW
         setCustomSystemPrompt(newPrompt);
@@ -164,6 +179,51 @@ export default function ChatPage() {
           ],
         }));
       }
+      return;
+    }
+
+    // 6. WHOAMI / EXPORT HANDLERS
+    if (text === "/whoami" || text === "/system export") {
+      const isExport = text === "/system export";
+      const { aiModel, customSystemPrompt, mood, settings } =
+        useChatStore.getState();
+
+      const summary = isExport
+        ? {
+            model: aiModel,
+            prompt: customSystemPrompt || "DYNAMIC_BACKEND",
+            timestamp: new Date().toISOString(),
+          }
+        : {
+            systemPrompt: customSystemPrompt
+              ? customSystemPrompt.slice(0, 280) + "..."
+              : "DYNAMIC_BACKEND",
+            aiModel: aiModel,
+            mood: mood,
+            sarcasmLevel: settings.sarcasmLevel,
+          };
+
+      const tempId = crypto.randomUUID();
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: tempId,
+            role: "user",
+            content: text,
+            created_at: new Date().toISOString(),
+            attachments: [],
+          },
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: isExport
+              ? `📦 Export completo:\n\`\`\`json\n${JSON.stringify(summary, null, 2)}\n\`\`\``
+              : `🧾 Mi estado actual:\n\`\`\`json\n${JSON.stringify(summary, null, 2)}\n\`\`\``,
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
       return;
     }
 
