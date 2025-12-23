@@ -1,9 +1,17 @@
 import React from "react";
 import { useChatStore } from "../../store/chatStore";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Layers, Cpu } from "lucide-react";
+import { Tooltip } from "../ui/Tooltip";
 
 export function AuditorHeader() {
-  const { aiModel, setAiModel, customSystemPrompt } = useChatStore();
+  const {
+    aiModel,
+    setAiModel,
+    customSystemPrompt,
+    workspaces,
+    activeWorkspaceId,
+    switchWorkspace,
+  } = useChatStore();
   const isOnline = true;
 
   return (
@@ -47,36 +55,96 @@ export function AuditorHeader() {
         </div>
       </div>
 
-      {/* Model Selector & Reset */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => {
-            if (
-              confirm("¿Reiniciar sistemas y purgar memoria a corto plazo?")
-            ) {
-              window.location.reload(); // Simple hard reset for now or use resetChat()
-            }
-          }}
-          className="p-1.5 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:rotate-180 transition-all duration-500"
-          title="Reiniciar Sistema"
-        >
-          <RefreshCw size={14} />
-        </button>
+      <div className="flex items-center gap-1 md:gap-2">
+        {/* WORKSPACE SELECTOR */}
+        <div className="hidden md:flex items-center mr-2 relative z-20">
+          <Tooltip content="Cambiar contexto de trabajo">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none text-[var(--wadi-text-muted)]">
+                <Layers size={10} />
+              </div>
+              <select
+                value={activeWorkspaceId || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "__NEW__") {
+                    // Handled via chat command for now
+                  } else {
+                    switchWorkspace(
+                      workspaces.find((w) => w.id === val)?.name || ""
+                    );
+                  }
+                }}
+                className="bg-black/50 border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] pl-7 pr-6 py-1 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none transition-colors w-[120px] truncate"
+              >
+                {workspaces.length === 0 && (
+                  <option value="">(Sin Workspace)</option>
+                )}
+                {workspaces.map((ws) => (
+                  <option key={ws.id} value={ws.id}>
+                    {ws.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-[var(--wadi-text-muted)]">
+                <svg
+                  width="8"
+                  height="8"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </div>
+            </div>
+          </Tooltip>
+        </div>
 
-        <span className="text-[10px] text-[var(--wadi-text-muted)] font-mono-wadi uppercase hidden sm:inline">
+        {/* RESET BUTTON */}
+        <Tooltip content="Reiniciar sistema (F5)">
+          <button
+            onClick={() => {
+              if (
+                confirm("¿Reiniciar sistemas y purgar memoria a corto plazo?")
+              ) {
+                window.location.reload();
+              }
+            }}
+            className="p-1.5 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-surface)] rounded transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[var(--wadi-primary)]"
+            title="Reiniciar Sistema"
+            aria-label="Reiniciar sistema"
+          >
+            <RefreshCw size={14} />
+          </button>
+        </Tooltip>
+
+        <div className="h-4 w-[1px] bg-[var(--wadi-border)] mx-1"></div>
+
+        <span className="text-[10px] text-[var(--wadi-text-muted)] font-mono-wadi uppercase hidden sm:inline mr-1">
           MOTOR:
         </span>
-        <select
-          value={aiModel}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setAiModel(e.target.value as "fast" | "deep")
-          }
-          className="bg-[black] border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] font-mono-wadi p-1 px-2 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none text-center min-w-[80px]"
-          style={{ textAlignLast: "center" }}
-        >
-          <option value="fast">RÁPIDO</option>
-          <option value="deep">PROFUNDO</option>
-        </select>
+        <Tooltip content="Modelo de IA">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-1.5 pointer-events-none text-[var(--wadi-text-muted)]">
+              <Cpu size={10} />
+            </div>
+            <select
+              value={aiModel}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setAiModel(e.target.value as "fast" | "deep")
+              }
+              className="bg-black/50 border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] font-mono-wadi p-1 pl-6 pr-2 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none text-center min-w-[90px] transition-colors focus:ring-1 focus:ring-[var(--wadi-primary)]"
+              style={{ textAlignLast: "center" }}
+            >
+              <option value="fast">RÁPIDO</option>
+              <option value="deep">PROFUNDO</option>
+            </select>
+          </div>
+        </Tooltip>
       </div>
     </header>
   );

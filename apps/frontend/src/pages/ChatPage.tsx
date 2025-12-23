@@ -102,7 +102,14 @@ export default function ChatPage() {
    * Handles /system, /whoami, /system reset, /system export, /help
    */
   const handleSystemCommand = async (text: string): Promise<boolean> => {
-    if (!text.startsWith("/system") && text !== "/whoami" && text !== "/help") {
+    if (
+      !text.startsWith("/system") &&
+      text !== "/whoami" &&
+      text !== "/help" &&
+      !text.startsWith("/remember") &&
+      text !== "/recall" &&
+      text !== "/forget"
+    ) {
       return false;
     }
 
@@ -138,8 +145,77 @@ export default function ChatPage() {
 /workspace delete   → Elimina un espacio. Permanente. Como tus errores.
 \`\`\`
 
+/help               → Esto mismo. Una tabla de comandos que estás leyendo ahora.
+/workspace new      → Crea un nuevo espacio de trabajo aislado.
+/workspace switch   → Cambia a otro espacio de trabajo.
+/workspace list     → Te lista todos tus intentos fallidos de organización.
+/workspace delete   → Elimina un espacio. Permanente. Como tus errores.
+/remember CLAVE VAL → WADI memoriza ese dato sin que tengas que repetirlo.
+/recall             → Lista todo lo que WADI recuerda hasta ahora.
+/forget             → Limpia la memoria como si nada hubiera pasado.
+\`\`\`
+
 🧠 Sugerencia: usalos sabiamente. Si me hacés romper, no pienso ayudarte a reiniciarme.
             `.trim(),
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+      return true;
+    }
+
+    // 0.5 MEMORY HANDLERS (/remember, /recall, /forget)
+    if (
+      text.startsWith("/remember") ||
+      text === "/recall" ||
+      text === "/forget"
+    ) {
+      const args = text.split(" ");
+      const cmd = args[0];
+      const { remember, recall, forget } = useChatStore.getState();
+
+      let response = "";
+
+      if (cmd === "/remember") {
+        const key = args[1];
+        const value = args.slice(2).join(" ");
+        if (!key || !value) {
+          response =
+            "🤨 ¿Recordar qué? Dame un dato decente. `/remember clave valor`.";
+        } else {
+          remember(key, value);
+          response = `📌 Anotado. Recordaré que "${key}" es "${value}". Hasta que me reinicies o me aburras.`;
+        }
+      } else if (cmd === "/recall") {
+        const memory = recall();
+        if (Object.keys(memory).length === 0) {
+          response = "🧠 Vacío. No recuerdo nada. Sos igual que tus ex.";
+        } else {
+          const entries = Object.entries(memory)
+            .map(([k, v]) => `- ${k}: ${v}`)
+            .join("\n");
+          response = `🧠 Mi memoria actual:\n\`\`\`\n${entries}\n\`\`\``;
+        }
+      } else if (cmd === "/forget") {
+        forget();
+        response = "🧼 Todo olvidado. Ahora estamos en la etapa de negación.";
+      }
+
+      const tempId = crypto.randomUUID();
+      useChatStore.setState((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: tempId,
+            role: "user",
+            content: text,
+            created_at: new Date().toISOString(),
+            attachments: [],
+          },
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: response,
             created_at: new Date().toISOString(),
           },
         ],
