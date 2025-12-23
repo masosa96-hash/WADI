@@ -12,8 +12,7 @@ export const useStoreHydration = () => {
     });
 
     if (useChatStore.persist.hasHydrated() && !hydrated) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setHydrated(true);
+      setTimeout(() => setHydrated(true), 0);
     }
 
     return () => {
