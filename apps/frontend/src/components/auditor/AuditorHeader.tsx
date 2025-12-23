@@ -1,3 +1,4 @@
+import React from "react";
 import { useChatStore } from "../../store/chatStore";
 
 export function AuditorHeader() {
@@ -47,7 +48,9 @@ export function AuditorHeader() {
         </span>
         <select
           value={aiModel}
-          onChange={(e) => setAiModel(e.target.value as "fast" | "deep")}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setAiModel(e.target.value as "fast" | "deep")
+          }
           className="bg-[black] border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] font-mono-wadi p-1 px-2 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none text-center min-w-[80px]"
           style={{ textAlignLast: "center" }}
         >

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { Button } from "./ui/Button";
 import { LogItem } from "./ui/LogItem";
 import { useScouter } from "../hooks/useScouter";
-import { Activity, Settings, User as UserIcon } from "lucide-react";
+import { Activity, Settings, User as UserIcon, LogOut } from "lucide-react";
 import { SettingsModal } from "./SettingsModal";
 import { useState } from "react";
 
@@ -171,13 +171,28 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           </div>
 
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)]/10 rounded-md transition-all"
-            title="Configuración del Sistema"
-          >
-            <Settings size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => {
+                if (confirm("¿Cerrar sesión y desconectar enlace neural?")) {
+                  signOut();
+                  navigate("/");
+                }
+              }}
+              className="p-2 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-alert)] hover:bg-[var(--wadi-alert)]/10 rounded-md transition-all"
+              title="Desconectar"
+            >
+              <LogOut size={16} />
+            </button>
+
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)]/10 rounded-md transition-all"
+              title="Configuración del Sistema"
+            >
+              <Settings size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
