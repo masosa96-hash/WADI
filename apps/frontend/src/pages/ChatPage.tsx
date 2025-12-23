@@ -3,7 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore, type Attachment } from "../store/chatStore";
 import { useDocumentStore } from "../store/documentStore";
+
 import { useScouter } from "../hooks/useScouter";
+import { useStoreHydration } from "../hooks/useStoreHydration";
 import { chatShortcuts } from "../config/chatShortcuts";
 
 import { TerminalInput } from "../components/ui/TerminalInput";
@@ -16,6 +18,7 @@ import { Dropzone } from "../components/auditor/Dropzone";
 export default function ChatPage() {
   const { conversationId } = useParams();
   const navigate = useNavigate();
+  const hydrated = useStoreHydration();
 
   const {
     messages,
@@ -648,6 +651,14 @@ export default function ChatPage() {
       setCrystallizeOpen(false);
     }
   };
+
+  if (!hydrated) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#0f111a] text-[var(--wadi-text-muted)] font-mono-wadi animate-pulse text-sm">
+        [SISTEMA]: Restaurando nexo neuronal... (Cargando)
+      </div>
+    );
+  }
 
   return (
     <Layout>
