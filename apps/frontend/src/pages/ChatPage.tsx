@@ -163,35 +163,30 @@ export default function ChatPage() {
                 Decime qué querés antes de que me arrepienta de estar encendido.
               </h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
-                {[
-                  {
-                    label: "🧠 Tengo una idea mediocre, hacela brillante",
-                    nav: "Idea brillante",
-                  },
-                  {
-                    label:
-                      "🧾 Organizá mi semana antes de que me ahogue en caos",
-                    nav: "Organizar semana",
-                  },
-                  {
-                    label: "🧪 Opiná sobre algo que todavía no existe",
-                    nav: "Opinión técnica",
-                  },
-                  {
-                    label:
-                      "❓ Explicame esto como si tuviera 3 neuronas (o menos)",
-                    nav: "Explicación simple",
-                  },
-                ].map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSendMessage(item.nav, [])}
-                    className="bg-[var(--wadi-surface)] hover:bg-[var(--wadi-surface-hover)] border border-[var(--wadi-border)] text-[var(--wadi-text)] transition-all duration-300 hover:translate-x-1 px-6 py-4 rounded-xl text-left shadow-md hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] text-sm font-medium"
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md mx-auto mt-8">
+                <button
+                  className="bg-wadi-button hover:bg-wadi-button-hover text-white font-bold py-3 px-4 rounded-2xl shadow transition"
+                  onClick={() =>
+                    handleSendMessage(
+                      "Tengo una idea mediocre, hacela brillante",
+                      []
+                    )
+                  }
+                >
+                  🧠 Tengo una idea mediocre, hacela brillante
+                </button>
+
+                <button
+                  className="bg-wadi-button hover:bg-wadi-button-hover text-white font-bold py-3 px-4 rounded-2xl shadow transition"
+                  onClick={() =>
+                    handleSendMessage(
+                      "Organizá mi semana antes de que me ahogue en caos",
+                      []
+                    )
+                  }
+                >
+                  🗓️ Organizá mi semana antes de que me ahogue en caos
+                </button>
               </div>
             </div>
           )}

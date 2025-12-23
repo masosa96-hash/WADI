@@ -12,6 +12,8 @@ module.exports = {
           tension: "#FACC15",
           action: "#7C3AED",
           neutral: "#F3F4F6",
+          button: "#6C38FF",
+          "button-hover": "#572cd1",
         },
       },
       fontFamily: {
