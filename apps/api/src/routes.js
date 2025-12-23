@@ -9,7 +9,9 @@ import {
   validateRunInput,
 } from "./middleware/validation.js";
 import { upload } from "./middleware/upload.js";
-import pdf from "pdf-parse/lib/pdf-parse.js";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse");
 
 const router = Router();
 
