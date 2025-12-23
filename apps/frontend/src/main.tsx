@@ -52,8 +52,12 @@ if (isStandalone) {
   }
 }
 
+import { ErrorBoundary } from "./components/ErrorBoundary";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ErrorBoundary>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
   </StrictMode>
 );
