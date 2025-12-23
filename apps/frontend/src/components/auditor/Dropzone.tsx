@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { UploadCloud, FileText, X } from "lucide-react";
 import { useDocumentStore } from "../../store/documentStore";
+import { useShallow } from "zustand/react/shallow";
 
 export function Dropzone() {
   const [isDragging, setIsDragging] = useState(false);
@@ -11,15 +12,17 @@ export function Dropzone() {
     documents,
     removeDocument,
     setCurrentDocument,
-  } = useDocumentStore((state) => ({
-    uploadDocument: state.uploadDocument,
-    activeDocument: state.documents.find(
-      (d) => d.id === state.currentDocumentId
-    ),
-    documents: state.documents,
-    removeDocument: state.removeDocument,
-    setCurrentDocument: state.setCurrentDocument,
-  }));
+  } = useDocumentStore(
+    useShallow((state) => ({
+      uploadDocument: state.uploadDocument,
+      activeDocument: state.documents.find(
+        (d) => d.id === state.currentDocumentId
+      ),
+      documents: state.documents,
+      removeDocument: state.removeDocument,
+      setCurrentDocument: state.setCurrentDocument,
+    }))
+  );
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
