@@ -5,20 +5,23 @@
 @tailwind utilities;
 
 :root {
-  /* WADI Y2K COLD PALETTE */
-  --wadi-bg: #050816; /* Midnight Blue */
-  --wadi-surface: #0a0f29; /* Deep Blue */
-  --wadi-border: #1e293b;
-  --wadi-text: #f8fafc;
-  --wadi-text-muted: #94a3b8;
-  --wadi-primary: #8b5cf6; /* Lavender */
-  --wadi-primary-glow: rgba(139, 92, 246, 0.4);
-  --wadi-alert: #ff003c; /* Crimson */
-  --wadi-alert-glow: rgba(255, 0, 60, 0.6);
-  --wadi-success: #10b981;
+  /* WADI REDUX PALETTE */
+  --wadi-bg: #101010;
+  --wadi-surface: #1c1c1c;
+  --wadi-border: #27272a;
+  --wadi-text: #e0e0e0;
+  --wadi-text-muted: #a1a1aa;
 
-  --glass-bg: rgba(5, 8, 22, 0.7);
-  --glass-border: rgba(139, 92, 246, 0.1);
+  --wadi-primary: #91f6d7; /* Accent Pale Cyan */
+  --wadi-primary-glow: rgba(145, 246, 215, 0.2);
+
+  --wadi-alert: #ff4d4f; /* Danger */
+  --wadi-alert-glow: rgba(255, 77, 79, 0.4);
+
+  --wadi-success: #10b981; /* Keep slightly distinct or map to accent? Keeping distinct for success states */
+
+  --glass-bg: rgba(28, 28, 28, 0.8);
+  --glass-border: rgba(145, 246, 215, 0.1);
 }
 
 @layer base {
@@ -124,15 +127,14 @@
   }
 
   .bubble-wadi {
-    @apply bubble-base bg-[var(--wadi-surface)] text-[var(--wadi-text)] border border-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.1)];
+    @apply bubble-base bg-[var(--wadi-surface)] text-[var(--wadi-text)] border-l-2 border-[var(--wadi-primary)];
     border-top-left-radius: 4px;
     font-family: "JetBrains Mono", monospace;
   }
 
   .bubble-user {
-    @apply bubble-base bg-[var(--wadi-primary)] text-white ml-auto border-none;
+    @apply bubble-base bg-[var(--wadi-border)] text-[var(--wadi-text)] ml-auto border border-[var(--wadi-border)];
     border-top-right-radius: 4px;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
   }
 
   .animate-pulse-soft {
