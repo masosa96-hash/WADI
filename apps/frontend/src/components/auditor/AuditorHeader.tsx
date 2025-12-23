@@ -1,6 +1,6 @@
-import React from "react";
+import { Link } from "react-router-dom";
 import { useChatStore } from "../../store/chatStore";
-import { RefreshCw, Layers, Cpu } from "lucide-react";
+import { RefreshCw, Layers, Cpu, LayoutDashboard } from "lucide-react";
 import { Tooltip } from "../ui/Tooltip";
 
 export function AuditorHeader() {
@@ -56,6 +56,16 @@ export function AuditorHeader() {
       </div>
 
       <div className="flex items-center gap-1 md:gap-2">
+        {/* DASHBOARD LINK */}
+        <Tooltip content="Dashboard & Métricas">
+          <Link
+            to="/dashboard"
+            className="hidden md:flex items-center justify-center p-1.5 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-surface)] rounded transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[var(--wadi-primary)] mr-1"
+          >
+            <LayoutDashboard size={14} />
+          </Link>
+        </Tooltip>
+
         {/* WORKSPACE SELECTOR */}
         <div className="hidden md:flex items-center mr-2 relative z-20">
           <Tooltip content="Cambiar contexto de trabajo">

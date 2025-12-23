@@ -9,6 +9,7 @@ import { AuditReport } from "./components/auditor/AuditReport";
 import IntroWadi from "./pages/IntroWadi";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import DashboardPage from "./pages/DashboardPage";
 
 export const router = createBrowserRouter([
   {
@@ -68,6 +69,14 @@ export const router = createBrowserRouter([
     element: (
       <AuthLoader>
         <AuditReport />
+      </AuthLoader>
+    ),
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <AuthLoader>
+        <DashboardPage />
       </AuthLoader>
     ),
   },
