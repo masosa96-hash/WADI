@@ -5,23 +5,23 @@
 @tailwind utilities;
 
 :root {
-  /* WADI REDUX PALETTE */
-  --wadi-bg: #101010;
-  --wadi-surface: #1c1c1c;
-  --wadi-border: #27272a;
-  --wadi-text: #e0e0e0;
-  --wadi-text-muted: #a1a1aa;
+  /* WADI INDUSTRIAL RETRO PALETTE */
+  --wadi-bg: #f3f3f0;
+  --wadi-surface: #e5e5e0;
+  --wadi-border: #d4d4cc;
+  --wadi-text: #1a1a1a;
+  --wadi-text-muted: #666666;
 
-  --wadi-primary: #91f6d7; /* Accent Pale Cyan */
-  --wadi-primary-glow: rgba(145, 246, 215, 0.2);
+  --wadi-primary: #00a7a7; /* Industrial Teal */
+  --wadi-primary-glow: rgba(0, 167, 167, 0.15);
 
-  --wadi-alert: #ff4d4f; /* Danger */
-  --wadi-alert-glow: rgba(255, 77, 79, 0.4);
+  --wadi-alert: #e11d48;
+  --wadi-alert-glow: rgba(225, 29, 72, 0.2);
 
-  --wadi-success: #10b981; /* Keep slightly distinct or map to accent? Keeping distinct for success states */
+  --wadi-success: #059669;
 
-  --glass-bg: rgba(28, 28, 28, 0.8);
-  --glass-border: rgba(145, 246, 215, 0.1);
+  --glass-bg: rgba(243, 243, 240, 0.85);
+  --glass-border: rgba(0, 167, 167, 0.2);
 }
 
 @layer base {
@@ -34,13 +34,17 @@
     margin: 0;
     padding: 0;
     background-color: var(--wadi-bg);
+    background-image: radial-gradient(circle at 25% 25%, #f8f8f8, #f3f3f0 80%);
     color: var(--wadi-text);
     overflow: hidden !important;
-    font-family: "Outfit", sans-serif;
-    cursor:
-      url('data:image/svg+xml;utf8,<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8" stroke="%238b5cf6" stroke-width="1.5"/><line x1="12" y1="2" x2="12" y2="6" stroke="%238b5cf6" stroke-width="1.5"/><line x1="12" y1="18" x2="12" y2="22" stroke="%238b5cf6" stroke-width="1.5"/><line x1="2" y1="12" x2="6" y2="12" stroke="%238b5cf6" stroke-width="1.5"/><line x1="18" y1="12" x2="22" y2="12" stroke="%238b5cf6" stroke-width="1.5"/><circle cx="12" cy="12" r="1" fill="%23ec4899"/></svg>')
-        12 12,
-      auto;
+    font-family: "Inter", sans-serif;
+    cursor: auto;
+  }
+
+  button:hover,
+  [role="button"]:hover,
+  a:hover {
+    cursor: crosshair;
   }
 
   /* Auditor Font */
@@ -127,18 +131,33 @@
   }
 
   .bubble-wadi {
-    @apply bubble-base bg-[var(--wadi-surface)] text-[var(--wadi-text)] border-l-2 border-[var(--wadi-primary)];
+    @apply bubble-base bg-[var(--wadi-surface)] text-[var(--wadi-text)] border-l-4 border-[var(--wadi-primary)] shadow-sm;
     border-top-left-radius: 4px;
     font-family: "JetBrains Mono", monospace;
   }
 
   .bubble-user {
-    @apply bubble-base bg-[var(--wadi-border)] text-[var(--wadi-text)] ml-auto border border-[var(--wadi-border)];
+    @apply bubble-base bg-[#f3f3f0] text-[var(--wadi-text)] ml-auto border border-[var(--wadi-border)];
     border-top-right-radius: 4px;
   }
 
   .animate-pulse-soft {
     animation: pulse-soft 2s infinite;
+  }
+
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .wadi-input-base {
+    @apply bg-white border border-[#cccccc] focus:outline-none focus:ring-2 focus:ring-[var(--wadi-primary)] rounded px-4 py-2 w-full font-sans text-[var(--wadi-text)] placeholder:text-[#999999] transition-shadow duration-200;
   }
 }
 

@@ -5,13 +5,13 @@ module.exports = {
     extend: {
       colors: {
         wadi: {
-          bg: "#101010",
-          surface: "#1c1c1c",
-          text: "#e0e0e0",
-          subtle: "#a1a1aa", // Zinc-400 for secondary text
-          accent: "#91f6d7", // Pale Cyan-Green
-          danger: "#ff4d4f",
-          border: "#27272a", // Zinc-800 for borders
+          bg: "#f3f3f0",
+          surface: "#e5e5e0",
+          text: "#1a1a1a",
+          subtle: "#666666",
+          accent: "#00a7a7", // Teal
+          danger: "#e11d48", // Stronger red for light mode
+          border: "#d4d4cc",
         },
       },
       borderRadius: {

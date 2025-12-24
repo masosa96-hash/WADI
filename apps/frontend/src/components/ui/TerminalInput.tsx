@@ -199,11 +199,11 @@ export function TerminalInput({
               placeholder={displayedPlaceholder}
               disabled={isLoading || !!activeFocus}
               className={`
-                  w-full bg-transparent border-b text-base py-2 px-2 font-mono-wadi focus:outline-none transition-all
+                  wadi-input-base
                   ${
                     isDecisionBlocked
-                      ? "border-[var(--wadi-alert)] text-[var(--wadi-alert)] placeholder:text-[var(--wadi-alert)]/50"
-                      : "border-[var(--wadi-border)] text-[var(--wadi-text)] placeholder:text-[var(--wadi-text-muted)] focus:border-[var(--wadi-primary)]"
+                      ? "border-[var(--wadi-alert)] text-[var(--wadi-alert)] placeholder:text-[var(--wadi-alert)]/50 focus:ring-[var(--wadi-alert)]"
+                      : ""
                   }
               `}
               autoComplete="off"

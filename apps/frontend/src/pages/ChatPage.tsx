@@ -654,7 +654,7 @@ export default function ChatPage() {
 
   if (!hydrated) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#0f111a] text-[var(--wadi-text-muted)] font-mono-wadi animate-pulse text-sm">
+      <div className="flex items-center justify-center h-screen bg-[var(--wadi-bg)] text-[var(--wadi-text-muted)] font-mono-wadi animate-pulse text-sm">
         [SISTEMA]: Restaurando nexo neuronal... (Cargando)
       </div>
     );

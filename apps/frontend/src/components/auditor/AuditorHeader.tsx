@@ -85,7 +85,7 @@ export function AuditorHeader() {
                     );
                   }
                 }}
-                className="bg-black/50 border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] pl-7 pr-6 py-1 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none transition-colors w-[120px] truncate"
+                className="bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] pl-7 pr-6 py-1 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none transition-colors w-[120px] truncate"
               >
                 {workspaces.length === 0 && (
                   <option value="">(Sin Workspace)</option>
@@ -147,7 +147,7 @@ export function AuditorHeader() {
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                 setAiModel(e.target.value as "fast" | "deep")
               }
-              className="bg-black/50 border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] font-mono-wadi p-1 pl-6 pr-2 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none text-center min-w-[90px] transition-colors focus:ring-1 focus:ring-[var(--wadi-primary)]"
+              className="bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] font-mono-wadi p-1 pl-6 pr-2 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none text-center min-w-[90px] transition-colors focus:ring-1 focus:ring-[var(--wadi-primary)]"
               style={{ textAlignLast: "center" }}
             >
               <option value="fast">RÁPIDO</option>
