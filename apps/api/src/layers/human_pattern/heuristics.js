@@ -1,6 +1,6 @@
 export function isVeryShort(text) {
   if (!text) return true;
-  return text.trim().split(/\s+/).length < 8;
+  return text.trim().split(/\s+/).length < 25;
 }
 
 export function containsDesireWords(text) {

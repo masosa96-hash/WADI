@@ -263,7 +263,7 @@ router.post(
     const preFlightResponse = wadiPreFlight(message);
 
     if (preFlightResponse) {
-      console.log(`[WADI HUMAN LAYER] Responding early.`);
+      console.log(`[WADI HUMAN LAYER] Response sent. HALTING.`);
       return res.json({
         reply: preFlightResponse,
         conversationId: currentConversationId,
