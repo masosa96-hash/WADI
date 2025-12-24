@@ -703,7 +703,7 @@ export default function ChatPage() {
                 {chatShortcuts.map((shortcut, idx) => (
                   <button
                     key={idx}
-                    className="bg-wadi-button hover:bg-wadi-button-hover text-white font-bold py-3 px-4 rounded-2xl shadow transition text-xs sm:text-sm text-left flex items-start gap-2"
+                    className="bg-white border border-[var(--wadi-border)] hover:border-[var(--wadi-primary)] text-[var(--wadi-text)] hover:text-[var(--wadi-primary)] font-bold py-3 px-4 rounded-xl shadow-sm transition-all duration-200 text-xs sm:text-sm text-left flex items-start gap-2 hover:shadow-md hover:scale-[1.02]"
                     onClick={() => handleSendMessage(shortcut.prompt, [])}
                   >
                     <span>{shortcut.label.split(" ")[0]}</span>

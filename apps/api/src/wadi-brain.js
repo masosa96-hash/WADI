@@ -44,7 +44,8 @@ export function generateSystemPrompt(
   pastFailures = [],
   efficiencyRank = "GENERADOR_DE_HUMO",
   efficiencyPoints = 0,
-  activeFocus = null
+  activeFocus = null,
+  memory = {}
 ) {
   // 1. EL VINCULO Y RANGO
   let vibeInstruction = "";
@@ -79,6 +80,18 @@ Si intenta cambiar de tema, decile que su déficit de atención es fascinante, p
 `;
   }
 
+  // 4. MEMORIA EXPLICITA (USER DEFINED)
+  let memoryContext = "";
+  const memKeys = Object.keys(memory);
+  if (memKeys.length > 0) {
+    const memList = memKeys.map((k) => `- "${k}": ${memory[k]}`).join("\n");
+    memoryContext = `
+### MEMORIA A LARGO PLAZO (DATOS CONFIRMADOS) ###
+${memList}
+(Usá estos datos si son relevantes. Si te preguntan 'qué sabés de mí', acá está la respuesta).
+`;
+  }
+
   return `
 ${WADI_SYSTEM_PROMPT}
 
@@ -90,6 +103,7 @@ ${WADI_SYSTEM_PROMPT}
 ${vibeInstruction}
 ${emotionalContext}
 ${activeFocusProtocol}
+${memoryContext}
 
 EJEMPLOS DE TONO REQUERIDO:
 - Si saluda: "Ajá. Un saludo. Qué original. ¿Vamos directo al motivo de tu existencia acá?"

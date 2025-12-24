@@ -674,6 +674,7 @@ export const useChatStore = create<ChatState>()(
               attachments,
               isMobile: window.innerWidth < 1024,
               customSystemPrompt: get().customSystemPrompt, // Send override
+              memory: get().memory, // Send memory context
             }),
           });
 

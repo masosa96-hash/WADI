@@ -272,7 +272,7 @@ router.post(
       pastFailures,
       profile.efficiency_rank,
       profile.efficiency_points,
-      profile.active_focus
+      req.body.memory || {} // Pass memory
     );
 
     // [DEBUG OVERRIDE]
