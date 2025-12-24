@@ -287,35 +287,50 @@ router.post(
     };
 
     const detectHumanPattern = (text) => {
-      const lower = text.toLowerCase();
+      if (!text) return null;
+      const lower = text.toLowerCase().trim();
+
+      console.log(
+        `[PATTERN DEBUG] Analyzing: "${lower}" (Len: ${lower.length})`
+      );
+
       // VAGUE_AMBITION: "quiero hacer algo innovador", "quiero una idea"
+      // Must be relatively short to be a "wish"
       if (
-        text.length < 80 &&
+        lower.length < 120 &&
         (lower.includes("quiero") ||
           lower.includes("me gustaría") ||
+          lower.includes("busco") ||
           lower.includes("deseo") ||
-          lower.includes("idea")) &&
-        (lower.includes("innovador") || lower.includes("algo"))
+          lower.includes("tengo ganas")) &&
+        (lower.includes("idea") ||
+          lower.includes("algo") ||
+          lower.includes("innovador") ||
+          lower.includes("proyecto"))
       ) {
         return "VAGUE_AMBITION";
       }
+
       // FAKE_DEPTH: Buzzwords
       if (
         lower.includes("sinergia") ||
         lower.includes("paradigma") ||
         lower.includes("disruptivo") ||
-        lower.includes("holístico")
+        lower.includes("holístico") ||
+        lower.includes("ecosistema digital")
       ) {
         return "FAKE_DEPTH";
       }
+
       // RESCUE_REQUEST: "no sé por dónde empezar"
       if (
-        lower.includes("no sé") ||
-        lower.includes("ayuda") ||
-        lower.includes("por dónde empezar")
+        lower.includes("no sé por dónde") ||
+        lower.includes("ayudame a empezar") ||
+        (lower.includes("estoy perdido") && lower.length < 60)
       ) {
         return "RESCUE_REQUEST";
       }
+
       return null;
     };
 
