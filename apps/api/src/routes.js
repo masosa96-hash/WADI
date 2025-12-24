@@ -255,6 +255,26 @@ router.post(
       };
     }
 
+    // --- PRE-FLIGHT CHECK: VAGUENESS FILTER (WADI V1) ---
+    // If identifying a "wish" without concrete details (e.g. "wish to...", "want to...", "quiero...") and length is short
+    const isVagueWish =
+      message.length < 80 &&
+      (message.toLowerCase().includes("quiero") ||
+        message.toLowerCase().includes("me gustaría") ||
+        message.toLowerCase().includes("deseo") ||
+        message.toLowerCase().includes("idea"));
+
+    if (isVagueWish) {
+      console.log("[WADI FILTER] Blocked vague wish:", message);
+      // Return early without AI cost
+      return res.json({
+        reply:
+          "Esto es un deseo, no una idea. Definí una premisa verificable o un primer paso concreto.",
+        conversationId: currentConversationId,
+        efficiencyPoints: profile.efficiency_points,
+      });
+    }
+
     // --- COMMON: GENERATE AI RESPONSE ---
 
     // [FIX]: Remove current msg from history for prompt context, and limit to recent history
@@ -288,14 +308,31 @@ router.post(
     }));
 
     try {
-      const completion = await openai.chat.completions.create({
-        model: AI_MODEL,
-        messages: [
-          { role: "system", content: finalSystemPrompt },
-          ...openAIHistory,
-          { role: "user", content: userContent },
-        ],
-      });
+      console.log(
+        `[AI START] Calling model for conv ${currentConversationId}...`
+      );
+
+      // 3. TIMEOUT SAFETY (25s)
+      const timeoutMs = 25000;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      const completion = await Promise.race([
+        openai.chat.completions.create({
+          model: AI_MODEL,
+          messages: [
+            { role: "system", content: finalSystemPrompt },
+            ...openAIHistory,
+            { role: "user", content: userContent },
+          ],
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("AI_TIMEOUT")), timeoutMs)
+        ),
+      ]);
+      clearTimeout(timeoutId);
+
+      console.log(`[AI END] Response received.`);
 
       const reply = completion.choices[0].message.content;
 
@@ -353,8 +390,21 @@ router.post(
         systemDeath,
         isGuest: !user,
       });
-    } catch (e) {
-      res.status(500).json({ error: "ERROR DE SISTEMA", details: e.message });
+    } catch (error) {
+      console.error("[AI ERROR]:", error);
+      let errorReply =
+        "El sistema colapsó por su propia complejidad. O OpenAI está caído. Probá de nuevo.";
+      if (error.message === "AI_TIMEOUT") {
+        errorReply =
+          "El modelo se quedó pensando demasiado. Tu pregunta debe ser fascinante o terriblemente aburrida. Simplificala.";
+      }
+
+      // Return a safe fallback instead of hanging
+      res.json({
+        reply: errorReply,
+        conversationId: currentConversationId,
+        efficiencyPoints: profile.efficiency_points,
+      });
     }
   })
 );
