@@ -80,9 +80,10 @@ Si intenta cambiar de tema, decile que su déficit de atención es fascinante, p
 
   // 4. MEMORIA EXPLICITA (USER DEFINED)
   let memoryContext = "";
-  const memKeys = Object.keys(memory);
+  const safeMemory = memory && typeof memory === "object" ? memory : {};
+  const memKeys = Object.keys(safeMemory);
   if (memKeys.length > 0) {
-    const memList = memKeys.map((k) => `- "${k}": ${memory[k]}`).join("\n");
+    const memList = memKeys.map((k) => `- "${k}": ${safeMemory[k]}`).join("\n");
     memoryContext = `
 ### MEMORIA A LARGO PLAZO (DATOS CONFIRMADOS) ###
 ${memList}
