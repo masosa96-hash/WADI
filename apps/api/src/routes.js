@@ -259,90 +259,13 @@ router.post(
     // WADI responde desde experiencia acumulada, no desde definiciones abstractas.
     // Si puede describir un patrón humano, no explica teoría.
 
-    const SOCIAL_MEMORY = {
-      VAGUE_AMBITION: {
-        observation:
-          "Esto aparece todo el tiempo y casi nunca alcanza para empezar.",
-        response:
-          "Si querés avanzar, decime qué problema concreto querés resolver.",
-      },
-      FAKE_DEPTH: {
-        observation:
-          "Cuando alguien habla así, suele estar tapando falta de claridad.",
-        response:
-          "Bajemos a algo específico: ¿qué afirmación concreta estás haciendo?",
-      },
-      RESCUE_REQUEST: {
-        observation:
-          "Querés avanzar, pero estás esperando que alguien piense por vos.",
-        response:
-          "Puedo ayudarte, pero primero necesitás poner algo sobre la mesa. ¿Qué ya decidiste?",
-      },
-      PROCRASTINATION_LOOP: {
-        observation:
-          "Esto ya dio vueltas suficientes. Seguir igual no va a cambiar nada.",
-        response:
-          "Sigamos solo si estás dispuesto a cambiar el planteo. ¿Qué vas a definir ahora?",
-      },
-    };
+    // --- HUMAN PATTERN LAYER (WADI V1) ---
+    const preFlightResponse = wadiPreFlight(message);
 
-    const detectHumanPattern = (text) => {
-      if (!text) return null;
-      const lower = text.toLowerCase().trim();
-
-      console.log(
-        `[PATTERN DEBUG] Analyzing: "${lower}" (Len: ${lower.length})`
-      );
-
-      // VAGUE_AMBITION: "quiero hacer algo innovador", "quiero una idea"
-      // Must be relatively short to be a "wish"
-      if (
-        lower.length < 120 &&
-        (lower.includes("quiero") ||
-          lower.includes("me gustaría") ||
-          lower.includes("busco") ||
-          lower.includes("deseo") ||
-          lower.includes("tengo ganas")) &&
-        (lower.includes("idea") ||
-          lower.includes("algo") ||
-          lower.includes("innovador") ||
-          lower.includes("proyecto"))
-      ) {
-        return "VAGUE_AMBITION";
-      }
-
-      // FAKE_DEPTH: Buzzwords
-      if (
-        lower.includes("sinergia") ||
-        lower.includes("paradigma") ||
-        lower.includes("disruptivo") ||
-        lower.includes("holístico") ||
-        lower.includes("ecosistema digital")
-      ) {
-        return "FAKE_DEPTH";
-      }
-
-      // RESCUE_REQUEST: "no sé por dónde empezar"
-      if (
-        lower.includes("no sé por dónde") ||
-        lower.includes("ayudame a empezar") ||
-        (lower.includes("estoy perdido") && lower.length < 60)
-      ) {
-        return "RESCUE_REQUEST";
-      }
-
-      return null;
-    };
-
-    const pattern = detectHumanPattern(message);
-
-    if (pattern) {
-      console.log(`[WADI PATTERN] Detected: ${pattern}`);
-      const memory = SOCIAL_MEMORY[pattern];
-      const reply = `${memory.observation}\n${memory.response}`;
-
+    if (preFlightResponse) {
+      console.log(`[WADI HUMAN LAYER] Responding early.`);
       return res.json({
-        reply: reply,
+        reply: preFlightResponse,
         conversationId: currentConversationId,
         efficiencyPoints: profile.efficiency_points,
       });
