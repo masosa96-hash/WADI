@@ -5,23 +5,23 @@
 @tailwind utilities;
 
 :root {
-  /* WADI INDUSTRIAL RETRO PALETTE */
-  --wadi-bg: #f3f3f0;
+  /* WADI INDUSTRIAL AUSTERE PALETTE */
+  --wadi-bg: #f2f0ec; /* Warm Cement */
   --wadi-surface: #e5e5e0;
   --wadi-border: #d4d4cc;
   --wadi-text: #1a1a1a;
   --wadi-text-muted: #666666;
 
-  --wadi-primary: #00a7a7; /* Industrial Teal */
-  --wadi-primary-glow: rgba(0, 167, 167, 0.15);
+  --wadi-primary: #008080; /* Sobriety Teal */
+  --wadi-primary-glow: rgba(0, 128, 128, 0.1);
 
-  --wadi-alert: #e11d48;
-  --wadi-alert-glow: rgba(225, 29, 72, 0.2);
+  --wadi-alert: #b91c1c; /* Muted Red */
+  --wadi-alert-glow: rgba(185, 28, 28, 0.15);
 
-  --wadi-success: #059669;
+  --wadi-success: #15803d;
 
-  --glass-bg: rgba(243, 243, 240, 0.85);
-  --glass-border: rgba(0, 167, 167, 0.2);
+  --glass-bg: rgba(242, 240, 236, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.05);
 }
 
 @layer base {
@@ -34,7 +34,6 @@
     margin: 0;
     padding: 0;
     background-color: var(--wadi-bg);
-    background-image: radial-gradient(circle at 25% 25%, #f8f8f8, #f3f3f0 80%);
     color: var(--wadi-text);
     overflow: hidden !important;
     font-family: "Inter", sans-serif;
@@ -44,7 +43,7 @@
   button:hover,
   [role="button"]:hover,
   a:hover {
-    cursor: crosshair;
+    cursor: default; /* No crosshair, keep it clean */
   }
 
   /* Auditor Font */
@@ -131,14 +130,12 @@
   }
 
   .bubble-wadi {
-    @apply bubble-base bg-[var(--wadi-surface)] text-[var(--wadi-text)] border-l-4 border-[var(--wadi-primary)] shadow-sm;
-    border-top-left-radius: 4px;
-    font-family: "JetBrains Mono", monospace;
+    @apply bubble-base bg-[#e5e5e0] text-[#1a1a1a] border-l-2 border-[var(--wadi-primary)] shadow-none rounded-none;
+    font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
   }
 
   .bubble-user {
-    @apply bubble-base bg-[#f3f3f0] text-[var(--wadi-text)] ml-auto border border-[var(--wadi-border)];
-    border-top-right-radius: 4px;
+    @apply bubble-base bg-white text-[#1a1a1a] ml-auto border border-[#d4d4cc] shadow-none rounded-sm;
   }
 
   .animate-pulse-soft {

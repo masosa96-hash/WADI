@@ -123,10 +123,10 @@ export function Dropzone() {
             />
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium text-[var(--wadi-text)]">
-                Arrastrá tu burocracia acá
+                Arrastrá tus documentos (sí, los que evitás leer)
               </p>
               <p className="text-[10px] text-[var(--wadi-text-muted)] uppercase tracking-wide">
-                PDF, TXT, MD (MAX 10MB)
+                PDF, TXT, MD (EVIDENCIA REQUERIDA)
               </p>
             </div>
           </div>

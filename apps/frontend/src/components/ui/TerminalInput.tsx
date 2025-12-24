@@ -10,10 +10,10 @@ interface TerminalInputProps {
   activeFocus?: string | null;
 }
 
-const PLACEHOLDERS_NORMAL = ["Escribe un mensaje..."];
+const PLACEHOLDERS_NORMAL = ["Escribí algo que podamos verificar."];
 const PLACEHOLDERS_BLOCKED = [
-  "[PAUSA DE LUCIDEZ: ENFOCATE EN UNA OPCIÓN]",
-  "ESPERANDO SELECCIÓN (A/B) PARA AVANZAR...",
+  "[PAUSA DE LUCIDEZ: DEFINÍ TU CAMINO]",
+  "ESPERANDO DEFINICIÓN DE CRITERIO...",
 ];
 
 export function TerminalInput({
