@@ -48,7 +48,7 @@ export default function ChatPage() {
     togglePanicMode,
   } = useChatStore();
 
-  const { initAmbientHum, audioState, playCrystallizeSound } = useScouter();
+  const { playCrystallizeSound } = useScouter();
 
   const lastMessage = messages[messages.length - 1];
   const isLastMessageUser = lastMessage?.role === "user";
@@ -720,14 +720,6 @@ export default function ChatPage() {
             <AuditorHeader />
 
             {/* Audio Suspended Check */}
-            {audioState === "suspended" && (
-              <button
-                onClick={initAmbientHum}
-                className="absolute top-16 right-4 z-50 px-3 py-1 bg-[var(--wadi-alert)]/10 border border-[var(--wadi-alert)]/50 text-[var(--wadi-alert)] text-[10px] font-mono-wadi uppercase tracking-widest hover:bg-[var(--wadi-alert)]/20 transition-colors animate-pulse rounded-full"
-              >
-                [ACTIVAR AUDIO]
-              </button>
-            )}
 
             {/* FILE DROPZONE */}
             <div className="px-6 pt-6">
@@ -1015,21 +1007,6 @@ export default function ChatPage() {
             />
           </div>
           {/* GLOBAL FOOTER STATUS - AUDIO CHECK */}
-          {audioState === "suspended" && (
-            <button
-              onClick={() => {
-                initAmbientHum();
-                // Just in case click propagation is needed
-                document.body.click();
-              }}
-              className="fixed bottom-4 right-4 z-[100] group flex items-center gap-2 px-3 py-2 bg-black/80 border border-[var(--wadi-alert)] rounded shadow-[0_0_15px_rgba(255,50,50,0.2)] hover:bg-[var(--wadi-alert)]/10 hover:shadow-[0_0_25px_rgba(255,50,50,0.5)] transition-all cursor-pointer animate-pulse-soft"
-            >
-              <span className="w-2 h-2 rounded-full bg-[var(--wadi-alert)] animate-ping"></span>
-              <span className="text-[10px] font-mono-wadi text-[var(--wadi-alert)] tracking-widest uppercase">
-                [SISTEMAS_OFFLINE: TOCAR_PARA_INICIAR]
-              </span>
-            </button>
-          )}
 
           {/* CRYSTALLIZE MODAL */}
           {isCrystallizeOpen && (
