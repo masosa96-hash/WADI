@@ -1,27 +1,24 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* WADI INDUSTRIAL AUSTERE PALETTE */
-  --wadi-bg: #f2f0ec; /* Warm Cement */
-  --wadi-surface: #e5e5e0;
-  --wadi-border: #d4d4cc;
-  --wadi-text: #1a1a1a;
-  --wadi-text-muted: #666666;
+  /* WADI MINIMAL CLEAN PALETTE */
+  --wadi-bg: #fafafa; /* Zinc 50 */
+  --wadi-surface: #ffffff;
+  --wadi-sidebar: #f4f4f5; /* Zinc 100 */
+  --wadi-border: #e4e4e7; /* Zinc 200 */
 
-  --wadi-primary: #008080; /* Sobriety Teal */
-  --wadi-primary-glow: rgba(0, 128, 128, 0.1);
+  --wadi-text: #18181b; /* Zinc 900 */
+  --wadi-text-muted: #71717a; /* Zinc 500 */
 
-  --wadi-alert: #b91c1c; /* Muted Red */
-  --wadi-alert-glow: rgba(185, 28, 28, 0.15);
+  --wadi-primary: #18181b; /* Zinc 900 (Monochrome Accent) */
+  --wadi-primary-glow: rgba(24, 24, 27, 0.05);
 
-  --wadi-success: #15803d;
-
-  --glass-bg: rgba(242, 240, 236, 0.95);
-  --glass-border: rgba(0, 0, 0, 0.05);
+  --wadi-alert: #ef4444;
+  --wadi-success: #10b981;
 }
 
 @layer base {
@@ -33,10 +30,10 @@
     width: 100vw !important;
     margin: 0;
     padding: 0;
-    background-color: #e3e1dc; /* Matte Cement */
+    background-color: var(--wadi-bg);
     color: var(--wadi-text);
     overflow: hidden !important;
-    font-family: "Inter", sans-serif;
+    font-family: "Outfit", sans-serif; /* Friendly Geometric Sans */
     cursor: auto;
   }
 
@@ -136,41 +133,46 @@
 
   .wadi-response {
     max-width: 720px;
-    margin: 48px auto 24px auto;
+    margin: 32px auto 24px auto;
     padding: 24px 28px;
 
-    background-color: #f5f4f1;
-    border-left: 4px solid #006d6d;
+    background-color: #ffffff;
+    /* Soft shadow instead of heavy border */
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border-radius: 16px;
+    border-left: 4px solid var(--wadi-primary);
 
-    font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
-    font-size: 15px;
-    line-height: 1.55;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    line-height: 1.6;
 
-    color: #1a1a1a;
+    color: #18181b;
   }
 
   .wadi-label {
-    font-size: 12px;
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #555;
-    margin-bottom: 8px;
-    font-family: "Inter", sans-serif;
+    color: #a1a1aa; /* Zinc 400 */
+    margin-bottom: 12px;
+    font-family: "Outfit", sans-serif;
     font-weight: 600;
   }
 
   .user-message {
     max-width: 640px;
     margin: 12px auto;
-    padding: 12px 16px;
+    padding: 12px 20px;
 
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    background: #f4f4f5; /* Zinc 100 */
+    border: none;
+    border-radius: 20px;
 
     font-size: 14px;
-    font-family: "Inter", sans-serif;
-    color: #333;
+    font-family: "Outfit", sans-serif;
+    color: #18181b;
   }
 
   /* Compatibility aliases for React code expecting old classes */
@@ -197,7 +199,7 @@
   }
 
   .wadi-input-base {
-    @apply bg-white border border-[#cccccc] focus:outline-none focus:ring-2 focus:ring-[var(--wadi-primary)] rounded px-4 py-2 w-full font-sans text-[var(--wadi-text)] placeholder:text-[#999999] transition-shadow duration-200;
+    @apply bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:border-transparent rounded-full px-6 py-3 w-full font-sans text-sm text-[var(--wadi-text)] placeholder:text-gray-400 shadow-sm transition-all duration-200;
   }
 }
 
