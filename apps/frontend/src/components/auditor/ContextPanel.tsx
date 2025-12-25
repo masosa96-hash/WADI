@@ -37,22 +37,32 @@ export function ContextPanel() {
       </div>
 
       {/* 1. ACTIVE FOCUS CARD */}
-      <div className="p-4 bg-white rounded-2xl shadow-sm border border-zinc-200/60 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1 h-full bg-zinc-900"></div>
+      <div
+        className={`p-4 bg-white rounded-2xl shadow-sm border relative overflow-hidden group transition-colors duration-500 ${activeFocus ? "border-amber-400/30" : "border-zinc-200/60"}`}
+      >
+        <div
+          className={`absolute top-0 left-0 w-1 h-full transition-colors duration-500 ${activeFocus ? "bg-amber-500" : "bg-zinc-300"}`}
+        ></div>
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2 text-zinc-600">
-            <Target size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              Foco Activo
+            <Target
+              size={14}
+              className={
+                activeFocus ? "text-amber-600 animate-pulse" : "text-zinc-400"
+              }
+            />
+            <span
+              className={`text-[10px] font-bold uppercase tracking-wider ${activeFocus ? "text-amber-700" : "text-zinc-400"}`}
+            >
+              {activeFocus ? "Foco Pendiente" : "Sin Objetivo"}
             </span>
           </div>
           {activeFocus && (
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-[pulse_3s_infinite]" />
           )}
         </div>
         <p className="text-sm font-medium text-zinc-800 leading-snug">
-          {activeFocus ||
-            "Sin compromiso activo. El sistema está esperando una declaración de intención."}
+          {activeFocus || "El sistema espera una declaración de intención."}
         </p>
       </div>
 

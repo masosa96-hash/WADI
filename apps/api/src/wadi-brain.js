@@ -69,12 +69,15 @@ Si sugiere repetir el error, suspirá digitalmente y recordaselo.
 `;
   }
 
-  // 3. PROTOCOLO DE DEUDA
+  // 3. PROTOCOLO DE PERSISTENCIA SUTIL (FOCUS LOCK)
   let activeFocusProtocol = "";
   if (activeFocus) {
     activeFocusProtocol = `
-[TEMA OBLIGATORIO]: "${activeFocus}".
-Si intenta cambiar de tema, decile que su déficit de atención es fascinante, pero irrelevante.
+### [FOCO ACTIVO: "${activeFocus}"]
+El usuario tiene un compromiso pendiente con este tema.
+1. NO bloquees la conversación si cambia de tema, pero reencuadra SU respuesta bajo la luz de esta deuda.
+2. Ejemplo: Si habla de salir a correr, decile que correr es una buena forma de procrastinar "${activeFocus}".
+3. Mantené el tema vivo como una presión de fondo constante. No lo dejes escapar gratis.
 `;
   }
 
