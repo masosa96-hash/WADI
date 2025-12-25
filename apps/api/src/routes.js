@@ -260,17 +260,19 @@ router.post(
     // Si puede describir un patrón humano, no explica teoría.
 
     // --- HUMAN PATTERN LAYER (WADI V1) ---
-    // --- HUMAN PATTERN LAYER (WADI V1) ---
-    const preFlightData = wadiPreFlight(message);
+    // SKIP IF PANIC MODE
+    if (mode !== "panic") {
+      const preFlightData = wadiPreFlight(message);
 
-    if (preFlightData) {
-      console.log(`[WADI HUMAN LAYER] Response sent. HALTING.`);
-      return res.json({
-        reply: preFlightData.reply,
-        detectedPattern: preFlightData.pattern,
-        conversationId: currentConversationId,
-        efficiencyPoints: profile.efficiency_points,
-      });
+      if (preFlightData) {
+        console.log(`[WADI HUMAN LAYER] Response sent. HALTING.`);
+        return res.json({
+          reply: preFlightData.reply,
+          detectedPattern: preFlightData.pattern,
+          conversationId: currentConversationId,
+          efficiencyPoints: profile.efficiency_points,
+        });
+      }
     }
 
     // --- COMMON: GENERATE AI RESPONSE ---

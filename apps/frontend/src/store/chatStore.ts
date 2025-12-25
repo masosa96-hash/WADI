@@ -67,6 +67,7 @@ interface ChatState {
   hasStarted: boolean;
   mood: WadiMood;
   isSidebarOpen: boolean;
+  isPanicMode: boolean; // EMERGENCY OVERRIDE
   isUploading: boolean;
   activeFocus: string | null;
 
@@ -108,6 +109,9 @@ interface ChatState {
   setMood: (mood: WadiMood) => void;
   toggleSidebar: () => void;
   setSidebarOpen: (isOpen: boolean) => void;
+  togglePanicMode: () => void;
+  setPanicMode: (isPanic: boolean) => void;
+
   setExplainLevel: (level: "short" | "normal" | "detailed") => void;
 
   fetchConversations: () => Promise<void>;
@@ -167,7 +171,9 @@ export const useChatStore = create<ChatState>()(
       error: null,
       hasStarted: false,
       mood: "hostile",
+
       isSidebarOpen: false,
+      isPanicMode: false,
       isUploading: false,
       activeFocus: null,
       rank: "GENERADOR_DE_HUMO",
@@ -203,6 +209,14 @@ export const useChatStore = create<ChatState>()(
       // Workspaces Init
       workspaces: [],
       activeWorkspaceId: null,
+
+      toggleSidebar: () =>
+        set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+      setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
+
+      togglePanicMode: () =>
+        set((state) => ({ isPanicMode: !state.isPanicMode })),
+      setPanicMode: (isPanic) => set({ isPanicMode: isPanic }),
 
       createWorkspace: (name) => {
         const newWorkspace: Workspace = {
@@ -396,10 +410,6 @@ export const useChatStore = create<ChatState>()(
         }),
 
       setMood: (mood) => set({ mood }),
-
-      toggleSidebar: () =>
-        set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-      setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
 
       setExplainLevel: (level) => set({ explainLevel: level }),
 

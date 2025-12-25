@@ -16,6 +16,15 @@ import { DataDeconstructor } from "../components/auditor/DataDeconstructor";
 import { Dropzone } from "../components/auditor/Dropzone";
 import { ContextPanel } from "../components/auditor/ContextPanel";
 
+// PANIC THEME CONSTANTS
+const PANIC_THEME = {
+  bg: "#1a0505",
+  surface: "#2a0a0a",
+  border: "#ff0000",
+  text: "#ffcccc",
+  primary: "#ff0000",
+};
+
 export default function ChatPage() {
   // ... (existing code)
   const { conversationId } = useParams();
@@ -35,6 +44,8 @@ export default function ChatPage() {
     crystallizeProject,
     setCustomSystemPrompt,
     getSystemPrompt,
+    isPanicMode,
+    togglePanicMode,
   } = useChatStore();
 
   const { initAmbientHum, audioState, playCrystallizeSound } = useScouter();
@@ -119,9 +130,16 @@ export default function ChatPage() {
       !text.startsWith("/read") &&
       text !== "/summarize" &&
       !text.startsWith("/compare") &&
-      text !== "/backup"
+      text !== "/backup" &&
+      text !== "/panic"
     ) {
       return false;
+    }
+
+    // -1. PANIC HANDLER
+    if (text === "/panic") {
+      togglePanicMode();
+      return true; // Stop propagation
     }
 
     // 0. HELP HANDLER
@@ -674,10 +692,30 @@ export default function ChatPage() {
         <DecisionWall messageContent={decisionBlockContent || undefined} />
       )}
 
-      {/* MAIN LAYOUT CONTAINER */}
-      <div className="flex h-full w-full bg-[var(--wadi-bg)]">
+      {/* MAIN LAYOUT CONTAINER - PANIC MODE STYLES */}
+      <div
+        className="flex h-full w-full bg-[var(--wadi-bg)] transition-colors duration-500"
+        style={
+          isPanicMode
+            ? ({
+                "--wadi-bg": PANIC_THEME.bg,
+                "--wadi-surface": PANIC_THEME.surface,
+                "--wadi-border": PANIC_THEME.border,
+                "--wadi-text": PANIC_THEME.text,
+                "--wadi-primary": PANIC_THEME.primary,
+              } as React.CSSProperties)
+            : {}
+        }
+      >
         {/* CENTER COLUMN: Chat Workspace */}
         <div className="flex-1 flex flex-col h-full relative overflow-hidden min-w-0">
+          {/* PANIC OVERLAY ALERT */}
+          {isPanicMode && (
+            <div className="w-full bg-red-600 text-white text-[10px] font-mono-wadi uppercase font-bold text-center py-1 tracking-[0.3em] animate-pulse z-50">
+              [MODO_EMERGENCIA: ACTIVADO] - PERSONALIDAD SUPRIMIDA
+            </div>
+          )}
+
           <div className="flex flex-col h-full max-w-[900px] w-full mx-auto relative border-x border-dashed border-zinc-200/50 bg-white/40">
             <AuditorHeader />
 
@@ -1055,9 +1093,11 @@ export default function ChatPage() {
         </div>
 
         {/* RIGHT COLUMN: Fact Sheet (Desktop) */}
-        <div className="hidden xl:flex w-[340px] border-l border-zinc-200 bg-[#fbfbfb] flex-col shrink-0 z-10 shadow-sm">
-          <ContextPanel />
-        </div>
+        {!isPanicMode && (
+          <div className="hidden xl:flex w-[340px] border-l border-zinc-200 bg-[#fbfbfb] flex-col shrink-0 z-10 shadow-sm">
+            <ContextPanel />
+          </div>
+        )}
       </div>
     </Layout>
   );
