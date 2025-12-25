@@ -14,10 +14,14 @@ export function wadiPreFlight(userInput, context = {}) {
     pattern === "VAGUE_AMBITION" ||
     pattern === "FAKE_DEPTH" ||
     pattern === "RESCUE_REQUEST" ||
-    pattern === "PROCRASTINATION_LOOP"
+    pattern === "PROCRASTINATION_LOOP" ||
+    pattern === "BLOCKED_BUT_REAL"
   ) {
     console.log(`[WADI HUMAN LAYER] Pre-empted Pattern: ${pattern}`);
-    return composeResponse(pattern);
+    return {
+      reply: composeResponse(pattern),
+      pattern: pattern,
+    };
   }
 
   return null; // seguir al LLM

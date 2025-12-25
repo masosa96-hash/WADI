@@ -260,12 +260,14 @@ router.post(
     // Si puede describir un patrón humano, no explica teoría.
 
     // --- HUMAN PATTERN LAYER (WADI V1) ---
-    const preFlightResponse = wadiPreFlight(message);
+    // --- HUMAN PATTERN LAYER (WADI V1) ---
+    const preFlightData = wadiPreFlight(message);
 
-    if (preFlightResponse) {
+    if (preFlightData) {
       console.log(`[WADI HUMAN LAYER] Response sent. HALTING.`);
       return res.json({
-        reply: preFlightResponse,
+        reply: preFlightData.reply,
+        detectedPattern: preFlightData.pattern,
         conversationId: currentConversationId,
         efficiencyPoints: profile.efficiency_points,
       });

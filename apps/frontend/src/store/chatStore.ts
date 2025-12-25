@@ -31,10 +31,11 @@ export interface Attachment {
 
 export interface Message {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
   attachments?: Attachment[]; // Refactored to Object Array
   created_at?: string;
+  diagnosis?: string; // WADI visual tag for user patterns
 }
 
 export interface Conversation {

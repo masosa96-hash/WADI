@@ -761,9 +761,18 @@ export default function ChatPage() {
                 key={msg.id}
                 className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}
               >
+                {/* DIAGNOSIS TAG (If present on user message) */}
+                {isUser && msg.diagnosis && (
+                  <div className="absolute -top-5 right-0 bg-red-50 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-100 uppercase tracking-wider animate-in fade-in slide-in-from-bottom-2">
+                    DIAGNÓSTICO: {msg.diagnosis.replace(/_/g, " ")}
+                  </div>
+                )}
+
                 <div
                   className={
-                    isUser ? "bubble-user" : "bubble-wadi group relative"
+                    isUser
+                      ? "bubble-user relative"
+                      : "bubble-wadi group relative"
                   }
                 >
                   {/* ACTION BAR (WADI ONLY) */}
