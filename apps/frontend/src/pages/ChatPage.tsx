@@ -695,7 +695,7 @@ export default function ChatPage() {
           {/* EMPTY STATE - WADI OS */}
           {!hasStarted && (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 text-center px-4 animate-in fade-in zoom-in-95 duration-500">
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold font-['Outfit'] text-[var(--wadi-text)] mb-8 max-w-xl text-center">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--wadi-text)] mb-8 max-w-2xl text-center leading-tight">
                 Decime qué querés antes de que me arrepienta de estar encendido.
               </h1>
 
@@ -703,11 +703,13 @@ export default function ChatPage() {
                 {chatShortcuts.map((shortcut, idx) => (
                   <button
                     key={idx}
-                    className="bg-white border border-[var(--wadi-border)] hover:border-[var(--wadi-primary)] text-[var(--wadi-text)] hover:text-[var(--wadi-primary)] font-bold py-3 px-4 rounded-xl shadow-sm transition-all duration-200 text-xs sm:text-sm text-left flex items-start gap-2 hover:shadow-md hover:scale-[1.02]"
+                    className="bg-white border border-[var(--wadi-border)] hover:border-[var(--wadi-primary)] text-[var(--wadi-text)] hover:text-white hover:bg-[var(--wadi-primary)] font-medium py-4 px-6 rounded-2xl shadow-sm transition-all duration-200 text-sm text-left flex flex-col gap-1 hover:shadow-md hover:scale-[1.01]"
                     onClick={() => handleSendMessage(shortcut.prompt, [])}
                   >
-                    <span>{shortcut.label.split(" ")[0]}</span>
-                    <span>
+                    <span className="opacity-60 text-xs uppercase tracking-wide">
+                      {shortcut.label.split(" ")[0]}
+                    </span>
+                    <span className="font-semibold text-base">
                       {shortcut.label.substring(
                         shortcut.label.indexOf(" ") + 1
                       )}

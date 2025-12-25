@@ -90,11 +90,11 @@ export function Dropzone() {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative border-2 border-dashed rounded-[var(--wadi-radius)] p-6 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden
+        className={`relative border border-dashed rounded-3xl p-8 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden bg-[var(--wadi-bg)]
         ${
           isDragging
-            ? "border-[var(--wadi-primary)] bg-[var(--wadi-primary)]/5 scale-[1.01]"
-            : "border-[var(--wadi-border)] bg-[var(--wadi-bg)] hover:border-[var(--wadi-text-muted)]"
+            ? "border-[var(--wadi-primary)] bg-zinc-100 scale-[1.005]"
+            : "border-zinc-300 hover:border-zinc-400"
         }`}
       >
         <input
