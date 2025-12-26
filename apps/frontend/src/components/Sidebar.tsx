@@ -1,18 +1,14 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useChatStore } from "../store/chatStore";
-import { useEffect } from "react";
-import { Button } from "./ui/Button";
-import { LogItem } from "./ui/LogItem";
-import { useScouter } from "../hooks/useScouter";
-import { Activity, Settings, User as UserIcon, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MessageSquare, Plus, LogOut, Settings, User } from "lucide-react";
 import { SettingsModal } from "./SettingsModal";
-import { useState } from "react";
 
 interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
-  className?: string;
+  className?: string; // Kept for compat
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
@@ -26,7 +22,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     resetChat,
     setSidebarOpen,
     deleteConversation,
-    criminalRecord,
     fetchCriminalSummary,
   } = useChatStore();
 
@@ -50,23 +45,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     setSidebarOpen(false);
   };
 
-  const { playScanSound } = useScouter();
-
-  const handleReport = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    playScanSound();
-    // Navigate to Audit View (mocked as a route for now, but UI asks for it)
-    navigate(`/chat/${id}/audit`);
-    onClose?.();
-  };
-
-  const [showSettings, setShowSettings] = useState(false);
-
-  // ... existing handleDelete ...
-
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (confirm("¿Eliminar evidencia permanentemente?")) {
+    if (confirm("¿Borrar chat?")) {
       await deleteConversation(id);
       if (location.pathname.includes(id)) {
         navigate("/chat");
@@ -75,122 +56,108 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
+  const [showSettings, setShowSettings] = useState(false);
+
   return (
     <aside
-      className={`sidebar-drawer ${isOpen ? "open" : ""} flex flex-col p-0 border-r border-[var(--wadi-border)] bg-[var(--wadi-bg)] w-[280px] h-full sm:w-[320px]`}
+      className={`sidebar-drawer ${
+        isOpen ? "open" : ""
+      } flex flex-col h-full bg-white/50 backdrop-blur-xl border-r border-[var(--monday-border)] w-[280px] shadow-2xl z-50 transition-all duration-300`}
     >
-      {/* LOGO AREA */}
-      <div className="p-6 border-b border-[var(--wadi-border)] flex items-center gap-3">
-        <div className="w-3 h-3 bg-[var(--wadi-primary)] rounded-full animate-pulse-soft shadow-[0_0_10px_var(--wadi-primary)]"></div>
-        <h1 className="font-mono-wadi text-xl font-bold tracking-tight text-white select-none">
-          WADI{" "}
-          <span className="text-[var(--wadi-text-muted)] text-xs font-normal align-top">
-            OS v1.2
-          </span>
-        </h1>
-      </div>
-
-      {/* 1. Botón Nuevo Chat (Acción Global) */}
-      <div className="p-4">
-        <Button
-          onClick={handleNewChat}
-          variant="default"
-          className="w-full justify-start gap-2 font-mono-wadi tracking-widest text-xs"
-        >
-          <span className="text-lg leading-none">+</span> Nuevo Chat
-        </Button>
-      </div>
-
-      {/* 2. Historial de Conversaciones (LOGS) */}
-      <div className="flex-1 overflow-y-auto px-2 space-y-1">
-        <div className="px-4 py-2 flex justify-between items-center text-[10px] uppercase tracking-[0.2em] text-[var(--wadi-text-muted)] font-mono-wadi opacity-70">
-          <span>Chats recientes</span>
-          <div
-            className={`flex items-center gap-1 cursor-help hover:text-[var(--wadi-alert)] transition-colors ${criminalRecord.riskCount > 5 ? "text-[var(--wadi-alert)] animate-pulse" : ""}`}
-            title={
-              criminalRecord.auditCount === 0
-                ? "[CONSTANTES: NORMAL]"
-                : `[ESTADO_VITAL: ACTIVO] | [DISTORSIÓN_ACUMULADA: ${criminalRecord.riskCount}%]`
-            }
-          >
-            <Activity size={12} />
-            <span>Estado</span>
+      {/* HEADER */}
+      <div className="p-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#38bdf8] flex items-center justify-center shadow-md text-white font-bold text-xs">
+            M
           </div>
+          <h1 className="font-['Outfit'] text-lg font-bold text-slate-800 tracking-tight">
+            Monday
+          </h1>
         </div>
+        <button
+          onClick={handleNewChat}
+          className="p-2 bg-white hover:bg-slate-50 border border-slate-100 rounded-lg shadow-sm text-slate-500 hover:text-[#8B5CF6] transition-all"
+          title="Nuevo Chat"
+        >
+          <Plus size={18} />
+        </button>
+      </div>
 
+      {/* CHAT LIST */}
+      <div className="flex-1 overflow-y-auto px-4 space-y-2 py-2">
+        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2 mb-2">
+          Conversaciones
+        </h3>
         {conversations && conversations.length > 0 ? (
           conversations.map((c) => {
             const isActive = location.pathname.includes(c.id);
-            // Format date YYYY-MM-DD
-            const date = c.updated_at
-              ? new Date(c.updated_at).toISOString().split("T")[0]
-              : "UNKNOWN";
-
             return (
-              <LogItem
+              <div
                 key={c.id}
-                date={date}
-                title={c.title || "REGISTRO_SIN_TITULO"}
-                isActive={isActive}
                 onClick={() => handleHistoryClick(c.id)}
-                onReport={(e) => handleReport(e, c.id)}
-                onDelete={(e) => handleDelete(e, c.id)}
-              />
+                className={`group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
+                  isActive
+                    ? "bg-white shadow-sm border border-purple-100"
+                    : "hover:bg-white/60 hover:shadow-xs"
+                }`}
+              >
+                <MessageSquare
+                  size={16}
+                  className={
+                    isActive
+                      ? "text-[#8B5CF6]"
+                      : "text-slate-400 group-hover:text-slate-600"
+                  }
+                />
+                <div className="flex-1 overflow-hidden">
+                  <p
+                    className={`text-sm truncate ${
+                      isActive ? "font-medium text-slate-800" : "text-slate-600"
+                    }`}
+                  >
+                    {c.title || "Nueva Conversación"}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => handleDelete(e, c.id)}
+                  className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-400 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
             );
           })
         ) : (
-          <div className="px-4 py-8 text-center text-[var(--wadi-text-muted)] text-xs font-mono-wadi border border-dashed border-[var(--wadi-border)] m-2 bg-[var(--wadi-surface)]/30">
-            [NO HAY REGISTROS]
+          <div className="text-center py-10 text-slate-400 text-sm italic">
+            Sin chats recientes.
           </div>
         )}
       </div>
 
-      {/* Footer Minimalista (Auth + Settings) */}
-      <div className="p-4 border-t border-[var(--wadi-border)] bg-[var(--wadi-bg)] space-y-3">
-        {/* User Profile */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-full bg-[var(--wadi-surface)] border border-[var(--wadi-border)] flex items-center justify-center text-[var(--wadi-text-muted)]">
-              {user?.email ? (
-                user.email[0].toUpperCase()
-              ) : (
-                <UserIcon size={14} />
-              )}
-            </div>
-            <div className="flex flex-col overflow-hidden">
-              <span
-                className="text-xs font-mono-wadi text-[var(--wadi-text)] truncate max-w-[120px]"
-                title={user?.email}
-              >
-                {user?.email?.split("@")[0]}
-              </span>
-              <span className="text-[10px] text-[var(--wadi-text-muted)] font-mono-wadi uppercase tracking-wider">
-                {/* Could show rank here if available in store */}
-                OPERADOR
-              </span>
-            </div>
+      {/* USER FOOTER */}
+      <div className="p-4 border-t border-slate-100 bg-white/30 backdrop-blur-md">
+        <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 transition-colors">
+          <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+            <User size={16} />
           </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => {
-                if (confirm("¿Cerrar sesión y desconectar enlace neural?")) {
-                  signOut();
-                  navigate("/");
-                }
-              }}
-              className="p-2 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-alert)] hover:bg-[var(--wadi-alert)]/10 rounded-md transition-all"
-              title="Desconectar"
-            >
-              <LogOut size={16} />
-            </button>
-
+          <div className="flex-1 overflow-hidden">
+            <p className="text-sm font-medium text-slate-700 truncate">
+              {user?.email?.split("@")[0] || "Usuario"}
+            </p>
+            <p className="text-[10px] text-slate-400">En línea</p>
+          </div>
+          <div className="flex gap-1">
             <button
               onClick={() => setShowSettings(true)}
-              className="p-2 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)]/10 rounded-md transition-all"
-              title="Configuración del Sistema"
+              className="p-1.5 text-slate-400 hover:text-[#8B5CF6] hover:bg-purple-50 rounded-lg transition-colors"
             >
               <Settings size={16} />
+            </button>
+            <button
+              onClick={() => signOut()}
+              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <LogOut size={16} />
             </button>
           </div>
         </div>

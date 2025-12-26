@@ -5,26 +5,27 @@
 @tailwind utilities;
 
 :root {
-  /* MONDAY OS v3.0 PALETTE - BUNKER Y2K COLD */
-  --monday-bg: #050816; /* Deep Void */
-  --monday-surface: #0a0e24; /* Panel Surface */
-  --monday-surface-hover: #111633;
+  /* NEO-Y2K MODERN PALETTE */
+  --monday-bg: #f9faff; /* Light Mist */
+  --monday-surface: rgba(255, 255, 255, 0.7); /* Glass White */
+  --monday-surface-hover: rgba(255, 255, 255, 0.9);
 
   --monday-primary: #8b5cf6; /* Electric Lavender */
-  --monday-primary-dim: rgba(139, 92, 246, 0.4);
-  --monday-primary-glow: rgba(139, 92, 246, 0.15);
+  --monday-primary-dim: rgba(139, 92, 246, 0.2);
+  --monday-primary-glow: rgba(139, 92, 246, 0.1);
 
-  --monday-amber: #f59e0b; /* Warning/Lock */
-  --monday-red: #ef4444; /* Critical/Vulnerability */
-  --monday-gray: #4b5563; /* Noise/Inactive */
+  --monday-sky: #38bdf8; /* Digital Sky */
+  --monday-amber: #fbbf24;
+  --monday-red: #ef4444;
+  --monday-gray: #64748b;
 
-  --monday-text: #e5e7eb; /* Light Gray - High Contrast */
-  --monday-text-dim: #9ca3af; /* Dim Gray */
+  --monday-text: #1e293b; /* Slate 800 */
+  --monday-text-dim: #64748b; /* Slate 500 */
 
-  --monday-border: #1f2937;
-  --monday-grid-color: rgba(139, 92, 246, 0.03);
+  --monday-border: rgba(139, 92, 246, 0.1);
+  --monday-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.15);
 
-  /* ALIASES FOR LEGACY COMPONENTS */
+  /* ALIASES */
   --wadi-bg: var(--monday-bg);
   --wadi-surface: var(--monday-surface);
   --wadi-primary: var(--monday-primary);
@@ -32,177 +33,65 @@
   --wadi-text: var(--monday-text);
   --wadi-text-muted: var(--monday-text-dim);
   --wadi-border: var(--monday-border);
-  --wadi-success: #10b981;
-
-  --color-primary: var(--monday-primary);
-  --color-surface: var(--monday-surface);
-  --color-bg: var(--monday-bg);
-  --color-border: var(--monday-border);
-  --color-text-main: var(--monday-text);
-  --color-text-soft: var(--monday-text-dim);
-  --grad-main: linear-gradient(
-    135deg,
-    var(--monday-text) 0%,
-    var(--monday-text-dim) 100%
-  );
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 @layer base {
   html,
   body,
   #root {
-    background-color: var(--monday-bg);
+    background: linear-gradient(180deg, #f0f4ff 0%, #f9faff 50%, #ffffff 100%);
     color: var(--monday-text);
     font-family: "Outfit", sans-serif;
     height: 100vh;
-    height: 100dvh; /* Mobile viewport fix */
+    height: 100dvh;
     width: 100vw;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    cursor:
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' stroke='%23A78BFA' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'><line x1='12' y1='5' x2='12' y2='19'></line><line x1='5' y1='12' x2='19' y2='12'></line></svg>")
-        12 12,
-      crosshair;
+    cursor: default; /* Modern default cursor */
   }
 
-  /* Scanline Effect */
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.15),
-      rgba(0, 0, 0, 0.15) 1px,
-      transparent 1px,
-      transparent 2px
-    );
-    pointer-events: none;
-    z-index: 50;
-    opacity: 0.4;
+  /* Smooth Scrolling */
+  * {
+    scroll-behavior: smooth;
   }
 
-  /* Custom Scrollbar for Terminals */
+  /* Custom Scrollbar (Subtle) */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--monday-bg);
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--monday-primary-dim);
-    border-radius: 3px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--monday-primary);
-  }
-
-  button,
-  a {
-    cursor: pointer;
+    background: rgba(139, 92, 246, 0.4);
   }
 }
 
 @layer components {
-  /* ATOMS */
+  /* GLASSMORPHISM UTILITIES */
+  .neo-glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/50 shadow-lg;
+  }
+
+  .neo-capsule {
+    @apply rounded-full bg-white shadow-lg border border-[var(--monday-border)] px-6 py-3 transition-all hover:shadow-xl focus-within:shadow-xl focus-within:border-[var(--monday-primary)] focus-within:ring-2 focus-within:ring-[var(--monday-primary-dim)];
+  }
+
   .monday-btn-primary {
-    @apply relative px-6 py-3 bg-[var(--monday-primary-glow)] border border-[var(--monday-primary)] text-[var(--monday-primary)] font-mono text-xs uppercase tracking-widest transition-all duration-200 hover:bg-[var(--monday-primary)] hover:text-white hover:shadow-[0_0_20px_var(--monday-primary-dim)];
+    @apply relative px-6 py-3 rounded-2xl bg-[var(--monday-primary)] text-white font-medium text-sm tracking-wide transition-all duration-300 hover:shadow-[0_4px_20px_var(--monday-primary-dim)] hover:-translate-y-0.5 active:translate-y-0 shadow-lg;
   }
 
-  .monday-input {
-    @apply w-full bg-[rgba(5,8,22,0.8)] border border-[var(--monday-border)] text-[var(--monday-text)] px-4 py-3 font-mono text-sm focus:outline-none focus:border-[var(--monday-primary)] focus:shadow-[0_0_15px_var(--monday-primary-glow)] rounded-sm backdrop-blur-sm transition-all;
-  }
-
-  .monday-card {
-    @apply bg-[var(--monday-surface)] border border-[var(--monday-border)] p-4 relative backdrop-blur-md;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-  }
-
-  .monday-grid-bg {
-    background-image:
-      linear-gradient(var(--monday-grid-color) 1px, transparent 1px),
-      linear-gradient(90deg, var(--monday-grid-color) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-
-  /* CHAT BUBBLES */
   .bubble-monday {
-    @apply bg-[#0e122b] border-l-2 border-[var(--monday-primary)] text-gray-200 font-mono text-sm p-4 my-2 max-w-[85%] rounded-r-lg shadow-lg;
+    @apply bg-white/80 backdrop-blur-sm border border-white text-[var(--monday-text)] text-sm p-4 my-2 max-w-[85%] rounded-2xl rounded-tl-sm shadow-sm;
   }
 
   .bubble-user {
-    @apply bg-[#1f2937] text-white font-sans text-sm p-3 my-2 max-w-[80%] rounded-l-lg ml-auto rounded-tr-lg rounded-br-none shadow-md border border-[var(--monday-border)];
+    @apply bg-[var(--monday-primary)] text-white text-sm p-4 my-2 max-w-[80%] rounded-2xl rounded-tr-sm ml-auto shadow-md;
   }
-
-  /* ANIMATIONS */
-  .animate-blink {
-    animation: blink 1s infinite step-end;
-  }
-
-  @keyframes blink {
-    50% {
-      opacity: 0;
-    }
-  }
-
-  .scanline-scan {
-    animation: scan 8s linear infinite;
-  }
-
-  @keyframes scan {
-    0% {
-      transform: translateY(-100vh);
-    }
-    100% {
-      transform: translateY(100vh);
-    }
-  }
-
-  /* MOBILE OPTIMIZATIONS */
-  .touch-min-44 {
-    min-height: 44px;
-    min-width: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-/* Animations Helpers for Old Components */
-@keyframes critical-error {
-  0% {
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.8;
-    background-color: rgba(255, 0, 60, 0.4);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes pulse-soft {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 2s infinite;
 }

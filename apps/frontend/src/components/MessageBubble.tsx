@@ -1,9 +1,8 @@
-// Imports removed
-
 interface MessageBubbleProps {
   role: "user" | "assistant";
   content: string;
   timestamp?: string;
+  attachments?: any[]; // Allow attachments support if needed
 }
 
 export function MessageBubble({
@@ -15,61 +14,35 @@ export function MessageBubble({
 
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: isUser ? "flex-end" : "flex-start",
-        marginBottom: "1rem", // Use explicit unit
-        maxWidth: "80%",
-        alignSelf: isUser ? "flex-end" : "flex-start",
-        width: "100%",
-      }}
+      className={`flex flex-col mb-4 w-full ${isUser ? "items-end" : "items-start"}`}
     >
-      <div
-        style={{
-          backgroundColor: isUser
-            ? "var(--color-primary)"
-            : "var(--color-surface)",
-          color: isUser ? "#FFFFFF" : "var(--color-text-main)",
-          padding: "0.8rem 1.2rem", // Explicit padding
-          borderRadius: "1rem", // Explicit radius
-          borderBottomRightRadius: isUser ? "4px" : "1rem",
-          borderBottomLeftRadius: !isUser ? "4px" : "1rem",
-          lineHeight: 1.6,
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          boxShadow: "var(--shadow-sm)",
-          fontSize: "var(--text-base)",
-          fontWeight: isUser ? 500 : 400,
-        }}
-      >
+      <div className={isUser ? "bubble-user" : "bubble-monday"}>
         {isUser ? (
-          content
+          <div className="whitespace-pre-wrap">{content}</div>
         ) : (
           <div>
             {content.split(/(?=^#{1,3}\s)/m).map((block, i) => {
+              // Simple markdown header parsing for Monday's structure
               const match = block.match(/^(#{1,3})\s+(.+)(\r?\n|$)/);
               if (match) {
                 const title = match[2].trim();
                 const body = block.replace(match[0], "").trim();
                 return (
-                  <div key={i} style={{ marginBottom: "1rem" }}>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        fontSize: "1.05em",
-                        marginBottom: "0.5rem",
-                        color: "var(--color-primary)",
-                      }}
-                    >
+                  <div key={i} className="mb-4 last:mb-0">
+                    <div className="font-bold text-[1.05em] mb-1 text-[#8B5CF6]">
                       {title}
                     </div>
-                    <div style={{ whiteSpace: "pre-wrap" }}>{body}</div>
+                    <div className="whitespace-pre-wrap leading-relaxed text-slate-600 font-light">
+                      {body}
+                    </div>
                   </div>
                 );
               }
               return (
-                <div key={i} style={{ whiteSpace: "pre-wrap" }}>
+                <div
+                  key={i}
+                  className="whitespace-pre-wrap leading-relaxed text-slate-600 font-light"
+                >
                   {block.trim()}
                 </div>
               );
@@ -77,19 +50,14 @@ export function MessageBubble({
           </div>
         )}
       </div>
+
       {timestamp && (
-        <small
-          style={{
-            marginTop: "0.25rem",
-            marginRight: isUser ? "0.25rem" : 0,
-            marginLeft: !isUser ? "0.25rem" : 0,
-            opacity: 0.7,
-            fontSize: "0.75rem",
-            color: "var(--color-text-soft)",
-          }}
-        >
-          {timestamp}
-        </small>
+        <span className="text-[10px] text-slate-400 px-2 mt-1">
+          {new Date(timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
       )}
     </div>
   );

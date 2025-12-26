@@ -1,7 +1,39 @@
 import { useState, useEffect, useRef } from "react";
 import { useChatStore, type Attachment } from "../../store/chatStore";
-import { Button } from "./Button";
 import { useScouter } from "../../hooks/useScouter";
+import { Send, Paperclip, X } from "lucide-react"; // Using lucid-react icons if available, else svgs
+
+// Fallback icons if lucide not imported/working in this context, but user mentioned "iconos minimalistas"
+const IconSend = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m22 2-7 20-4-9-9-4Z" />
+    <path d="M22 2 11 13" />
+  </svg>
+);
+
+const IconAttach = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+  </svg>
+);
 
 interface TerminalInputProps {
   onSendMessage: (text: string, attachments: Attachment[]) => Promise<void>;
@@ -13,7 +45,6 @@ interface TerminalInputProps {
 export function TerminalInput({
   onSendMessage,
   isLoading,
-  isDecisionBlocked = false,
   activeFocus,
 }: TerminalInputProps) {
   const [input, setInput] = useState("");
@@ -28,7 +59,7 @@ export function TerminalInput({
     if (!isLoading && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isLoading, input, selectedFile]); // Re-focus on any change/loading end
+  }, [isLoading, input, selectedFile]);
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -37,13 +68,12 @@ export function TerminalInput({
     let finalPrompt = input;
     const finalAttachments: Attachment[] = [];
 
-    // OPTIMISTIC UPDATE: Clear UI immediately
-    const prevInput = input; // backup in case of error (optional, but good practice)
+    const prevInput = input;
     setInput("");
     setSelectedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
 
-    // Force focus back immediately
+    // Force focus back
     if (inputRef.current) inputRef.current.focus();
 
     if (selectedFile) {
@@ -56,10 +86,9 @@ export function TerminalInput({
       if (isText) {
         try {
           const textContent = await selectedFile.text();
-          finalPrompt += `\n\n[CONTENIDO_EVIDENCIA_ADJUNTA]\n[ARCHIVO: ${selectedFile.name}]\n---\n${textContent}\n---`;
+          finalPrompt += `\n\n[ARCHIVO IMPLÍCITO: ${selectedFile.name}]\n---\n${textContent}\n---`;
         } catch (err) {
           console.error("Error reading text file", err);
-          finalPrompt += `\n\n[ERROR_LEYENDO_EVIDENCIA: ${selectedFile.name}]`;
         }
       } else {
         try {
@@ -69,7 +98,6 @@ export function TerminalInput({
             reader.onerror = reject;
             reader.readAsDataURL(selectedFile);
           });
-
           finalAttachments.push({
             url: base64,
             name: selectedFile.name,
@@ -84,7 +112,6 @@ export function TerminalInput({
     try {
       await onSendMessage(finalPrompt, finalAttachments);
     } catch (err) {
-      // Restore if failed (optional, but clean)
       console.error("Send failed", err);
       setInput(prevInput);
     }
@@ -93,47 +120,31 @@ export function TerminalInput({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validación de tamaño (4MB)
-    if (file.size > 4 * 1024 * 1024) {
-      useChatStore.getState().triggerVisualAlert();
-      // Opcional: Feedback visual temporal en el placeholder
-
-      return;
-    }
-
     playScanSound();
     setSelectedFile(file);
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col gap-2 relative">
-      <form
-        onSubmit={handleSend}
-        className="w-full flex flex-col gap-2 relative"
-      >
-        {selectedFile && (
-          <div className="px-2">
-            <div className="inline-flex items-center gap-3 bg-[var(--wadi-surface)] border border-[var(--wadi-primary)] px-3 py-1.5 shadow-[0_0_10px_rgba(139,92,246,0.2)] animate-in slide-in-from-bottom-2 fade-in duration-300">
-              <span className="text-[var(--wadi-primary)] font-mono-wadi text-xs tracking-wider uppercase flex items-center gap-2">
-                <span className="w-2 h-2 bg-[var(--wadi-primary)] animate-pulse rounded-full"></span>
-                [EVIDENCIA_CARGADA: {selectedFile.name}]
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedFile(null);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }}
-                className="text-[var(--wadi-text-muted)] hover:text-[var(--wadi-alert)] ml-2 transition-colors font-bold"
-              >
-                ✕
-              </button>
-            </div>
+    <div className="w-full max-w-3xl mx-auto flex flex-col gap-2 relative mb-6">
+      {/* File Preview Capsule */}
+      {selectedFile && (
+        <div className="absolute -top-12 left-0 right-0 flex justify-center animate-in fade-in slide-in-from-bottom-2">
+          <div className="bg-white/90 backdrop-blur border border-purple-100 shadow-sm rounded-full px-4 py-1 flex items-center gap-2 text-xs text-purple-600 font-medium">
+            <Paperclip size={12} className="opacity-50" />
+            <span>{selectedFile.name}</span>
+            <button
+              onClick={() => setSelectedFile(null)}
+              className="ml-2 hover:bg-purple-50 rounded-full p-1 transition-colors"
+            >
+              x
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        <div className="flex items-end gap-0 bg-[var(--wadi-bg)]/90 backdrop-blur-md border-t border-[var(--wadi-border)] pt-2 pb-6 px-4 md:px-0 sticky bottom-0 z-40">
+      {/* Main Input Capsule */}
+      <form onSubmit={handleSend} className="relative w-full">
+        <div className="neo-capsule flex items-center gap-2 pr-2 overflow-hidden">
           <input
             type="file"
             ref={fileInputRef}
@@ -142,92 +153,47 @@ export function TerminalInput({
             accept="image/*,.txt,.md,.pdf,.csv,.json"
           />
 
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon"
-            className="rounded-none text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] mb-1"
+            className="p-2 text-gray-400 hover:text-purple-500 transition-colors rounded-full hover:bg-purple-50"
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </Button>
+            <IconAttach />
+          </button>
 
-          <div className="flex-1 relative">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={
-                activeFocus
-                  ? "[PRUEBA DE VIDA REQUERIDA: SUBÍ EVIDENCIA]"
-                  : "Escribí algo real..."
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={
+              activeFocus
+                ? "Estamos en un foco activo. ¿Qué opinás?"
+                : "Pregunta o instruye a Monday..."
+            }
+            className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder:text-gray-400 text-sm font-medium h-full min-h-[24px]"
+            autoComplete="off"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
               }
-              disabled={isLoading || !!activeFocus}
-              className={`
-                  w-full bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)]
-                  text-sm px-4 py-3 rounded-xl
-                  focus:outline-none focus:ring-1 focus:ring-[var(--wadi-primary)] focus:border-[var(--wadi-primary)]
-                  transition-all shadow-sm
-                  ${
-                    isDecisionBlocked
-                      ? "border-[var(--wadi-alert)] text-[var(--wadi-alert)] placeholder:text-[var(--wadi-alert)]/50 focus:ring-[var(--wadi-alert)]"
-                      : ""
-                  }
-              `}
-              autoComplete="off"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-            />
-          </div>
+            }}
+          />
 
-          <Button
-            type="submit"
-            variant="ghost"
-            disabled={(!input.trim() && !selectedFile) || isLoading}
-            className="rounded-none text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)] hover:text-white mb-1 px-4 font-mono-wadi"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m5 12 7-7 7 7" />
-              <path d="M12 19V5" />
-            </svg>
-          </Button>
-        </div>
-      </form>
-
-      {!!activeFocus && (
-        <div className="mt-2 flex justify-center sticky bottom-0 z-50 bg-[var(--wadi-bg)] pb-2">
           <button
-            onClick={() => useChatStore.getState().admitFailure()}
-            className="text-[10px] text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)]/10 border border-transparent hover:border-[var(--wadi-primary)]/30 px-2 py-1 transition-all uppercase tracking-widest"
+            type="submit"
+            disabled={(!input.trim() && !selectedFile) || isLoading}
+            className={`p-2 rounded-full transition-all duration-300 ${
+              input.trim() || selectedFile
+                ? "bg-[var(--monday-primary)] text-white shadow-md hover:scale-105"
+                : "bg-gray-100 text-gray-300"
+            }`}
           >
-            [SOLTAR_Y_RECALIBRAR]
+            <IconSend />
           </button>
         </div>
-      )}
+      </form>
     </div>
   );
 }

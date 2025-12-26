@@ -2,13 +2,14 @@ import { type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { useChatStore } from "../store/chatStore";
+import { Menu, Plus } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { isSidebarOpen, setSidebarOpen, toggleSidebar, resetChat, rank } =
+  const { isSidebarOpen, setSidebarOpen, toggleSidebar, resetChat } =
     useChatStore();
   const navigate = useNavigate();
 
@@ -18,84 +19,48 @@ export function Layout({ children }: LayoutProps) {
     setSidebarOpen(false);
   };
 
-  // Immersion Logic: "Generador de Humo" gets a degraded experience
-  const isLowRank = rank === "GENERADOR_DE_HUMO";
-  const wrapperStyle = isLowRank
-    ? { filter: "contrast(1.1) brightness(0.9) grayscale(0.2)" }
-    : {};
-
   return (
-    <div
-      className="flex w-full h-screen min-h-screen relative overflow-hidden bg-[var(--color-bg)] transition-all duration-1000"
-      style={wrapperStyle}
-    >
-      {/* Chromatic Aberration for Low Rank (Overlay) */}
-      {isLowRank && (
-        <div
-          className="pointer-events-none fixed inset-0 z-[99999] opacity-10 mix-blend-overlay bg-repeat"
-          style={{
-            backgroundImage:
-              "linear-gradient(45deg, #ff0000 25%, transparent 25%, transparent 75%, #00ff00 75%, #00ff00), linear-gradient(45deg, #0000ff 25%, transparent 25%, transparent 75%, #ff0000 75%, #ff0000)",
-            backgroundSize: "4px 4px",
-            animation: "noise 0.2s infinite",
-          }}
-        />
-      )}
+    <div className="flex w-full h-screen min-h-screen relative overflow-hidden bg-[var(--color-bg)] text-[var(--monday-text)]">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
-          className="sidebar-overlay"
+          className="lg:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {/* Sidebar - Visible on Desktop, Drawer on Mobile */}
+      <div
+        className={`fixed lg:relative z-50 h-full transition-transform duration-300 lg:transform-none ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
+      </div>
 
-      <div className="flex-1 flex flex-col relative w-full overflow-hidden">
+      <div className="flex-1 flex flex-col relative w-full overflow-hidden bg-white/40 backdrop-blur-3xl">
         {/* Mobile Top Bar */}
-        <div className="mobile-only h-[60px] border-b border-[var(--color-border)] bg-[var(--color-surface)] items-center justify-between px-4 shrink-0 z-40">
-          {/* Left: Hamburger & Logo */}
+        <div className="lg:hidden h-[60px] border-b border-purple-50 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 shrink-0 z-30 shadow-sm relative">
           <div className="flex items-center gap-3">
             <button
               onClick={toggleSidebar}
-              className="text-2xl text-[var(--color-text-soft)] p-3 flex items-center justify-center min-w-[44px] min-h-[44px]"
+              className="text-slate-500 p-2 rounded-lg hover:bg-slate-100 transition-colors"
               aria-label="Abrir menú"
             >
-              ☰
+              <Menu size={20} />
             </button>
-            <Link to="/" className="no-underline">
-              <span
-                style={{
-                  fontWeight: 900,
-                  fontSize: "1.2rem",
-                  background: "var(--grad-main)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                WADI
+            <Link to="/" className="flex items-center gap-2 no-underline">
+              <span className="font-bold text-lg text-slate-800 tracking-tight">
+                Monday
               </span>
             </Link>
           </div>
 
-          {/* Right: New Chat Button */}
           <button
             onClick={handleNewChat}
-            style={{
-              background: "var(--color-primary)",
-              color: "white",
-              padding: "0.6rem 1rem",
-              minHeight: "44px",
-              borderRadius: "999px",
-              fontSize: "0.9rem",
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              boxShadow: "var(--shadow-sm)",
-            }}
+            className="p-2 bg-[var(--monday-primary)] text-white rounded-full shadow-md active:scale-95 transition-transform"
           >
-            <span>+</span> Nueva
+            <Plus size={20} />
           </button>
         </div>
 
