@@ -6,7 +6,6 @@ import { useDocumentStore } from "../store/documentStore";
 
 import { useScouter } from "../hooks/useScouter";
 import { useStoreHydration } from "../hooks/useStoreHydration";
-import { chatShortcuts } from "../config/chatShortcuts";
 
 import { TerminalInput } from "../components/ui/TerminalInput";
 import { Scouter } from "../components/ui/Scouter";
@@ -55,7 +54,6 @@ export default function ChatPage() {
     !isLastMessageUser &&
     hasForceDecision
   );
-  const decisionBlockContent = isDecisionBlocked ? lastMessage.content : null;
 
   // Load conversation on mount/param change
   useEffect(() => {
@@ -914,7 +912,7 @@ export default function ChatPage() {
                             </div>
                           )}
 
-                          <DataDeconstructor data={deconstructionData} />
+                          <DataDeconstructor items={deconstructionData} />
 
                           {afterText && (
                             <div className="whitespace-pre-wrap">

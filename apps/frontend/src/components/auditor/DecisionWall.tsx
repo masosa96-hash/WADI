@@ -1,5 +1,4 @@
 import React from "react";
-import { MondayButton } from "../ui/MondayButton";
 
 interface DecisionWallProps {
   onOptionA: () => void;
