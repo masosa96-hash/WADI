@@ -17,13 +17,6 @@ import { Dropzone } from "../components/auditor/Dropzone";
 import { ContextPanel } from "../components/auditor/ContextPanel";
 
 // PANIC THEME CONSTANTS
-const PANIC_THEME = {
-  bg: "#1a0505",
-  surface: "#2a0a0a",
-  border: "#ff0000",
-  text: "#ffcccc",
-  primary: "#ff0000",
-};
 
 export default function ChatPage() {
   // ... (existing code)

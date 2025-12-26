@@ -10,13 +10,6 @@ interface TerminalInputProps {
   activeFocus?: string | null;
 }
 
-const PLACEHOLDERS_NORMAL = ["Escribí algo que podamos verificar."];
-const PLACEHOLDERS_BLOCKED = [
-  "Pará un poco. Me estás mareando.",
-  "Elegí A o B. No te mientas.",
-  "Te espero acá hasta que te decidas.",
-];
-
 export function TerminalInput({
   onSendMessage,
   isLoading,
@@ -36,28 +29,6 @@ export function TerminalInput({
       inputRef.current.focus();
     }
   }, [isLoading, input, selectedFile]); // Re-focus on any change/loading end
-
-  const [dynamicPlaceholder, setDynamicPlaceholder] = useState(
-    PLACEHOLDERS_NORMAL[0]
-  );
-
-  useEffect(() => {
-    if (activeFocus) return;
-
-    const targetPlaceholders = isDecisionBlocked
-      ? PLACEHOLDERS_BLOCKED
-      : PLACEHOLDERS_NORMAL;
-    let i = 0;
-    const interval = setInterval(() => {
-      setDynamicPlaceholder(targetPlaceholders[i]);
-      i = (i + 1) % targetPlaceholders.length;
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isDecisionBlocked, activeFocus]);
-
-  const displayedPlaceholder = activeFocus
-    ? `[PRUEBA DE VIDA]: SUBÍ EVIDENCIA DE "${activeFocus}"`
-    : dynamicPlaceholder;
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -127,8 +98,7 @@ export function TerminalInput({
     if (file.size > 4 * 1024 * 1024) {
       useChatStore.getState().triggerVisualAlert();
       // Opcional: Feedback visual temporal en el placeholder
-      setDynamicPlaceholder("[ERROR: ARCHIVO EXCEDE 4MB]");
-      setTimeout(() => setDynamicPlaceholder(PLACEHOLDERS_NORMAL[0]), 3000);
+
       return;
     }
 

@@ -10,7 +10,12 @@ export function useScouter() {
     (freq: number, type: OscillatorType, duration: number) => {
       try {
         const AudioContext =
-          window.AudioContext || (window as any).webkitAudioContext;
+          window.AudioContext ||
+          (
+            window as unknown as {
+              webkitAudioContext: typeof window.AudioContext;
+            }
+          ).webkitAudioContext;
         if (!AudioContext) return;
         const ctx = new AudioContext();
         const osc = ctx.createOscillator();
