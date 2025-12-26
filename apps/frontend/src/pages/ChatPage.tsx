@@ -856,17 +856,15 @@ export default function ChatPage() {
                             </svg>
                           </button>
                           {/* Thumbs Up/Down (Visual) */}
+                          {/* CRYSTALLIZE BUTTON */}
                           <button
-                            className="text-[var(--wadi-text-muted)] hover:text-[var(--wadi-success)] p-1"
-                            title="Buen dato"
+                            onClick={() => {
+                              openCrystallizeModal(msg.content);
+                            }}
+                            className="bg-[var(--wadi-surface)] border border-[var(--wadi-primary)] text-[var(--wadi-primary)] hover:bg-[var(--wadi-primary)] hover:text-black text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider transition-colors ml-2"
+                            title="Convertir en proyecto"
                           >
-                            👍
-                          </button>
-                          <button
-                            className="text-[var(--wadi-text-muted)] hover:text-[var(--wadi-alert)] p-1"
-                            title="Cualquiera"
-                          >
-                            👎
+                            [CRISTALIZAR]
                           </button>
                         </div>
                       )}
@@ -999,8 +997,8 @@ export default function ChatPage() {
                   [CRISTALIZAR_IDEA]
                 </h2>
                 <div className="text-[var(--wadi-text-secondary)] text-xs mb-4 font-mono-wadi">
-                  ¿Pasamos esto a limpio? WADI generará un nombre técnico si lo
-                  dejás vacío.
+                  ¿Pasamos esto a limpio? MONDAY le pondrá nombre si no te da la
+                  cabeza.
                 </div>
 
                 <label className="block text-[var(--wadi-text)] text-xs font-mono-wadi mb-2">
