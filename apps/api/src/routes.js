@@ -471,7 +471,10 @@ router.post(
     let { name, description } = req.body;
 
     if (!description || description.trim().length === 0) {
-      throw new AppError("INVALID_INPUT", "Description is required");
+      throw new AppError(
+        "MONDAY_REJECTION",
+        "No puedo cristalizar la nada misma. Escribí una descripción."
+      );
     }
 
     // Auto-generate name if missing
