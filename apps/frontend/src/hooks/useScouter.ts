@@ -4,7 +4,7 @@ export type AudioContextState = "suspended" | "running" | "closed";
 
 export function useScouter() {
   // WADI AUDIO PROTOCOL
-  // Ambience: Filtered White Noise (Bunker Wind/Rain)
+  // Ambience: Brown Noise (Deep Bunker Rumble)
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const ambientNodeRef = useRef<AudioBufferSourceNode | null>(null);
@@ -64,32 +64,36 @@ export function useScouter() {
       const ctx = audioContextRef.current;
       if (!ctx || ambientNodeRef.current) return;
 
-      // Create White Noise Buffer
+      // Create Brown Noise Buffer (Deep Rumble)
       const bufferSize = 2 * ctx.sampleRate;
       const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
+      let lastOut = 0;
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
+        const white = Math.random() * 2 - 1;
+        output[i] = (lastOut + 0.02 * white) / 1.02;
+        lastOut = output[i];
+        output[i] *= 3.5; // Compensate for gain loss
       }
 
-      const whiteNoise = ctx.createBufferSource();
-      whiteNoise.buffer = noiseBuffer;
-      whiteNoise.loop = true;
+      const brownNoise = ctx.createBufferSource();
+      brownNoise.buffer = noiseBuffer;
+      brownNoise.loop = true;
 
-      // Filter (Lowpass for "Bunker Hum")
+      // Filter (Optional, strict lowpass to suppress any hiss)
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass";
-      filter.frequency.value = 150; // Deep hum/rumble
+      filter.frequency.value = 120; // Extremely deep
 
       const gain = ctx.createGain();
-      gain.gain.value = 0.02; // Very subtle
+      gain.gain.value = 0.02; // As requested
 
-      whiteNoise.connect(filter);
+      brownNoise.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
 
-      whiteNoise.start();
-      ambientNodeRef.current = whiteNoise;
+      brownNoise.start();
+      ambientNodeRef.current = brownNoise;
       ambientGainRef.current = gain;
 
       if (ctx.state === "suspended") ctx.resume();
