@@ -1,9 +1,8 @@
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useChatStore, type Attachment } from "../store/chatStore";
 import { useStoreHydration } from "../hooks/useStoreHydration";
-import { useScouter } from "../hooks/useScouter";
 
 import { TerminalInput } from "../components/ui/TerminalInput";
 import { Scouter } from "../components/ui/Scouter";
@@ -14,7 +13,6 @@ import { MessageBubble } from "../components/MessageBubble";
 
 export default function ChatPage() {
   const { conversationId } = useParams();
-  const navigate = useNavigate();
   const hydrated = useStoreHydration();
 
   const {
@@ -27,8 +25,6 @@ export default function ChatPage() {
     conversationId: storeConversationId,
     activeFocus,
   } = useChatStore();
-
-  const { playCrystallizeSound } = useScouter();
 
   // Load conversation on mount/param change
   useEffect(() => {
@@ -157,6 +153,7 @@ export default function ChatPage() {
                   "[DECONSTRUCT_START]"
                 );
                 let displayContent = message.content;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let deconstructItems: any[] = [];
 
                 if (isDeconstruct) {
@@ -178,7 +175,9 @@ export default function ChatPage() {
                 return (
                   <div key={message.id} className="space-y-4">
                     <MessageBubble
-                      message={{ ...message, content: displayContent }}
+                      role={message.role === "assistant" ? "assistant" : "user"}
+                      content={displayContent}
+                      timestamp={message.created_at}
                     />
                     {deconstructItems.length > 0 && (
                       <DataDeconstructor items={deconstructItems} />

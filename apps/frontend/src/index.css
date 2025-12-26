@@ -88,10 +88,10 @@
   }
 
   .bubble-monday {
-    @apply bg-white/80 backdrop-blur-sm border border-white text-[var(--monday-text)] text-sm p-4 my-2 max-w-[85%] rounded-2xl rounded-tl-sm shadow-sm;
+    @apply bg-purple-50/80 backdrop-blur-sm border border-purple-100 text-[var(--monday-text)] text-sm p-4 my-2 max-w-[85%] rounded-2xl rounded-tl-sm shadow-sm;
   }
 
   .bubble-user {
-    @apply bg-[var(--monday-primary)] text-white text-sm p-4 my-2 max-w-[80%] rounded-2xl rounded-tr-sm ml-auto shadow-md;
+    @apply bg-white/70 backdrop-blur-md border border-white text-slate-800 text-sm p-4 my-2 max-w-[80%] rounded-2xl rounded-tr-sm ml-auto shadow-sm;
   }
 }

@@ -3,14 +3,30 @@ import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useProjectsStore } from "../store/projectsStore";
 import { Layout } from "../components/Layout";
-import { Card } from "../components/common/Card";
 import { Button } from "../components/common/Button";
 import { Input } from "../components/common/Input";
 import { Modal } from "../components/common/Modal";
 
+// Define interface for project with extra fields if not in store type
+interface ProjectWithMetrics {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  noise_count?: number;
+  total_items_audited?: number;
+}
+
 export default function Projects() {
   const { projects, fetchProjects, createProject, loading } =
     useProjectsStore();
+// ...
+ // (inside render)
+                  {/* Smoke Index Calculation */}
+                    {(() => {
+                      const pWithMetrics = p as unknown as ProjectWithMetrics;
+                      const noise = pWithMetrics.noise_count || 0;
+                      const total = pWithMetrics.total_items_audited || 0;
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -27,7 +43,6 @@ export default function Projects() {
       return;
     }
 
-    // Clear previous errors
     setNameError("");
 
     try {
@@ -37,7 +52,6 @@ export default function Projects() {
       setIsCreating(false);
     } catch (err) {
       console.error("Error creating project:", err);
-      // Ideally show a toast here
     }
   };
 
@@ -48,340 +62,140 @@ export default function Projects() {
 
   return (
     <Layout>
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1000px",
-          margin: "0 auto",
-          padding: "2rem",
-          background: "var(--color-bg)",
-          minHeight: "100%",
-        }}
-      >
+      <div className="w-full max-w-5xl mx-auto p-8 min-h-full">
         {/* Header simple */}
-        <header
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginBottom: "2rem",
-          }}
-        >
-          {/* User profile placeholder if we wanted one, handled by Sidebar */}
-        </header>
+        <header className="flex justify-end mb-8"></header>
 
         {/* Hero Section */}
-        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <div
-            style={{
-              width: "72px",
-              height: "72px",
-              background: "var(--grad-secondary)", // Cyan to Lime
-              borderRadius: "50%",
-              margin: "0 auto 1.5rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "2.5rem",
-              boxShadow: "0 0 20px rgba(34, 211, 238, 0.4)", // Cyan shadow
-            }}
-          >
+        <div className="text-center mb-12">
+          <div className="w-16 h-16 bg-gradient-to-tr from-[#38bdf8] to-[#84cc16] rounded-full mx-auto mb-6 flex items-center justify-center text-3xl shadow-[0_0_30px_rgba(56,189,248,0.3)] animate-in zoom-in duration-500">
             🚀
           </div>
-          <h1
-            style={{
-              fontSize: "var(--text-3xl)",
-              fontWeight: 800,
-              marginBottom: "0.5rem",
-              background: "var(--grad-main)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
+          <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500">
             Punto de Control
           </h1>
-          <p
-            style={{
-              color: "var(--color-text-soft)",
-              fontSize: "var(--text-lg)",
-            }}
-          >
-            ¿En qué trabajamos hoy?
-          </p>
+          <p className="text-slate-500 text-lg">¿En qué trabajamos hoy?</p>
         </div>
 
         {/* Action Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "1.5rem",
-            marginBottom: "3rem",
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Card 1: New Project */}
-          <Card
-            hoverable
+          <button
             onClick={openCreateModal}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-              alignItems: "flex-start",
-              textAlign: "left",
-              padding: "2rem",
-              border: "1px solid var(--color-primary)",
-              background: "rgba(139, 92, 246, 0.05)", // Very soft violet
-              boxShadow: "var(--shadow-sm)",
-            }}
+            className="flex flex-col gap-4 items-start text-left p-8 rounded-3xl border border-purple-100 bg-white/60 backdrop-blur-md shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg hover:border-purple-200 group"
           >
-            <div style={{ color: "var(--color-primary)", fontSize: "2rem" }}>
+            <div className="text-3xl p-3 bg-purple-50 rounded-2xl group-hover:bg-purple-100 transition-colors">
               ✨
             </div>
             <div>
-              <span
-                style={{
-                  display: "block",
-                  fontSize: "var(--text-xl)",
-                  fontWeight: 700,
-                  color: "var(--color-text-main)",
-                  marginBottom: "0.5rem",
-                }}
-              >
+              <span className="block text-xl font-bold text-slate-800 mb-2">
                 Crear nuevo proyecto
               </span>
-              <span
-                style={{
-                  fontSize: "var(--text-sm)",
-                  color: "var(--color-text-soft)",
-                  lineHeight: 1.5,
-                }}
-              >
+              <span className="text-sm text-slate-500 leading-relaxed">
                 Inicia una nueva sesión de trabajo desde cero.
               </span>
             </div>
-          </Card>
+          </button>
 
           {/* Card 2: Explore */}
-          <Card
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-              opacity: 0.9,
-              padding: "2rem",
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <div style={{ color: "var(--color-success)", fontSize: "2rem" }}>
+          <div className="flex flex-col gap-4 items-start text-left p-8 rounded-3xl border border-slate-100 bg-white/40 backdrop-blur-sm opacity-80">
+            <div className="text-3xl p-3 bg-slate-50 rounded-2xl grayscale">
               📚
             </div>
             <div>
-              <span
-                style={{
-                  display: "block",
-                  fontSize: "var(--text-xl)",
-                  fontWeight: 700,
-                  color: "var(--color-text-main)",
-                  marginBottom: "0.5rem",
-                }}
-              >
+              <span className="block text-xl font-bold text-slate-700 mb-2">
                 Explorar recursos
               </span>
-              <span
-                style={{
-                  fontSize: "var(--text-sm)",
-                  color: "var(--color-text-soft)",
-                  lineHeight: 1.5,
-                }}
-              >
+              <span className="text-sm text-slate-500 leading-relaxed">
                 Documentación y guías (Próximamente).
               </span>
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Recent Projects List */}
         <div>
-          <h3
-            style={{
-              fontSize: "var(--text-xs)",
-              fontWeight: 700,
-              color: "var(--color-text-soft)",
-              marginBottom: "1rem",
-              textTransform: "uppercase",
-              letterSpacing: "1.5px",
-              paddingLeft: "0.5rem",
-            }}
-          >
+          <h3 className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest pl-2">
             Recientes
           </h3>
 
           {loading && (
-            <p
-              style={{ color: "var(--color-text-soft)", paddingLeft: "0.5rem" }}
-            >
-              Cargando...
+            <p className="text-slate-400 pl-2 animate-pulse">
+              Sincronizando...
             </p>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-            }}
-          >
+          <div className="flex flex-col gap-4">
             {projects.map((p) => (
               <Link
                 key={p.id}
                 to={`/projects/${p.id}`}
-                style={{ textDecoration: "none" }}
+                className="no-underline"
               >
-                <Card
-                  hoverable
-                  style={{
-                    padding: "1.25rem 1.5rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    borderRadius: "1rem",
-                    border: "1px solid var(--color-border)",
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                    background: "var(--color-surface)",
-                    boxShadow: "var(--shadow-sm)",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "1rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        background: "var(--color-surface-soft)",
-                        borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "1.2rem",
-                      }}
-                    >
+                <div className="group p-6 flex items-center justify-between rounded-3xl border border-white/50 bg-white/70 backdrop-blur-md shadow-sm transition-all hover:shadow-md hover:bg-white hover:scale-[1.01]">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-xl group-hover:bg-purple-50 group-hover:text-purple-500 transition-colors">
                       📄
                     </div>
                     <div>
-                      <div
-                        style={{
-                          fontWeight: 600,
-                          fontSize: "var(--text-base)",
-                          color: "var(--color-text-main)",
-                          marginBottom: "0.2rem",
-                        }}
-                      >
+                      <div className="font-semibold text-base text-slate-800 mb-1 group-hover:text-purple-600 transition-colors">
                         {p.name}
                       </div>
                       {p.description && (
-                        <div
-                          style={{
-                            fontSize: "var(--text-sm)",
-                            color: "var(--color-text-soft)",
-                          }}
-                        >
+                        <div className="text-sm text-slate-500">
                           {p.description}
                         </div>
                       )}
                     </div>
                   </div>
-                  <span
-                    style={{
-                      fontSize: "var(--text-xs)",
-                      color: "var(--color-text-soft)",
-                      background: "var(--color-surface-soft)",
-                      padding: "4px 8px",
-                      borderRadius: "6px",
-                    }}
-                  >
-                    {new Date(p.created_at).toLocaleDateString()}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "var(--text-xs)",
-                      color: "var(--color-text-soft)",
-                      background: "var(--color-surface-soft)",
-                      padding: "4px 8px",
-                      borderRadius: "6px",
-                      fontFamily: "var(--font-mono)",
-                      letterSpacing: "0.5px",
-                    }}
-                  >
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400 bg-slate-50 px-3 py-1 rounded-full">
+                      {new Date(p.created_at).toLocaleDateString()}
+                    </span>
+
                     {/* Smoke Index Calculation */}
                     {(() => {
-                      const noise = (p as any).noise_count || 0;
-                      const total = (p as any).total_items_audited || 0;
+                      const pWithMetrics = p as unknown as ProjectWithMetrics;
+                      const noise = pWithMetrics.noise_count || 0;
+                      const total = pWithMetrics.total_items_audited || 0;
                       const percentage =
                         total > 0 ? Math.round((noise / total) * 100) : 0;
 
-                      let color = "var(--wadi-primary)";
-                      let blink = false;
+                      let colorClass = "text-purple-500 bg-purple-50";
 
                       if (percentage > 50) {
-                        color = "var(--wadi-alert)"; // Red
-                        blink = true;
+                        colorClass = "text-red-500 bg-red-50 animate-pulse";
                       } else if (percentage > 20) {
-                        color = "#fbbf24"; // Yellow/Amber
+                        colorClass = "text-amber-500 bg-amber-50";
                       }
 
                       return (
                         <span
-                          style={{
-                            color: color,
-                          }}
-                          className={blink ? "animate-pulse" : ""}
+                          className={`text-[10px] font-mono px-3 py-1 rounded-full ${colorClass}`}
                         >
-                          [ÍNDICE_DE_HUMO: {percentage}%]
+                          HUMO: {percentage}%
                         </span>
                       );
                     })()}
-                  </span>
-                </Card>
+                  </div>
+                </div>
               </Link>
             ))}
 
             {projects.length === 0 && !loading && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "4rem 2rem",
-                  background: "var(--color-surface-soft)",
-                  borderRadius: "1rem",
-                  border: "2px dashed var(--color-border)",
-                  display: "flex", // Flex
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "1rem",
-                }}
-              >
-                <div style={{ fontSize: "2rem" }}>🌱</div>
-                <h3
-                  style={{
-                    margin: 0,
-                    fontSize: "var(--text-lg)",
-                    color: "var(--color-text-main)",
-                  }}
-                >
+              <div className="text-center py-16 px-8 bg-white/30 rounded-3xl border border-dashed border-slate-200 flex flex-col items-center gap-4">
+                <div className="text-4xl">🌱</div>
+                <h3 className="text-lg font-medium text-slate-700">
                   Tu espacio está limpio
                 </h3>
-                <p style={{ color: "var(--color-text-soft)", margin: 0 }}>
+                <p className="text-slate-500 max-w-xs mx-auto">
                   Aún no tienes proyectos. ¡Es hora de empezar algo nuevo!
                 </p>
                 <Button
                   onClick={openCreateModal}
                   variant="primary"
-                  style={{ marginTop: "1rem" }}
+                  className="mt-4 shadow-lg shadow-purple-200"
                 >
                   🚀 Creá tu primer proyecto
                 </Button>
@@ -396,14 +210,7 @@ export default function Projects() {
           onClose={() => setIsCreating(false)}
           title="Nuevo Proyecto"
         >
-          <form
-            onSubmit={handleCreate}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-            }}
-          >
+          <form onSubmit={handleCreate} className="flex flex-col gap-4">
             <Input
               label="Nombre del proyecto"
               placeholder="Ej. Análisis de datos"
@@ -422,14 +229,7 @@ export default function Projects() {
               onChange={(e) => setDesc(e.target.value)}
             />
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "0.5rem",
-                marginTop: "1rem",
-              }}
-            >
+            <div className="flex justify-end gap-2 mt-4">
               <Button
                 type="button"
                 variant="ghost"
@@ -440,7 +240,7 @@ export default function Projects() {
               <Button
                 type="submit"
                 variant="primary"
-                style={{ background: "var(--color-primary)", border: "none" }}
+                className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-200"
               >
                 Crear Proyecto
               </Button>
