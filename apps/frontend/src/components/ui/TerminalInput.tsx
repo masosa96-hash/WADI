@@ -12,8 +12,9 @@ interface TerminalInputProps {
 
 const PLACEHOLDERS_NORMAL = ["Escribí algo que podamos verificar."];
 const PLACEHOLDERS_BLOCKED = [
-  "[PAUSA DE LUCIDEZ: DEFINÍ TU CAMINO]",
-  "ESPERANDO DEFINICIÓN DE CRITERIO...",
+  "Pará un poco. Me estás mareando.",
+  "Elegí A o B. No te mientas.",
+  "Te espero acá hasta que te decidas.",
 ];
 
 export function TerminalInput({

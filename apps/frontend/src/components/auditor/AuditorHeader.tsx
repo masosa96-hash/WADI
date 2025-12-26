@@ -35,7 +35,7 @@ export function AuditorHeader() {
         </svg>
         <div className="flex flex-col">
           <span className="font-bold text-sm leading-none tracking-tight text-[var(--wadi-text)]">
-            WADI
+            MONDAY
           </span>
 
           {customSystemPrompt && (

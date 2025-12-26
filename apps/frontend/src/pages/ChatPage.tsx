@@ -726,8 +726,8 @@ export default function ChatPage() {
               {!hasStarted && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 text-center px-4 animate-in fade-in zoom-in-95 duration-500">
                   <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--wadi-text)] mb-8 max-w-2xl text-center leading-tight">
-                    Decime qué querés antes de que me arrepienta de estar
-                    encendido.
+                    ¿Qué rompiste ahora? O explicame tu plan antes de que me
+                    ponga a mirar el techo.
                   </h1>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md mx-auto mt-8">
