@@ -31,11 +31,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   } = useChatStore();
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchConversations();
       fetchCriminalSummary();
     }
-  }, [user, fetchConversations, fetchCriminalSummary]);
+  }, [user?.id]);
 
   const handleNewChat = () => {
     resetChat();
