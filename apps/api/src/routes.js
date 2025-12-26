@@ -12,6 +12,7 @@ import { upload } from "./middleware/upload.js";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
+import { wadiPreFlight } from "./layers/human_pattern/index.js";
 
 const router = Router();
 
