@@ -695,17 +695,7 @@ export default function ChatPage() {
       {/* MAIN LAYOUT CONTAINER - PANIC MODE STYLES */}
       <div
         className="flex h-full w-full bg-[var(--wadi-bg)] transition-colors duration-500"
-        style={
-          isPanicMode
-            ? ({
-                "--wadi-bg": PANIC_THEME.bg,
-                "--wadi-surface": PANIC_THEME.surface,
-                "--wadi-border": PANIC_THEME.border,
-                "--wadi-text": PANIC_THEME.text,
-                "--wadi-primary": PANIC_THEME.primary,
-              } as React.CSSProperties)
-            : {}
-        }
+        style={{}}
       >
         {/* CENTER COLUMN: Chat Workspace */}
         <div className="flex-1 flex flex-col h-full relative overflow-hidden min-w-0">

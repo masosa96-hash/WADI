@@ -4,14 +4,7 @@ import { RefreshCw, Layers, Cpu, LayoutDashboard } from "lucide-react";
 import { Tooltip } from "../ui/Tooltip";
 
 export function AuditorHeader() {
-  const {
-    aiModel,
-    setAiModel,
-    customSystemPrompt,
-    workspaces,
-    activeWorkspaceId,
-    switchWorkspace,
-  } = useChatStore();
+  const { aiModel, setAiModel, customSystemPrompt } = useChatStore();
   const isOnline = true;
 
   return (
@@ -44,9 +37,7 @@ export function AuditorHeader() {
           <span className="font-bold text-sm leading-none tracking-tight text-[var(--wadi-text)]">
             WADI
           </span>
-          <span className="text-[10px] text-[var(--wadi-text-muted)] font-medium leading-none mt-1 tracking-wide">
-            ESTADO: {isOnline ? "CONECTADO" : "OFFLINE"}
-          </span>
+
           {customSystemPrompt && (
             <span className="text-[9px] text-[var(--wadi-tension)] font-mono-wadi leading-none mt-0.5 tracking-widest animate-pulse">
               [SYSTEM_OVERRIDE]
@@ -65,54 +56,6 @@ export function AuditorHeader() {
             <LayoutDashboard size={14} />
           </Link>
         </Tooltip>
-
-        {/* WORKSPACE SELECTOR */}
-        <div className="hidden md:flex items-center mr-2 relative z-20">
-          <Tooltip content="Cambiar contexto de trabajo">
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none text-[var(--wadi-text-muted)]">
-                <Layers size={10} />
-              </div>
-              <select
-                value={activeWorkspaceId || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "__NEW__") {
-                    // Handled via chat command for now
-                  } else {
-                    switchWorkspace(
-                      workspaces.find((w) => w.id === val)?.name || ""
-                    );
-                  }
-                }}
-                className="bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] pl-7 pr-6 py-1 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none transition-colors w-[120px] truncate"
-              >
-                {workspaces.length === 0 && (
-                  <option value="">(Sin Workspace)</option>
-                )}
-                {workspaces.map((ws) => (
-                  <option key={ws.id} value={ws.id}>
-                    {ws.name}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-[var(--wadi-text-muted)]">
-                <svg
-                  width="8"
-                  height="8"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </div>
-            </div>
-          </Tooltip>
-        </div>
 
         {/* RESET BUTTON */}
         <Tooltip content="Reiniciar sistema (F5)">
@@ -133,28 +76,6 @@ export function AuditorHeader() {
         </Tooltip>
 
         <div className="h-4 w-[1px] bg-[var(--wadi-border)] mx-1"></div>
-
-        <span className="text-[10px] text-[var(--wadi-text-muted)] font-mono-wadi uppercase hidden sm:inline mr-1">
-          MOTOR:
-        </span>
-        <Tooltip content="Modelo de IA">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-1.5 pointer-events-none text-[var(--wadi-text-muted)]">
-              <Cpu size={10} />
-            </div>
-            <select
-              value={aiModel}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setAiModel(e.target.value as "fast" | "deep")
-              }
-              className="bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)] text-[10px] font-mono-wadi p-1 pl-6 pr-2 rounded outline-none hover:border-[var(--wadi-primary)] focus:border-[var(--wadi-primary)] cursor-pointer appearance-none text-center min-w-[90px] transition-colors focus:ring-1 focus:ring-[var(--wadi-primary)]"
-              style={{ textAlignLast: "center" }}
-            >
-              <option value="fast">RÁPIDO</option>
-              <option value="deep">PROFUNDO</option>
-            </select>
-          </div>
-        </Tooltip>
       </div>
     </header>
   );

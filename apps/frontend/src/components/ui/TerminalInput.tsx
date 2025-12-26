@@ -196,10 +196,13 @@ export function TerminalInput({
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={displayedPlaceholder}
+              placeholder="Escribí algo real..."
               disabled={isLoading || !!activeFocus}
               className={`
-                  wadi-input-base
+                  w-full bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)]
+                  text-sm px-4 py-3 rounded-xl
+                  focus:outline-none focus:ring-1 focus:ring-[var(--wadi-primary)] focus:border-[var(--wadi-primary)]
+                  transition-all shadow-sm
                   ${
                     isDecisionBlocked
                       ? "border-[var(--wadi-alert)] text-[var(--wadi-alert)] placeholder:text-[var(--wadi-alert)]/50 focus:ring-[var(--wadi-alert)]"
@@ -214,13 +217,6 @@ export function TerminalInput({
                 }
               }}
             />
-            {isLoading && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                <span className="animate-pulse text-[var(--wadi-primary)] text-xs font-mono-wadi">
-                  PROCESANDO...
-                </span>
-              </div>
-            )}
           </div>
 
           <Button
