@@ -20,7 +20,7 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="flex w-full h-screen min-h-screen relative overflow-hidden bg-[var(--color-bg)] text-[var(--monday-text)]">
+    <div className="flex w-full h-screen min-h-screen relative overflow-hidden bg-gradient-to-br from-[#f0f4ff] via-[#f9faff] to-[#ffffff] text-[var(--monday-text)]">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
