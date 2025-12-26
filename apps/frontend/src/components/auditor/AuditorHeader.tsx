@@ -1,82 +1,34 @@
-import { Link } from "react-router-dom";
-import { useChatStore } from "../../store/chatStore";
-import { RefreshCw, Layers, Cpu, LayoutDashboard } from "lucide-react";
-import { Tooltip } from "../ui/Tooltip";
+import React from "react";
 
-export function AuditorHeader() {
-  const { aiModel, setAiModel, customSystemPrompt } = useChatStore();
-  const isOnline = true;
-
+export const AuditorHeader: React.FC = () => {
   return (
-    <header className="flex items-center justify-between p-4 border-b border-[var(--wadi-border)] bg-[var(--wadi-bg)]/95 backdrop-blur z-10 sticky top-0 h-[60px]">
+    <header className="fixed top-0 left-0 w-full h-[60px] bg-[var(--monday-bg)]/90 backdrop-blur-md border-b border-[var(--monday-border)] z-40 flex items-center justify-between px-6">
       <div className="flex items-center gap-3">
-        {/* WADI EYE LOGO SVG */}
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="text-[var(--wadi-primary)] animate-pulse-soft"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <circle cx="12" cy="12" r="4" fill="currentColor" />
-          <path
-            d="M12 2V4M12 20V22M2 12H4M20 12H22"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-        </svg>
-        <div className="flex flex-col">
-          <span className="font-bold text-sm leading-none tracking-tight text-[var(--wadi-text)]">
-            MONDAY
-          </span>
-
-          {customSystemPrompt && (
-            <span className="text-[9px] text-[var(--wadi-tension)] font-mono-wadi leading-none mt-0.5 tracking-widest animate-pulse">
-              [SYSTEM_OVERRIDE]
+        <div className="w-8 h-8 flex items-center justify-center border border-[var(--monday-primary)] rounded-full animate-pulse-soft">
+          <div className="w-2 h-2 bg-[var(--monday-primary)] rounded-full"></div>
+        </div>
+        <div>
+          <h1 className="text-xl font-bold tracking-tighter text-white font-mono leading-none">
+            MONDAY<span className="text-[var(--monday-primary)]">::OS</span>
+          </h1>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-blink block"></span>
+            <span className="text-[9px] text-[var(--monday-text-dim)] tracking-widest uppercase font-mono">
+              ONLINE // V3.0
             </span>
-          )}
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 md:gap-2">
-        {/* DASHBOARD LINK */}
-        <Tooltip content="Dashboard & Métricas">
-          <Link
-            to="/dashboard"
-            className="hidden md:flex items-center justify-center p-1.5 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-surface)] rounded transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[var(--wadi-primary)] mr-1"
-          >
-            <LayoutDashboard size={14} />
-          </Link>
-        </Tooltip>
-
-        {/* RESET BUTTON */}
-        <Tooltip content="Reiniciar sistema (F5)">
-          <button
-            onClick={() => {
-              if (
-                confirm("¿Reiniciar sistemas y purgar memoria a corto plazo?")
-              ) {
-                window.location.reload();
-              }
-            }}
-            className="p-1.5 text-[var(--wadi-text-muted)] hover:text-[var(--wadi-primary)] hover:bg-[var(--wadi-surface)] rounded transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[var(--wadi-primary)]"
-            title="Reiniciar Sistema"
-            aria-label="Reiniciar sistema"
-          >
-            <RefreshCw size={14} />
-          </button>
-        </Tooltip>
-
-        <div className="h-4 w-[1px] bg-[var(--wadi-border)] mx-1"></div>
+      {/* Decorative Status */}
+      <div className="hidden md:flex gap-4 font-mono text-[10px] text-[var(--monday-text-dim)]">
+        <span className="border px-2 py-1 border-[var(--monday-border)] rounded">
+          MEM: 64TB
+        </span>
+        <span className="border px-2 py-1 border-[var(--monday-border)] rounded text-[var(--monday-primary)]">
+          UPLINK: SECURE
+        </span>
       </div>
     </header>
   );
-}
+};

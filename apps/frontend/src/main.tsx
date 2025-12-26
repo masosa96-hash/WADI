@@ -9,21 +9,21 @@ import "./index.css";
 
 // 1. Service Worker Registration
 // 1. Service Worker Registration
-// if ("serviceWorker" in navigator) {
-//   window.addEventListener("load", () => {
-//     navigator.serviceWorker
-//       .register("/sw.js")
-//       .then((registration) => {
-//         console.log(
-//           "[WADI_SYSTEM]: Service Worker registrado. Alcance:",
-//           registration.scope
-//         );
-//       })
-//       .catch((error) => {
-//         console.error("[WADI_ERROR]: Fallo en registro de SW:", error);
-//       });
-//   });
-// }
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log(
+          "[WADI_SYSTEM]: Service Worker registrado. Alcance:",
+          registration.scope
+        );
+      })
+      .catch((error) => {
+        console.error("[WADI_ERROR]: Fallo en registro de SW:", error);
+      });
+  });
+}
 
 // 2. Monday's Standalone Detection
 const isStandalone =

@@ -682,7 +682,18 @@ export default function ChatPage() {
       )}
 
       {isDecisionBlocked && (
-        <DecisionWall messageContent={decisionBlockContent || undefined} />
+        <DecisionWall
+          onOptionA={() =>
+            handleSendMessage("OPCIÓN A: Volvamos al plan técnico.", [])
+          }
+          onOptionB={() => {
+            handleSendMessage("OPCIÓN B: Cierro el canal.", []);
+            setTimeout(() => {
+              resetChat();
+              navigate("/");
+            }, 1000);
+          }}
+        />
       )}
 
       {/* MAIN LAYOUT CONTAINER - PANIC MODE STYLES */}
@@ -717,30 +728,25 @@ export default function ChatPage() {
             >
               {/* EMPTY STATE - WADI OS */}
               {!hasStarted && (
-                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 text-center px-4 animate-in fade-in zoom-in-95 duration-500">
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--wadi-text)] mb-8 max-w-2xl text-center leading-tight">
-                    ¿Qué rompiste ahora? O explicame tu plan antes de que me
-                    ponga a mirar el techo.
+                <div className="flex flex-col items-center justify-center h-full min-h-[60vh] gap-6 text-center select-none">
+                  <h1 className="text-6xl md:text-8xl font-bold font-mono-wadi tracking-tighter text-[var(--monday-text)] animate-pulse-soft">
+                    MONDAY
+                    <span className="text-[var(--monday-primary)]">::OS</span>
                   </h1>
+                  <p className="text-[var(--monday-text-dim)] font-mono text-xs uppercase tracking-[0.3em]">
+                    SISTEMA OPERATIVO DE EJECUCIÓN // v3.0
+                  </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md mx-auto mt-8">
-                    {chatShortcuts.map((shortcut, idx) => (
-                      <button
-                        key={idx}
-                        className="bg-white border border-[var(--wadi-border)] hover:border-[var(--wadi-primary)] text-[var(--wadi-text)] hover:text-white hover:bg-[var(--wadi-primary)] font-medium py-4 px-6 rounded-2xl shadow-sm transition-all duration-200 text-sm text-left flex flex-col gap-1 hover:shadow-md hover:scale-[1.01]"
-                        onClick={() => handleSendMessage(shortcut.prompt, [])}
-                      >
-                        <span className="opacity-60 text-xs uppercase tracking-wide">
-                          {shortcut.label.split(" ")[0]}
-                        </span>
-                        <span className="font-semibold text-base">
-                          {shortcut.label.substring(
-                            shortcut.label.indexOf(" ") + 1
-                          )}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                  <button
+                    onClick={() =>
+                      handleSendMessage("Hola Monday. [ABRIR_CANAL]", [])
+                    }
+                    className="mt-8 relative px-8 py-4 bg-[var(--monday-primary-glow)] border border-[var(--monday-primary)] text-[var(--monday-primary)] font-mono text-sm uppercase tracking-widest hover:bg-[var(--monday-primary)] hover:text-white transition-all duration-300 hover:shadow-[0_0_30px_var(--monday-primary-dim)] group"
+                  >
+                    <span className="group-hover:animate-blink mr-2">[</span>
+                    ABRIR CANAL
+                    <span className="group-hover:animate-blink ml-2">]</span>
+                  </button>
                 </div>
               )}
 
