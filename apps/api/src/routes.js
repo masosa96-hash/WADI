@@ -137,7 +137,7 @@ router.post(
       .select("efficiency_points")
       .eq("id", user.id)
       .maybeSingle();
-    const newPoints = (profile?.efficiency_points || 0) - 50;
+    const newPoints = profile?.efficiency_points || 0; // No penalty, just reset state
     const newRank = calculateRank(newPoints);
 
     await supabase.from("profiles").upsert({
