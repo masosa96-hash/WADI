@@ -38,7 +38,9 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
       if (flashOverlay) {
         // Alerta roja explícita para errores de validación
         flashOverlay.style.background = "var(--wadi-alert)";
-        flashOverlay.style.opacity = "0.6";
+        setTimeout(() => {
+          flashOverlay.style.opacity = "0.6";
+        }, 100);
         setTimeout(() => {
           flashOverlay.style.opacity = "0";
         }, 800);
@@ -57,7 +59,9 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
       const flashOverlay = document.getElementById("scouter-flash-overlay");
       if (flashOverlay) {
         flashOverlay.style.background = "#A78BFA"; // Lavender
-        flashOverlay.style.opacity = "0.5";
+        setTimeout(() => {
+          flashOverlay.style.opacity = "0.5";
+        }, 100);
         setTimeout(() => {
           flashOverlay.style.opacity = "0";
         }, 800);
@@ -162,7 +166,9 @@ export function Scouter({ isDecisionBlocked = false }: ScouterProps) {
             } else {
               flashOverlay.style.background = "var(--wadi-alert)";
             }
-            flashOverlay.style.opacity = "0.4"; // Suave
+            setTimeout(() => {
+              flashOverlay.style.opacity = "0.4";
+            }, 100);
             setTimeout(() => {
               flashOverlay.style.opacity = "0";
               flashOverlay.style.background = "var(--wadi-alert)"; // reset

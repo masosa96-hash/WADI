@@ -343,11 +343,17 @@ router.post(
 
       // Persistence Update
       if (user) {
-        let pointChange = reply.includes("[FOCO_LIBERADO]")
-          ? 20
-          : reply.includes("[FORCE_DECISION]")
-            ? -10
-            : 0;
+        let pointChange = 0;
+        if (reply.includes("[FOCO_LIBERADO]")) {
+          pointChange = 20;
+        } else if (reply.includes("[FORCE_DECISION]")) {
+          pointChange = -10;
+        } else if (reply.includes("[DECONSTRUCT_START]")) {
+          // Smoke Index: Penalty for excessive noise
+          const noiseCount = (reply.match(/"category":\s*"RUIDO"/g) || [])
+            .length;
+          if (noiseCount > 3) pointChange = -10;
+        }
         newPoints += pointChange;
         systemDeath = newPoints <= -50;
 

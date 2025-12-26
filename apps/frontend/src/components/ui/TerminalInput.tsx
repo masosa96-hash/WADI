@@ -167,7 +167,11 @@ export function TerminalInput({
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Escribí algo real..."
+              placeholder={
+                activeFocus
+                  ? "[PRUEBA DE VIDA REQUERIDA: SUBÍ EVIDENCIA]"
+                  : "Escribí algo real..."
+              }
               disabled={isLoading || !!activeFocus}
               className={`
                   w-full bg-[var(--wadi-surface)] border border-[var(--wadi-border)] text-[var(--wadi-text)]

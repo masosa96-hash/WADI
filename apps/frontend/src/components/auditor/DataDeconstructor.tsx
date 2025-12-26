@@ -63,7 +63,22 @@ export const DataDeconstructor: React.FC<DataDeconstructorProps> = ({
       </div>
       <div className="p-2 border-t border-[var(--monday-border)] text-[10px] text-[var(--monday-text-dim)] flex justify-between">
         <span>TOTAL ITEMS: {items.length}</span>
-        <span className="animate-pulse">PROCESSING_COMPLETE</span>
+        <button
+          onClick={() => {
+            const text = items
+              .map((i) => `[${i.category}] ${i.item} -> ${i.verdict}`)
+              .join("\n");
+            const blob = new Blob([text], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `MONDAY_PLAN_${Date.now()}.txt`;
+            a.click();
+          }}
+          className="hover:text-[var(--monday-primary)] hover:underline cursor-pointer uppercase font-bold"
+        >
+          [EXPORT_PLAN]
+        </button>
       </div>
     </MondayCard>
   );

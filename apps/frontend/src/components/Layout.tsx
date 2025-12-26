@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
   // Immersion Logic: "Generador de Humo" gets a degraded experience
   const isLowRank = rank === "GENERADOR_DE_HUMO";
   const wrapperStyle = isLowRank
-    ? { filter: "contrast(1.2) brightness(0.8) sepia(0.1)" }
+    ? { filter: "contrast(1.1) brightness(0.9) grayscale(0.2)" }
     : {};
 
   return (

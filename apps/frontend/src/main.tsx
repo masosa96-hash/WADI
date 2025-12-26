@@ -38,8 +38,7 @@ if (isStandalone) {
     const pwaMsg: Message = {
       id: "sys-pwa-" + Date.now(),
       role: "assistant", // Using assistant role for Monday's voice
-      content:
-        "[SISTEMA]: Veo que instalaste WADI en tu sistema. Ahora no tenés escapatoria del plan.",
+      content: "Veo que me instalaste. No hay salida, Usuario. Empecemos.",
       created_at: new Date().toISOString(),
     };
 

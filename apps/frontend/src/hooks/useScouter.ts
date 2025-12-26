@@ -1,23 +1,33 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 export type AudioContextState = "suspended" | "running" | "closed";
 
 export function useScouter() {
-  // WADI AUDIO PROTOCOL: MONDAY'S REACTIONS
-  // Using simple oscillators for diegetic feedback without external assets.
+  // WADI AUDIO PROTOCOL
+  // Ambience: Filtered White Noise (Bunker Wind/Rain)
+
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const ambientNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const ambientGainRef = useRef<GainNode | null>(null);
+
+  const initAudio = useCallback(() => {
+    if (audioContextRef.current) return;
+    const AudioContext =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof window.AudioContext })
+        .webkitAudioContext;
+    if (!AudioContext) return;
+    audioContextRef.current = new AudioContext();
+  }, []);
 
   const playTone = useCallback(
     (freq: number, type: OscillatorType, duration: number, rampTo?: number) => {
       try {
-        const AudioContext =
-          window.AudioContext ||
-          (
-            window as unknown as {
-              webkitAudioContext: typeof window.AudioContext;
-            }
-          ).webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
+        initAudio();
+        const ctx = audioContextRef.current;
+        if (!ctx) return;
+        if (ctx.state === "suspended") ctx.resume();
+
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
@@ -45,15 +55,68 @@ export function useScouter() {
         console.error("Audio error", e);
       }
     },
-    []
+    [initAudio]
   );
 
+  const initAmbientHum = useCallback(() => {
+    try {
+      initAudio();
+      const ctx = audioContextRef.current;
+      if (!ctx || ambientNodeRef.current) return;
+
+      // Create White Noise Buffer
+      const bufferSize = 2 * ctx.sampleRate;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      // Filter (Lowpass for "Bunker Hum")
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 150; // Deep hum/rumble
+
+      const gain = ctx.createGain();
+      gain.gain.value = 0.02; // Very subtle
+
+      whiteNoise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      whiteNoise.start();
+      ambientNodeRef.current = whiteNoise;
+      ambientGainRef.current = gain;
+
+      if (ctx.state === "suspended") ctx.resume();
+    } catch (e) {
+      console.error("Ambient error", e);
+    }
+  }, [initAudio]);
+
+  const setAmbientIntensity = useCallback((level: "normal" | "high") => {
+    if (!ambientGainRef.current) return;
+    const target = level === "high" ? 0.05 : 0.02;
+    // Smooth transition
+    const ctx = audioContextRef.current;
+    if (ctx) {
+      ambientGainRef.current.gain.linearRampToValueAtTime(
+        target,
+        ctx.currentTime + 1
+      );
+    }
+  }, []);
+
   const playScanSound = useCallback(() => {
-    playTone(1200, "sine", 0.1); // Sonar Agudo (Éxito/Escaneo)
+    playTone(1200, "sine", 0.1);
   }, [playTone]);
 
   const playAlertSound = useCallback(() => {
-    playTone(400, "sawtooth", 0.3); // Sonar Grave (Alerta/Decisión)
+    playTone(400, "sawtooth", 0.3);
   }, [playTone]);
 
   const playCrystallizeSound = useCallback(() => {
@@ -75,8 +138,8 @@ export function useScouter() {
     playCrystallizeSound,
     playDeathSound,
     playYawnSound,
-    initAmbientHum: useCallback(() => {}, []),
-    setAmbientIntensity: useCallback(() => {}, []),
+    initAmbientHum,
+    setAmbientIntensity,
     audioState: "running" as AudioContextState,
   };
 }
