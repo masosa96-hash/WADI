@@ -1,24 +1,13 @@
 {
-  "name": "WADI · SYSTEM",
-  "short_name": "WADI",
-  "description": "Monday OS v3.0 // Execution Environment",
+  "name": "MONDAY OS :: Búnker",
+  "short_name": "MONDAY",
+  "description": "Sistema Operativo de Ejecución Estratégica.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050816",
   "theme_color": "#8B5CF6",
-  "orientation": "portrait-primary",
   "icons": [
-    {
-      "src": "icon-192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
-    }
-  ],
-  "screenshots": [],
-  "categories": ["productivity", "bunker", "utilities"]
+    { "src": "icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
 }

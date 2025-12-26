@@ -677,9 +677,6 @@ export default function ChatPage() {
     <Layout>
       {/* ATOMIC COMPONENTS */}
       <Scouter isDecisionBlocked={isDecisionBlocked} />
-      {isDecisionBlocked && (
-        <DecisionWall messageContent={decisionBlockContent || undefined} />
-      )}
 
       {isDecisionBlocked && (
         <DecisionWall

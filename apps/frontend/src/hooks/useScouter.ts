@@ -48,34 +48,35 @@ export function useScouter() {
     []
   );
 
+  const playScanSound = useCallback(() => {
+    playTone(1200, "sine", 0.1); // Sonar Agudo (Éxito/Escaneo)
+  }, [playTone]);
+
+  const playAlertSound = useCallback(() => {
+    playTone(400, "sawtooth", 0.3); // Sonar Grave (Alerta/Decisión)
+  }, [playTone]);
+
+  const playCrystallizeSound = useCallback(() => {
+    playTone(1500, "sine", 0.05);
+    setTimeout(() => playTone(1200, "sine", 0.2), 50);
+  }, [playTone]);
+
+  const playDeathSound = useCallback(() => {
+    playTone(50, "square", 1, 10);
+  }, [playTone]);
+
+  const playYawnSound = useCallback(() => {
+    playTone(300, "triangle", 0.8, 100);
+  }, [playTone]);
+
   return {
-    playScanSound: useCallback(() => playTone(800, "sine", 0.15), [playTone]), // Standard Scan
-
-    // Check de Lucidez / Amber Alert: Low Sonar Ping
-    playAlertSound: useCallback(
-      () => playTone(400, "sawtooth", 0.4), // Low warning
-      [playTone]
-    ),
-
+    playScanSound,
+    playAlertSound,
+    playCrystallizeSound,
+    playDeathSound,
+    playYawnSound,
     initAmbientHum: useCallback(() => {}, []),
     setAmbientIntensity: useCallback(() => {}, []),
-
-    playDeathSound: useCallback(
-      () => playTone(50, "square", 1, 10),
-      [playTone]
-    ), // Slide down
-
-    // Crystallize / Success: High Sonar Ping (Lavender)
-    playCrystallizeSound: useCallback(
-      () => playTone(1200, "sine", 0.6), // Pure high tone
-      [playTone]
-    ),
-
-    // Scorn / Yawn: Low descending slide
-    playYawnSound: useCallback(() => {
-      playTone(300, "triangle", 0.8, 100);
-    }, [playTone]),
-
     audioState: "running" as AudioContextState,
   };
 }
